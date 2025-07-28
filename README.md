@@ -36,7 +36,7 @@ Dotsy aims to simplify dotfile management by:
 ### Hosts
 
 - Represent **device- or environment-specific configurations**.
-- Examples: `global` (shared configs between profiles like gitconfig), `foo`, `bar`, `baz`.
+- Examples: `global` (shared configs between hosts like gitconfig), `foo`, `bar`, `baz`.
 - Stored in `hosts/` directory.
 - Each host contains multiple config folders, e.g., `fish/`, `git/`, `nvim/`. These folders themselves can contain a collection of configs.
 
