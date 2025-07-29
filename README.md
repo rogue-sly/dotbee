@@ -1,7 +1,6 @@
 # Dotsy
 
 <!--toc:start-->
-
 - [Dotsy](#dotsy)
   - [Motivation](#motivation)
   - [Key Concepts](#key-concepts)
@@ -12,9 +11,9 @@
     - [dotsy init <name>](#dotsy-init-name)
     - [dotsy list](#dotsy-list)
     - [dotsy switch <host>](#dotsy-switch-host)
+    - [dotsy status](#dotsy-status)
     - [dotsy purge](#dotsy-purge)
     - [dotsy repair](#dotsy-repair)
-
 <!--toc:end-->
 
 Dotsy is an opinionated, file-based dotfiles manager designed to keep your configuration organized, and easy to manage across multiple machines and environments.
@@ -115,6 +114,10 @@ Lists all available hosts in the hosts/ folder.
 ### dotsy switch <host>
 
 Activates the selected host. Removes the current symlinks and sets up new ones for the chosen host and global.
+
+### dotsy status
+
+Shows the status of the selected host(Checks whether symlinks are broken or not or configs not symlinked at all).
 
 ### dotsy purge
 
