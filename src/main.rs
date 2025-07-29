@@ -8,11 +8,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match args.command {
         Commands::Init { name } => commands::init::run(name)?,
-        Commands::List {} => todo!(),
-        Commands::Purge {} => todo!(),
-        Commands::Repair {} => todo!(),
-        Commands::Status {} => todo!(),
-        Commands::Switch { host } => todo!(),
+        Commands::List {} => commands::list::run()?,
+        Commands::Purge {} => commands::purge::run()?,
+        Commands::Repair {} => commands::repair::run()?,
+        Commands::Status {} => commands::status::run()?,
+        Commands::Switch { host } => commands::switch::run(host)?,
     }
 
     Ok(())
