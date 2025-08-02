@@ -1,6 +1,7 @@
 # Dotsy
 
 <!--toc:start-->
+
 - [Dotsy](#dotsy)
   - [Motivation](#motivation)
   - [Key Concepts](#key-concepts)
@@ -14,6 +15,7 @@
     - [dotsy status](#dotsy-status)
     - [dotsy purge](#dotsy-purge)
     - [dotsy repair](#dotsy-repair)
+
 <!--toc:end-->
 
 Dotsy is an opinionated, file-based dotfiles manager designed to keep your configuration organized, and easy to manage across multiple machines and environments.
@@ -37,7 +39,6 @@ Dotsy aims to simplify dotfile management by:
 - Represent **device- or environment-specific configurations**.
 - Examples: `global` (shared configs between hosts like gitconfig), `foo`, `bar`, `baz`.
 - Stored in `hosts/` directory.
-- Each host contains multiple config folders, e.g., `fish/`, `git/`, `nvim/`. These folders themselves can contain a collection of configs.
 
 ### State File
 
@@ -62,33 +63,47 @@ You organize your dotfiles like this:
 │   └── note.txt
 └── hosts
     ├── bar
-    │   ├── editor
-    │   │   └── .config
-    │   │       └── zed
-    │   ├── nushell
-    │   │   └── .config
-    │   │       └── nushell
-    │   └── rioterm
-    │       └── .config
-    │           └── rio
+    │   └── .config
+    │       ├── nushell
+    │       │   └── config.nu
+    │       ├── rio
+    │       │   └── config.toml
+    │       └── zed
+    │           ├── keymap.json
+    │           ├── settings.json
+    │           └── themes
     ├── baz
-    │   └── nushell
-    │       └── .config
-    │           └── nushell
+    │   ├── .config
+    │   │   ├── inner
+    │   │   │   └── something.txt
+    │   │   ├── lol.txt
+    │   │   └── nushell
+    │   │       └── config.nu
+    │   └── .haha.txt
     └── foo
-        ├── editor
-        │   └── .config
-        │       ├── neovide
-        │       └── nvim
-        ├── niri-wm
-        │   └── .config
-        │       ├── kitty
-        │       ├── mako
-        │       ├── niri
-        │       ├── waybar
-        │       └── wofi
-        └── zsh
-            └── .zshrc
+        ├── .config
+        │   ├── kitty
+        │   │   ├── current-theme.conf
+        │   │   ├── kitty.conf
+        │   │   ├── settings
+        │   │   └── themes
+        │   ├── mako
+        │   │   └── config
+        │   ├── neovide
+        │   │   └── config.toml
+        │   ├── niri
+        │   │   └── config.kdl
+        │   ├── nvim
+        │   │   └── init.lua
+        │   ├── waybar
+        │   │   ├── config.jsonc
+        │   │   └── style.css
+        │   └── wofi
+        │       ├── config
+        │       ├── select.css
+        │       └── style.css
+        └── .zshrc
+
 ```
 
 When you run:

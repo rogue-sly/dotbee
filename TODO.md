@@ -44,7 +44,6 @@
 
 - [ ] Dry-run mode to preview changes before applying.
 - [ ] Auto-backup current dotfiles before switching or purging.
-- [ ] Support grouping related configs (e.g., groups inside hosts).
 - [ ] Cross-platform support improvements (macOS, Termux, Windows?(most likely not)).
 - [ ] Git integration per host for versioning and syncing.
 - [ ] Add tests for core functionality and edge cases.
