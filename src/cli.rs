@@ -5,11 +5,11 @@ use clap::{Parser, Subcommand};
 #[command(about = "An opinionated, file-based dotfiles manager", version, author)]
 pub struct Cli {
     #[command(subcommand)]
-    pub command: Commands,
+    pub command: Command,
 }
 
 #[derive(Subcommand)]
-pub enum Commands {
+pub enum Command {
     /// switch to a host
     Switch {
         /// host to switch to
