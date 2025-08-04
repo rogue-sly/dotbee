@@ -2,7 +2,7 @@ use colored::Colorize;
 use dialoguer::{Select, theme::ColorfulTheme};
 use std::{
     error::Error,
-    fmt::Display,
+    fmt::{Display, Formatter},
     os::unix::fs::symlink,
     path::{Path, PathBuf},
 };
@@ -16,7 +16,7 @@ enum ConflictAction {
 }
 
 impl Display for ConflictAction {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         write!(
             f,
             "{}",
