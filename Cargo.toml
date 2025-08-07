@@ -2,7 +2,7 @@
 name = "dotsy"
 version = "0.1.0"
 authors = ["rogue-87 <rogue87@tuta.io>"]
-description = "Dotfiles manager designed to for ease of use"
+description = "Dotfiles manager designed for ease of use"
 edition = "2024"
 repository = "https://github.com/rogue-87/dotsy"
 keywords = ["dotsy", "dotfiles"]
