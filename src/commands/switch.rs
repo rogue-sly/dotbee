@@ -44,8 +44,7 @@ impl ConflictAction {
                 DemandOption::new(ConflictAction::Adopt)
                     .description("Replace the file in dotfiles with the conflicting one"),
             ])
-            .run()
-            .expect("Error occurred in selection menu");
+            .run()?;
 
         Ok(selection)
     }
