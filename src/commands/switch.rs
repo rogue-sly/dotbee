@@ -42,7 +42,7 @@ impl ConflictAction {
                 DemandOption::new(ConflictAction::Overwrite)
                     .description("Overwrite conflicting file"),
                 DemandOption::new(ConflictAction::Adopt)
-                    .description("Replace the file in config with the conflicting one"),
+                    .description("Replace the file in dotfiles with the conflicting one"),
             ])
             .run()
             .expect("Error occurred in selection menu");
