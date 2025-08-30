@@ -124,14 +124,14 @@ fn handle_conflict(
     kind: &str,
 ) -> Result<(), Box<dyn Error>> {
     match ConflictAction::prompt(kind)? {
-        ConflictAction::Skip => println!("➡️ Skipped {}", destination.display()),
+        ConflictAction::Skip => println!(" Skipped {}", destination.display()),
         ConflictAction::Overwrite => {
             if destination.is_dir() {
                 trash::delete(destination)?;
             }
             symlink(source, destination)?;
             println!(
-                "🗑️ Removed and symlinked: {} → {}",
+                " Removed and symlinked: {} → {}",
                 source.display(),
                 destination.display()
             );
@@ -143,7 +143,7 @@ fn handle_conflict(
             }
             std::fs::rename(destination, &adopt_target)?;
             symlink(source, destination)?;
-            println!("📥 Adopted existing file into host config and created new symlink.");
+            println!("󰸧 Adopted existing file into host config and created new symlink.");
         }
     }
 
