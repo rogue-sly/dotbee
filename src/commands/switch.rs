@@ -1,5 +1,5 @@
 use colored::Colorize;
-use dialoguer::{Select, theme::ColorfulTheme};
+use demand::{DemandOption, Select, Theme};
 use std::{
     error::Error,
     fmt::{Display, Formatter},
@@ -30,18 +30,21 @@ impl Display for ConflictAction {
 }
 
 impl ConflictAction {
-    const OPTIONS: [Self; 3] = [Self::Skip, Self::Overwrite, Self::Adopt];
+    fn prompt(kind: &str) -> Result<ConflictAction, Box<dyn Error>> {
+        let selection = Select::new("Conflict")
+            .description(
+                format!("Conflict occurred {kind}. how do you want to handle it?").as_str(),
+            )
+            .theme(&Theme::base16())
+            .options(vec![
+                DemandOption::new(ConflictAction::Skip),
+                DemandOption::new(ConflictAction::Overwrite),
+                DemandOption::new(ConflictAction::Adopt),
+            ])
+            .run()
+            .expect("Error occurred in selection menu");
 
-    fn prompt(kind: &str) -> Result<Self, Box<dyn Error>> {
-        let selection = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt(format!(
-                "Conflict detected with {kind}. What do you want to do?"
-            ))
-            .default(0)
-            .items(&Self::OPTIONS)
-            .interact()?;
-
-        Ok(Self::OPTIONS[selection])
+        Ok(selection)
     }
 }
 
