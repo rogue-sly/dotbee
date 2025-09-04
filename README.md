@@ -62,7 +62,7 @@ You organize your dotfiles like this:
 │   │   └── something.txt
 │   └── note.txt
 └── hosts
-    ├── bar
+    ├── desktop
     │   └── .config
     │       ├── nushell
     │       │   └── config.nu
@@ -72,7 +72,7 @@ You organize your dotfiles like this:
     │           ├── keymap.json
     │           ├── settings.json
     │           └── themes
-    ├── baz
+    ├── termux
     │   ├── .config
     │   │   ├── inner
     │   │   │   └── something.txt
@@ -80,7 +80,7 @@ You organize your dotfiles like this:
     │   │   └── nushell
     │   │       └── config.nu
     │   └── .haha.txt
-    └── foo
+    └── laptop
         ├── .config
         │   ├── kitty
         │   │   ├── current-theme.conf
