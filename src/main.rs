@@ -2,8 +2,9 @@ mod cli;
 mod commands;
 use clap::Parser;
 use cli::{Cli, Command};
+use std::error::Error;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let args = Cli::parse();
 
     match args.command {

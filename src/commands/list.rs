@@ -1,8 +1,9 @@
 use colored::Colorize;
 use std::path::Path;
 use walkdir::WalkDir;
+use std::error::Error;
 
-pub fn run() -> Result<(), Box<dyn std::error::Error>> {
+pub fn run() -> Result<(), Box<dyn Error>> {
     println!("Available hosts:");
 
     let root = Path::new("hosts");
