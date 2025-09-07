@@ -103,19 +103,18 @@ fn get_destination_status(
     source: &Path,
     destination: &Path,
 ) -> Result<DestinationStatus, Box<dyn Error>> {
-    if destination.exists() {
-        if destination.is_symlink() {
-            let target = std::fs::read_link(destination)?;
-            if target == source {
-                Ok(DestinationStatus::AlreadyLinked)
-            } else {
-                Ok(DestinationStatus::ConflictingSymlink(target.clone()))
-            }
-        } else {
-            Ok(DestinationStatus::ConflictingFileOrDir)
+    if !destination.exists() {
+        return Ok(DestinationStatus::NonExistent);
+    }
+
+    if destination.is_symlink() {
+        let target = std::fs::read_link(destination)?;
+        match target == source {
+            true => Ok(DestinationStatus::AlreadyLinked),
+            false => Ok(DestinationStatus::ConflictingSymlink(target)),
         }
     } else {
-        Ok(DestinationStatus::NonExistent)
+        Ok(DestinationStatus::ConflictingFileOrDir)
     }
 }
 
