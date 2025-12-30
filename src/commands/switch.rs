@@ -40,17 +40,12 @@ impl Display for ConflictAction {
 impl ConflictAction {
     fn prompt(kind: &str) -> Result<ConflictAction, Box<dyn Error>> {
         let selection = Select::new("Conflict")
-            .description(
-                format!("Conflict occurred of kind: {kind}.\nhow do you want to handle it?")
-                    .as_str(),
-            )
+            .description(format!("Conflict occurred of kind: {kind}.\nhow do you want to handle it?").as_str())
             .theme(&Theme::base16())
             .options(vec![
                 DemandOption::new(ConflictAction::Skip).description("Don't symlink this file"),
-                DemandOption::new(ConflictAction::Overwrite)
-                    .description("Overwrite conflicting file"),
-                DemandOption::new(ConflictAction::Adopt)
-                    .description("Replace the file in dotfiles with the conflicting one"),
+                DemandOption::new(ConflictAction::Overwrite).description("Overwrite conflicting file"),
+                DemandOption::new(ConflictAction::Adopt).description("Replace the file in dotfiles with the conflicting one"),
             ])
             .run()?;
 
@@ -58,50 +53,11 @@ impl ConflictAction {
     }
 }
 
-pub fn run(host: String) -> Result<(), Box<dyn Error>> {
-    let cwd = std::env::current_dir()?;
-    let hosts_dir = cwd.join("hosts");
-    let selected_host = hosts_dir.join(&host);
-    let home = dirs::home_dir().ok_or("Could not determine home directory")?;
-
-    if !selected_host.exists() {
-        return Err(format!("Host {host} not found").into());
-    }
-
-    println!("{}: {}", "Switching to host".yellow(), host.green().bold());
-
-    for entry in WalkDir::new(&selected_host)
-        .into_iter()
-        .filter_map(Result::ok)
-        .filter(|e| e.file_type().is_file())
-    {
-        let source = entry.path();
-        let rel_path = source.strip_prefix(&selected_host)?;
-        let destination = home.join(rel_path);
-        let status = get_destination_status(source, &destination)?;
-        print_link_status(&status, source, &destination);
-
-        match status {
-            DestinationStatus::AlreadyLinked => {}
-            DestinationStatus::ConflictingSymlink(_) => {
-                handle_conflict(source, &destination, &selected_host, rel_path, "symlink")?;
-            }
-            DestinationStatus::ConflictingFileOrDir => {
-                handle_conflict(source, &destination, &selected_host, rel_path, "file/dir")?;
-            }
-            DestinationStatus::NonExistent => {
-                symlink_with_parents(source, &destination)?;
-            }
-        }
-    }
-
-    Ok(())
+pub fn run(config: String) -> Result<(), Box<dyn Error>> {
+    todo!()
 }
 
-fn get_destination_status(
-    source: &Path,
-    destination: &Path,
-) -> Result<DestinationStatus, Box<dyn Error>> {
+fn get_destination_status(source: &Path, destination: &Path) -> Result<DestinationStatus, Box<dyn Error>> {
     if !destination.exists() {
         return Ok(DestinationStatus::NonExistent);
     }
@@ -117,13 +73,7 @@ fn get_destination_status(
     }
 }
 
-fn handle_conflict(
-    source: &Path,
-    destination: &PathBuf,
-    selected_host: &Path,
-    rel_path: &Path,
-    kind: &str,
-) -> Result<(), Box<dyn Error>> {
+fn handle_conflict(source: &Path, destination: &PathBuf, selected_host: &Path, rel_path: &Path, kind: &str) -> Result<(), Box<dyn Error>> {
     match ConflictAction::prompt(kind)? {
         ConflictAction::Skip => println!("  Skipped {}", destination.display()),
         ConflictAction::Overwrite => {
@@ -131,11 +81,7 @@ fn handle_conflict(
                 trash::delete(destination)?;
             }
             symlink(source, destination)?;
-            println!(
-                " Removed and symlinked: {} → {}",
-                source.display(),
-                destination.display()
-            );
+            println!(" Removed and symlinked: {} → {}", source.display(), destination.display());
         }
         ConflictAction::Adopt => {
             let adopt_target = selected_host.join(rel_path);
@@ -161,12 +107,7 @@ fn symlink_with_parents(source: &Path, destination: &PathBuf) -> std::io::Result
 fn print_link_status(status: &DestinationStatus, source: &Path, destination: &Path) {
     match status {
         DestinationStatus::AlreadyLinked => {
-            println!(
-                "{} {} → {} (already linked)",
-                " ".cyan(),
-                source.display(),
-                destination.display()
-            );
+            println!("{} {} → {} (already linked)", " ".cyan(), source.display(), destination.display());
         }
         DestinationStatus::ConflictingSymlink(target) => {
             println!(
@@ -186,12 +127,7 @@ fn print_link_status(status: &DestinationStatus, source: &Path, destination: &Pa
             );
         }
         DestinationStatus::NonExistent => {
-            println!(
-                "{} {} → {}",
-                " ".green(),
-                source.display(),
-                destination.display()
-            );
+            println!("{} {} → {}", " ".green(), source.display(), destination.display());
         }
     }
 }

@@ -8,12 +8,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args = Cli::parse();
 
     match args.command {
-        Command::Init { name } => commands::init::run(name)?,
+        Command::Init {} => commands::init::run()?,
         Command::List {} => commands::list::run()?,
         Command::Purge {} => commands::purge::run()?,
         Command::Repair {} => commands::repair::run()?,
         Command::Status {} => commands::status::run()?,
-        Command::Switch { host } => commands::switch::run(host)?,
+        Command::Switch { config } => commands::switch::run(config)?,
     }
 
     Ok(())

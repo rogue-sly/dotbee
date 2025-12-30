@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(name = "Dotsy")]
-#[command(about = "An opinionated, file-based dotfiles manager", version, author)]
+#[command(about = "Easy to use dotfiles manager", version, author)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Command,
@@ -12,24 +12,20 @@ pub struct Cli {
 pub enum Command {
     /// switch to a host
     Switch {
-        /// host to switch to
-        host: String,
+        /// config collection to switch to
+        config: String,
     },
 
-    /// show the current active host and symlinks
+    /// show currently used configs and symlinks status
     Status {},
 
-    /// scaffold a new dotfiles layout or host
-    Init {
-        /// name for dotfiles directory
-        #[arg(short, long)]
-        name: String,
-    },
+    /// init dotsy :3
+    Init {},
 
-    /// list all available hosts
+    /// list all available configs
     List {},
 
-    /// purge symlinks and state
+    /// purge symlinks
     Purge {},
 
     /// attempt to fix broken symlinks
