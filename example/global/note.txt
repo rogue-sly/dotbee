@@ -1,4 +1,0 @@
-configs defined here a relative to the home directory, so if you want to
-create a config in .config folder, you must create a .config folder within global folder
-
-very simple right?
