@@ -17,7 +17,7 @@ pub enum Command {
     },
 
     /// show currently used configs and symlinks status
-    Status {},
+    Doctor {},
 
     /// init dotsy :3
     Init {},

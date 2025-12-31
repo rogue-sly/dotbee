@@ -13,7 +13,7 @@
 - [ ] Implement `dotsy list`
   - List configs(a config is a collection of configuration files)
 - [ ] Implement `dotsy switch <config>`
-- [ ] Implement `dotsy status`.
+- [ ] Implement `dotsy doctor`.
   - Shows the status of the selected config
   - Displays each config whether it's symlink is broken or not
 - [ ] Implement `dotsy purge`

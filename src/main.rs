@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::List {} => commands::list::run()?,
         Command::Purge {} => commands::purge::run()?,
         Command::Repair {} => commands::repair::run()?,
-        Command::Status {} => commands::status::run()?,
+        Command::Doctor {} => commands::doctor::run()?,
         Command::Switch { config } => commands::switch::run(config)?,
     }
 
