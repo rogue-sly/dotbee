@@ -1,20 +1,35 @@
 [settings]
-on_conflict = "ask"        # backup, overwrite, skip, abort or ask (ask)
-link_type = "relative"     # creates links like '../.dotfiles/bashrc'
 atomic_links = true        # swaps links via temp file for safety
 auto_detect_profile = true # try to match hostname to a profile
+on_conflict = "ask"        #  overwrite, adopt, skip, abort or ask (default: ask)
 
+[variables]
+editor = "nvim"
+
+# scripts that run before dotsy switch
+[hooks.pre]
+pre_link = "echo 'pre hook'"
+
+# scripts that run after dotsy switch
+[hooks.post]
+post_link = "echo 'post hook'"
+
+# global configs that gets applied regardless of profile
 [global.links]
-# Format: "Target Path" = "Source in Repo"
 "~/.bashrc" = "bash/bashrc"
 "~/.gitconfig" = "git/gitconfig"
 
+# each profile below is a collection of configs
+
+# desktop profile
 [profiles.desktop.links]
 "~/.config/i3/config" = "linux/i3_config"
 "~/.config/polybar/config" = "linux/polybar_config"
 
+# server profile
 [profiles.server.links]
 "~/.tmux.conf" = "server/tmux.conf"
 
+# termux profile
 [profiles.termux.links]
 "~/.termux" = "termux/.termux"
