@@ -74,28 +74,28 @@ pub fn run(profile_name: String) -> Result<(), Box<dyn Error>> {
         return Err("dotsy.toml not found. Run 'dotsy init' first.".into());
     }
 
-    let config = Config::load_from_path(config_path)?;
-    let cwd = std::env::current_dir()?;
+    let config = Config::load_from_path(config_path).unwrap();
+    let cwd = std::env::current_dir().unwrap();
 
     // pre-hooks
     if let Some(hooks) = &config.hooks {
         if let Some(pre) = &hooks.pre {
             println!("{}", "Running pre-hooks...".yellow());
-            run_hooks(pre)?;
+            run_hooks(pre).unwrap();
         }
     }
 
     // apply global symlinks
     if let Some(global) = &config.global {
         println!("{}", "Processing global links...".blue());
-        process_links(&global.links, &cwd, &config.settings.on_conflict)?;
+        process_links(&global.links, &cwd, &config.settings.on_conflict).unwrap();
     }
 
     // apply profile symlinks
     if let Some(profiles) = &config.profiles {
         if let Some(profile) = profiles.get(&profile_name) {
             println!("Processing profile '{}'...", profile_name.green());
-            process_links(&profile.links, &cwd, &config.settings.on_conflict)?;
+            process_links(&profile.links, &cwd, &config.settings.on_conflict).unwrap();
         } else {
             return Err(format!("Profile '{}' not found in configuration.", profile_name).into());
         }
@@ -107,7 +107,7 @@ pub fn run(profile_name: String) -> Result<(), Box<dyn Error>> {
     if let Some(hooks) = &config.hooks {
         if let Some(post) = &hooks.post {
             println!("{}", "Running post-hooks...".yellow());
-            run_hooks(post)?;
+            run_hooks(post).unwrap();
         }
     }
 
@@ -117,7 +117,7 @@ pub fn run(profile_name: String) -> Result<(), Box<dyn Error>> {
 fn run_hooks(hooks: &HashMap<String, String>) -> Result<(), Box<dyn Error>> {
     for (name, command) in hooks {
         println!("  Running {}: {}", name.cyan(), command);
-        let status = Command::new("sh").arg("-c").arg(command).status()?;
+        let status = Command::new("sh").arg("-c").arg(command).status().unwrap();
         if !status.success() {
             eprintln!("{} Hook '{}' failed with status {}", "Warning:".yellow(), name, status);
         }
@@ -128,19 +128,19 @@ fn run_hooks(hooks: &HashMap<String, String>) -> Result<(), Box<dyn Error>> {
 fn process_links(links: &HashMap<String, String>, cwd: &Path, default_conflict_strategy: &str) -> Result<(), Box<dyn Error>> {
     for (target_str, source_str) in links {
         let source_path = cwd.join(source_str);
-        let target_path = expand_path(target_str)?;
+        let target_path = expand_path(target_str).unwrap();
 
         if !source_path.exists() {
             println!("{} Source not found: {}", " ".red(), source_path.display());
             continue;
         }
 
-        let status = get_destination_status(&source_path, &target_path)?;
+        let status = get_destination_status(&source_path, &target_path).unwrap();
 
         match status {
             DestinationStatus::AlreadyLinked => println!("{} {} → {} (already linked)", " ".green(), source_str, target_str),
             DestinationStatus::NonExistent => {
-                symlink_with_parents(&source_path, &target_path)?;
+                symlink_with_parents(&source_path, &target_path).unwrap();
                 println!("{} {} → {}", " ".green(), source_str, target_str);
             }
             DestinationStatus::ConflictingFileOrDir | DestinationStatus::ConflictingSymlink(_) => {
@@ -153,10 +153,10 @@ fn process_links(links: &HashMap<String, String>, cwd: &Path, default_conflict_s
                     a
                 } else {
                     println!("{} Conflict: {} → {} ({})", " ".red(), source_str, target_str, kind);
-                    ConflictAction::prompt(kind)?
+                    ConflictAction::prompt(kind).unwrap()
                 };
 
-                handle_conflict(action, &source_path, &target_path, cwd, Path::new(source_str))?;
+                handle_conflict(action, &source_path, &target_path, cwd, Path::new(source_str)).unwrap();
             }
         }
     }
@@ -181,7 +181,9 @@ fn get_destination_status(source: &Path, destination: &Path) -> Result<Destinati
         return Ok(DestinationStatus::NonExistent);
     }
 
-    let target = fs::read_link(destination)?;
+    dbg!(destination);
+    dbg!(fs::read_link(destination));
+    let target = fs::read_link(destination).unwrap();
     match (destination.is_symlink(), target == source) {
         (true, true) => Ok(DestinationStatus::AlreadyLinked),
         (true, false) => Ok(DestinationStatus::ConflictingSymlink(target)),
@@ -201,29 +203,29 @@ fn handle_conflict(
         ConflictAction::Abort => return Err("Operation aborted by user.".into()),
         ConflictAction::Overwrite => {
             if destination.is_symlink() || destination.is_file() || destination.is_dir() {
-                trash::delete(destination)?;
+                trash::delete(destination).unwrap();
             }
-            symlink_with_parents(source, destination)?;
+            symlink_with_parents(source, destination).unwrap();
             println!("  Overwrite: {} → {}", source.display(), destination.display());
         }
         ConflictAction::Adopt => {
             let adopt_target = repo_root.join(rel_source);
             // ensure parent exists in repo (it should if source exists, but checking just in case)
             if let Some(parent) = adopt_target.parent() {
-                fs::create_dir_all(parent)?;
+                fs::create_dir_all(parent).unwrap();
             }
             // if the source file already exists in repo, trash it before adopting the system one?
             // "Adopt" implies the system one is the truth.
             if adopt_target.exists() {
-                trash::delete(&adopt_target)?;
+                trash::delete(&adopt_target).unwrap();
             }
             // move the file from destination (system) to source (repo)
             // rename might fail across filesystems, so copy+delete is safer, but rename is atomic on same FS.
             // let's try rename first, fallback to copy/delete if needed?
             // for now, simple rename :D
-            fs::rename(destination, &adopt_target)?;
+            fs::rename(destination, &adopt_target).unwrap();
             // Now link back
-            symlink_with_parents(source, destination)?;
+            symlink_with_parents(source, destination).unwrap();
             println!("  Adopted: {} → {}", source.display(), destination.display());
         }
     }
@@ -233,7 +235,7 @@ fn handle_conflict(
 
 fn symlink_with_parents(source: &Path, destination: &PathBuf) -> std::io::Result<()> {
     if let Some(parent) = destination.parent() {
-        fs::create_dir_all(parent)?;
+        fs::create_dir_all(parent).unwrap();
     }
     symlink(source, destination)
 }
