@@ -8,7 +8,7 @@ repository = "https://gitlab.com/rogue87/dotsy"
 keywords = ["dotsy", "dotfiles"]
 categories = ["command-line-utilities"]
 license = "MIT"
-rust-version = "1.88"
+rust-version = "1.92.0"
 
 [dependencies]
 clap = { version = "4.5.41", features = ["derive"] }
