@@ -143,17 +143,18 @@ fn process_links(links: &HashMap<String, String>, cwd: &Path, default_conflict_s
                 symlink_with_parents(&source_path, &target_path).unwrap();
                 println!("{} {} → {}", " ".green(), source_str, target_str);
             }
-            DestinationStatus::ConflictingFileOrDir | DestinationStatus::ConflictingSymlink(_) => {
+            _ => {
                 let kind = match status {
                     DestinationStatus::ConflictingSymlink(_) => "Symlink",
                     _ => "File/Dir",
                 };
 
-                let action = if let Some(a) = ConflictAction::from_str(default_conflict_strategy) {
-                    a
-                } else {
-                    println!("{} Conflict: {} → {} ({})", " ".red(), source_str, target_str, kind);
-                    ConflictAction::prompt(kind).unwrap()
+                let action = match ConflictAction::from_str(default_conflict_strategy) {
+                    Some(action) => action,
+                    _ => {
+                        println!("{} Conflict: {} → {} ({})", " ".red(), source_str, target_str, kind);
+                        ConflictAction::prompt(kind).unwrap()
+                    }
                 };
 
                 handle_conflict(action, &source_path, &target_path, cwd, Path::new(source_str)).unwrap();
