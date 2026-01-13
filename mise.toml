@@ -1,0 +1,13 @@
+[tasks.build-container]
+description = "Builds the container image (this only needs to run once)"
+run = "docker build -t dotsy-dev ."
+
+[tasks.run-container]
+description = "Runs 'cargo build' and then runs the container and puts the dotsy binary in it"
+run = """
+#!/bin/env bash
+
+cargo build
+
+docker run -it --rm -v $(pwd)/target/debug/dotsy:/usr/local/bin/dotsy:Z dotsy-dev
+"""
