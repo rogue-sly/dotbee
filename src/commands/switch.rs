@@ -182,13 +182,15 @@ fn get_destination_status(source: &Path, destination: &Path) -> Result<Destinati
         return Ok(DestinationStatus::NonExistent);
     }
 
-    dbg!(destination);
-    dbg!(fs::read_link(destination));
-    let target = fs::read_link(destination).unwrap();
+    let target = match fs::read_link(destination) {
+        Ok(v) => v,
+        Err(_) => return Ok(DestinationStatus::ConflictingFileOrDir),
+    };
+
     match (destination.is_symlink(), target == source) {
         (true, true) => Ok(DestinationStatus::AlreadyLinked),
         (true, false) => Ok(DestinationStatus::ConflictingSymlink(target)),
-        (false, false) | (false, true) => Ok(DestinationStatus::ConflictingFileOrDir),
+        _ => Ok(DestinationStatus::ConflictingFileOrDir),
     }
 }
 
