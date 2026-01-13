@@ -1,6 +1,6 @@
 FROM fedora:latest
 
-RUN dnf install -y vim git tmux tree && dnf clean all
+RUN dnf install -y vim git tmux tree bat && dnf clean all
 
 # dotsy can't be used by root and I will not support that
 RUN useradd -m -s /bin/bash testuser
