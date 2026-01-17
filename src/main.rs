@@ -1,6 +1,7 @@
 mod cli;
 mod commands;
 mod config;
+mod util;
 use clap::Parser;
 use cli::{Cli, Command};
 use std::error::Error;
