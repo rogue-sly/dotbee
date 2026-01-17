@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::util::expand_path;
+use crate::util::{expand_path, is_profile_active};
 use colored::Colorize;
 use demand::{DemandOption, Select, Theme};
 use std::{
@@ -90,6 +90,16 @@ pub fn run(profile_name: String) -> Result<(), Box<dyn Error>> {
     if let Some(global) = &config.global {
         println!("{}", "Processing global links...".blue());
         process_links(&global.links, &cwd, &config.settings.on_conflict).unwrap();
+    }
+
+    // unlink other active profiles
+    if let Some(profiles) = &config.profiles {
+        for (name, profile) in profiles {
+            if name != &profile_name && is_profile_active(profile, &cwd) {
+                println!("Unlinking previously active profile '{}'...", name.yellow());
+                unlink_profile(&profile.links).unwrap();
+            }
+        }
     }
 
     // apply profile symlinks
@@ -231,4 +241,15 @@ fn symlink_with_parents(source: &Path, destination: &PathBuf) -> std::io::Result
         fs::create_dir_all(parent).unwrap();
     }
     symlink(source, destination)
+}
+
+fn unlink_profile(links: &HashMap<String, String>) -> Result<(), Box<dyn Error>> {
+    for (target_str, _) in links {
+        let target_path = expand_path(target_str)?;
+        if target_path.is_symlink() {
+            fs::remove_file(&target_path)?;
+            println!("  Unlinked {}", target_str);
+        }
+    }
+    Ok(())
 }
