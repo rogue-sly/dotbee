@@ -15,7 +15,7 @@ use std::{
 enum DestinationStatus {
     AlreadyLinked,
     ConflictingFileOrDir,
-    ConflictingSymlink(PathBuf),
+    ConflictingSymlink,
     NonExistent,
 }
 
@@ -156,7 +156,7 @@ fn process_links(links: &HashMap<String, String>, cwd: &Path, default_conflict_s
             }
             _ => {
                 let kind = match status {
-                    DestinationStatus::ConflictingSymlink(_) => "Symlink",
+                    DestinationStatus::ConflictingSymlink => "Symlink",
                     _ => "File/Dir",
                 };
 
@@ -189,7 +189,7 @@ fn get_destination_status(source: &Path, destination: &Path) -> Result<Destinati
 
     match (destination.is_symlink(), target == source) {
         (true, true) => Ok(DestinationStatus::AlreadyLinked),
-        (true, false) => Ok(DestinationStatus::ConflictingSymlink(target)),
+        (true, false) => Ok(DestinationStatus::ConflictingSymlink),
         _ => Ok(DestinationStatus::ConflictingFileOrDir),
     }
 }
