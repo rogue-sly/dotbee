@@ -5,7 +5,7 @@ Easy to use dotfiles manager.
 > [!WARNING]
 > Dotsy is still in early development
 > I highly recommend trying it in a docker or podman container for now
-> You can use mise to easily setup a container and run it
+> You can use `mise tasks` to easily setup a container and run it
 
 ## Motivation
 
