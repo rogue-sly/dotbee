@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::util::expand_path;
 use colored::Colorize;
 use demand::{DemandOption, Select, Theme};
 use std::{
@@ -164,18 +165,7 @@ fn process_links(links: &HashMap<String, String>, cwd: &Path, default_conflict_s
     Ok(())
 }
 
-fn expand_path(path_str: &str) -> Result<PathBuf, Box<dyn Error>> {
-    if path_str.starts_with("~") {
-        if let Some(home) = dirs::home_dir() {
-            if path_str == "~" {
-                return Ok(home);
-            }
-            // safely strip prefix
-            return Ok(home.join(path_str.trim_start_matches("~/")));
-        }
-    }
-    Ok(PathBuf::from(path_str))
-}
+
 
 fn get_destination_status(source: &Path, destination: &Path) -> Result<DestinationStatus, Box<dyn Error>> {
     if !destination.exists() && !destination.is_symlink() {
