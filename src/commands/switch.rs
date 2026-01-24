@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::util::{expand_path, is_profile_active};
+use crate::util::{expand_path, get_destination_status, is_profile_active, unlink_profile_links, DestinationStatus};
 use colored::Colorize;
 use demand::{DemandOption, Select, Theme};
 use std::{
@@ -11,13 +11,6 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
-
-enum DestinationStatus {
-    AlreadyLinked,
-    ConflictingFileOrDir,
-    ConflictingSymlink,
-    NonExistent,
-}
 
 #[derive(Clone)]
 enum ConflictAction {
@@ -97,7 +90,7 @@ pub fn run(profile_name: String) -> Result<(), Box<dyn Error>> {
         for (name, profile) in profiles {
             if name != &profile_name && is_profile_active(profile, &cwd) {
                 println!("Unlinking previously active profile '{}'...", name.yellow());
-                unlink_profile(&profile.links).unwrap();
+                unlink_profile_links(&profile.links, &cwd).unwrap();
             }
         }
     }
@@ -172,29 +165,10 @@ fn process_links(links: &HashMap<String, String>, cwd: &Path, default_conflict_s
             }
         }
     }
-    Ok(())
-}
-
-
-
-fn get_destination_status(source: &Path, destination: &Path) -> Result<DestinationStatus, Box<dyn Error>> {
-    if !destination.exists() && !destination.is_symlink() {
-        return Ok(DestinationStatus::NonExistent);
+        Ok(())
     }
-
-    let target = match fs::read_link(destination) {
-        Ok(v) => v,
-        Err(_) => return Ok(DestinationStatus::ConflictingFileOrDir),
-    };
-
-    match (destination.is_symlink(), target == source) {
-        (true, true) => Ok(DestinationStatus::AlreadyLinked),
-        (true, false) => Ok(DestinationStatus::ConflictingSymlink),
-        _ => Ok(DestinationStatus::ConflictingFileOrDir),
-    }
-}
-
-fn handle_conflict(
+    
+    fn handle_conflict(
     action: ConflictAction,
     source: &Path,
     destination: &PathBuf,
@@ -241,15 +215,4 @@ fn symlink_with_parents(source: &Path, destination: &PathBuf) -> std::io::Result
         fs::create_dir_all(parent).unwrap();
     }
     symlink(source, destination)
-}
-
-fn unlink_profile(links: &HashMap<String, String>) -> Result<(), Box<dyn Error>> {
-    for (target_str, _) in links {
-        let target_path = expand_path(target_str)?;
-        if target_path.is_symlink() {
-            fs::remove_file(&target_path)?;
-            println!("  Unlinked {}", target_str);
-        }
-    }
-    Ok(())
 }

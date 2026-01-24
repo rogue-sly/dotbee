@@ -3,6 +3,14 @@ use colored::Colorize;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+#[derive(Debug, PartialEq)]
+pub enum DestinationStatus {
+    AlreadyLinked,
+    ConflictingFileOrDir,
+    ConflictingSymlink,
+    NonExistent,
+}
+
 pub fn get_config<'a>() -> Result<&'a Path, Box<dyn std::error::Error>> {
     let config_path = Path::new("dotsy.toml");
     return match config_path.exists() {
@@ -50,4 +58,37 @@ pub fn is_profile_active(profile: &Profile, cwd: &Path) -> bool {
         }
     }
     true
+}
+
+pub fn get_destination_status(source: &Path, destination: &Path) -> Result<DestinationStatus, Box<dyn std::error::Error>> {
+    if !destination.exists() && !destination.is_symlink() {
+        return Ok(DestinationStatus::NonExistent);
+    }
+
+    let target = match fs::read_link(destination) {
+        Ok(v) => v,
+        Err(_) => return Ok(DestinationStatus::ConflictingFileOrDir),
+    };
+
+    match (destination.is_symlink(), target == source) {
+        (true, true) => Ok(DestinationStatus::AlreadyLinked),
+        (true, false) => Ok(DestinationStatus::ConflictingSymlink),
+        _ => Ok(DestinationStatus::ConflictingFileOrDir),
+    }
+}
+
+pub fn unlink_profile_links(links: &std::collections::HashMap<String, String>, cwd: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    for (target_str, source_str) in links {
+        let target_path = expand_path(target_str)?;
+        let source_path = cwd.join(source_str);
+
+        if target_path.is_symlink() {
+            let actual_target = fs::read_link(&target_path)?;
+            if actual_target == source_path {
+                fs::remove_file(&target_path)?;
+                println!("  {} Unlinked {}", " ".red(), target_str);
+            }
+        }
+    }
+    Ok(())
 }
