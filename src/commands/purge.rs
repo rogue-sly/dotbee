@@ -2,7 +2,6 @@ use crate::config::Config;
 use crate::util::{is_profile_active, unlink_profile_links};
 use colored::Colorize;
 use std::error::Error;
-use std::path::Path;
 
 pub fn run() -> Result<(), Box<dyn Error>> {
     let config = Config::load(None)?;
