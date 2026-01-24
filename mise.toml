@@ -1,2 +1,5 @@
 [tools]
-rust = { version = "1.92.0", components = "cargo,clippy,rust-src,rustc,rust-std,rustfmt,rust-analyzer" }
+
+[tools.rust]
+version = "1.92.0"
+components = "cargo,clippy,rust-src,rustc,rust-std,rustfmt,rust-analyzer"
