@@ -5,11 +5,11 @@ use clap::{Parser, Subcommand};
 #[command(about = "Easy to use dotfiles manager", version, author)]
 pub struct Cli {
     #[command(subcommand)]
-    pub command: Command,
+    pub subcommand: SubCommand,
 }
 
 #[derive(Subcommand)]
-pub enum Command {
+pub enum SubCommand {
     /// show currently used configs and symlinks status
     Doctor {
         /// custom config file path
