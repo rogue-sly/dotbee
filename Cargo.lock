@@ -396,13 +396,11 @@ dependencies = [
  "colored",
  "demand",
  "dirs",
- "nix",
  "serde",
  "taplo",
  "toml",
  "trash",
  "usage-lib",
- "walkdir",
 ]
 
 [[package]]
