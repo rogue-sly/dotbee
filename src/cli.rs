@@ -4,10 +4,6 @@ use clap::{Parser, Subcommand};
 #[command(name = "Dotsy")]
 #[command(about = "Easy to use dotfiles manager", version, author)]
 pub struct Cli {
-    /// custom config file path
-    #[clap(short, long, value_name = "FILE", global = true)]
-    pub config: Option<String>,
-
     #[command(subcommand)]
     pub command: Command,
 }
@@ -15,20 +11,36 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Command {
     /// show currently used configs and symlinks status
-    Doctor {},
+    Doctor {
+        /// custom config file path
+        #[clap(short, long, value_name = "FILE", global = true)]
+        config: Option<String>,
+    },
 
     /// init dotsy :3
     Init {
+        /// custom config file path
+        #[clap(short, long, value_name = "FILE", global = true)]
+        config: Option<String>,
+
         /// do not perform any actions
         #[clap(long)]
         dry_run: bool,
     },
 
     /// list all available configs
-    List {},
+    List {
+        /// custom config file path
+        #[clap(short, long, value_name = "FILE", global = true)]
+        config: Option<String>,
+    },
 
     /// purge symlinks
     Purge {
+        /// custom config file path
+        #[clap(short, long, value_name = "FILE", global = true)]
+        config: Option<String>,
+
         /// do not perform any actions
         #[clap(long)]
         dry_run: bool,
@@ -36,6 +48,10 @@ pub enum Command {
 
     /// attempt to fix broken symlinks
     Repair {
+        /// custom config file path
+        #[clap(short, long, value_name = "FILE", global = true)]
+        config: Option<String>,
+
         /// do not perform any actions
         #[clap(long)]
         dry_run: bool,
@@ -46,9 +62,12 @@ pub enum Command {
         /// profile to switch to
         profile: String,
 
+        /// custom config file path
+        #[clap(short, long, value_name = "FILE", global = true)]
+        config: Option<String>,
+
         /// do not perform any actions
         #[clap(long)]
         dry_run: bool,
     },
-}
 }

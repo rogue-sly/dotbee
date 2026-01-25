@@ -10,12 +10,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args = Cli::parse();
 
     match args.command {
-        Command::Doctor {} => commands::doctor::run(args.config)?,
-        Command::Init { dry_run } => commands::init::run(args.config, dry_run)?,
-        Command::List {} => commands::list::run(args.config)?,
-        Command::Purge { dry_run } => commands::purge::run(args.config, dry_run)?,
-        Command::Repair { dry_run } => commands::repair::run(args.config, dry_run)?,
-        Command::Switch { profile, dry_run } => commands::switch::run(profile, args.config, dry_run)?,
+        Command::Doctor { config } => commands::doctor::run(config)?,
+        Command::Init { config, dry_run } => commands::init::run(config, dry_run)?,
+        Command::List { config } => commands::list::run(config)?,
+        Command::Purge { config, dry_run } => commands::purge::run(config, dry_run)?,
+        Command::Repair { config, dry_run } => commands::repair::run(config, dry_run)?,
+        Command::Switch { profile, config, dry_run } => commands::switch::run(profile, config, dry_run)?,
     }
 
     Ok(())

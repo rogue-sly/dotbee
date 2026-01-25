@@ -10,7 +10,11 @@ pub fn run(config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Err
     let config_path = Path::new(&path_string);
 
     if config_path.exists() {
-        println!("{} {}", " ".red(), format!("{} already exists in the current directory.", path_string).red());
+        println!(
+            "{} {}",
+            " ".red(),
+            format!("{} already exists in the current directory.", path_string).red()
+        );
         return Ok(());
     }
 
@@ -24,7 +28,7 @@ pub fn run(config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Err
     println!("{} {}", " ".green(), format!("Successfully initialized {}", path_string).green());
     println!(
         "Edit the file to configure your dotfiles, then run {} to apply.",
-        format!("dotsy --config {} switch <profile>", path_string).yellow()
+        format!("dotsy switch <profile>").yellow()
     );
 
     Ok(())
