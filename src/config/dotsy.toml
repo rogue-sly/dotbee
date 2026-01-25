@@ -1,10 +1,6 @@
 [settings]
-atomic_links = true        # swaps links via temp file for safety
 auto_detect_profile = true # try to match hostname to a profile
 on_conflict = "ask"        #  overwrite, adopt, skip, abort or ask (default: ask)
-
-[variables]
-editor = "nvim"
 
 # scripts that run before dotsy switch
 [hooks.pre]
