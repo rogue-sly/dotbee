@@ -1,4 +1,5 @@
 use crate::config::Profile;
+use crate::config::Icons;
 use colored::Colorize;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -73,6 +74,7 @@ pub fn unlink_profile_links(
     links: &std::collections::HashMap<String, String>,
     cwd: &Path,
     dry_run: bool,
+    icons: &Icons,
 ) -> Result<(), Box<dyn std::error::Error>> {
     for (target_str, source_str) in links {
         let target_path = expand_path(target_str)?;
@@ -82,10 +84,10 @@ pub fn unlink_profile_links(
             let actual_target = fs::read_link(&target_path)?;
             if actual_target == source_path {
                 if dry_run {
-                    println!("  {} Would unlink {} (dry run)", " ".red(), target_str);
+                    println!("  {} Would unlink {} (dry run)", icons.cross.red(), target_str);
                 } else {
                     fs::remove_file(&target_path)?;
-                    println!("  {} Unlinked {}", " ".red(), target_str);
+                    println!("  {} Unlinked {}", icons.cross.red(), target_str);
                 }
             }
         }

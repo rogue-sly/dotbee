@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::config::Icons;
 use crate::util::{expand_path, get_destination_status, is_profile_active, DestinationStatus};
 use colored::Colorize;
 use std::error::Error;
@@ -7,13 +8,15 @@ use std::path::Path;
 pub fn run(config_path: Option<String>) -> Result<(), Box<dyn Error>> {
     let config = Config::load(config_path)?;
     let cwd = std::env::current_dir()?;
+    let icon_style = config.settings.icon_style.as_deref().unwrap_or("nerdfonts");
+    let icons = Icons::new(icon_style);
 
     println!("{}", "Dotsy Doctor Report".bold().underline());
     println!();
 
     if let Some(global) = &config.global {
         println!("{}", "Global Links:".blue().bold());
-        check_links(&global.links, &cwd)?;
+        check_links(&global.links, &cwd, &icons)?;
         println!();
     }
 
@@ -22,7 +25,7 @@ pub fn run(config_path: Option<String>) -> Result<(), Box<dyn Error>> {
         for (name, profile) in profiles {
             if is_profile_active(profile, &cwd) {
                 println!("Active Profile: {}", name.green().bold());
-                check_links(&profile.links, &cwd)?;
+                check_links(&profile.links, &cwd, &icons)?;
                 println!();
                 active_found = true;
             }
@@ -38,7 +41,11 @@ pub fn run(config_path: Option<String>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn check_links(links: &std::collections::HashMap<String, String>, cwd: &Path) -> Result<(), Box<dyn Error>> {
+fn check_links(
+    links: &std::collections::HashMap<String, String>,
+    cwd: &Path,
+    icons: &Icons,
+) -> Result<(), Box<dyn Error>> {
     let mut sorted_links: Vec<_> = links.iter().collect();
     sorted_links.sort_by_key(|(k, _)| k.as_str());
 
@@ -47,7 +54,7 @@ fn check_links(links: &std::collections::HashMap<String, String>, cwd: &Path) ->
         let target_path = expand_path(target_str)?;
 
         if !source_path.exists() {
-            println!("  {} {} (Source missing: {})", "❌".red(), source_str, source_path.display());
+            println!("  {} {} (Source missing: {})", icons.cross.red(), source_str, source_path.display());
             continue;
         }
 
@@ -55,16 +62,16 @@ fn check_links(links: &std::collections::HashMap<String, String>, cwd: &Path) ->
 
         match status {
             DestinationStatus::AlreadyLinked => {
-                println!("  {} {} -> {}", "✅".green(), source_str, target_str);
+                println!("  {} {} -> {}", icons.check.green(), source_str, target_str);
             }
             DestinationStatus::ConflictingSymlink => {
-                println!("  {} {} (Symlink points to wrong target)", "⚠️ ".yellow(), target_str);
+                println!("  {} {} (Symlink points to wrong target)", icons.warning.yellow(), target_str);
             }
             DestinationStatus::ConflictingFileOrDir => {
-                println!("  {} {} (Conflict: File/Dir exists)", "🚫".red(), target_str);
+                println!("  {} {} (Conflict: File/Dir exists)", icons.error.red(), target_str);
             }
             DestinationStatus::NonExistent => {
-                println!("  {} {} (Not linked)", "⚪".dimmed(), source_str);
+                println!("  {} {} (Not linked)", icons.info.dimmed(), source_str);
             }
         }
     }

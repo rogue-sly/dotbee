@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::config::Icons;
 use crate::util::{expand_path, get_destination_status, is_profile_active, symlink_with_parents, unlink_profile_links, DestinationStatus};
 use colored::Colorize;
 use demand::{DemandOption, Select, Theme};
@@ -64,6 +65,8 @@ impl ConflictAction {
 pub fn run(profile_name: String, config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Error>> {
     let config = Config::load(config_path)?;
     let cwd = std::env::current_dir().unwrap();
+    let icon_style = config.settings.icon_style.as_deref().unwrap_or("nerdfonts");
+    let icons = Icons::new(icon_style);
 
     if dry_run {
         println!("{}", "Switching profile (dry run)...".bold().yellow());
@@ -80,7 +83,7 @@ pub fn run(profile_name: String, config_path: Option<String>, dry_run: bool) -> 
     // apply global symlinks
     if let Some(global) = &config.global {
         println!("{}", "Processing global links...".blue());
-        process_links(&global.links, &cwd, &config.settings.on_conflict, dry_run).unwrap();
+        process_links(&global.links, &cwd, &config.settings.on_conflict, dry_run, &icons).unwrap();
     }
 
     // unlink other active profiles
@@ -88,7 +91,7 @@ pub fn run(profile_name: String, config_path: Option<String>, dry_run: bool) -> 
         for (name, profile) in profiles {
             if name != &profile_name && is_profile_active(profile, &cwd) {
                 println!("Unlinking previously active profile '{}'...", name.yellow());
-                unlink_profile_links(&profile.links, &cwd, dry_run).unwrap();
+                unlink_profile_links(&profile.links, &cwd, dry_run, &icons).unwrap();
             }
         }
     }
@@ -97,7 +100,7 @@ pub fn run(profile_name: String, config_path: Option<String>, dry_run: bool) -> 
     if let Some(profiles) = &config.profiles {
         if let Some(profile) = profiles.get(&profile_name) {
             println!("Processing profile '{}'...", profile_name.green());
-            process_links(&profile.links, &cwd, &config.settings.on_conflict, dry_run).unwrap();
+            process_links(&profile.links, &cwd, &config.settings.on_conflict, dry_run, &icons).unwrap();
         } else {
             return Err(format!("Profile '{}' not found in configuration.", profile_name).into());
         }
@@ -140,26 +143,27 @@ fn process_links(
     cwd: &Path,
     default_conflict_strategy: &str,
     dry_run: bool,
+    icons: &Icons,
 ) -> Result<(), Box<dyn Error>> {
     for (target_str, source_str) in links {
         let source_path = cwd.join(source_str);
         let target_path = expand_path(target_str).unwrap();
 
         if !source_path.exists() {
-            println!("{} Source not found: {}", " ".red(), source_path.display());
+            println!("{} Source not found: {}", icons.cross.red(), source_path.display());
             continue;
         }
 
         let status = get_destination_status(&source_path, &target_path).unwrap();
 
         match status {
-            DestinationStatus::AlreadyLinked => println!("{} {} → {} (already linked)", " ".green(), source_str, target_str),
+            DestinationStatus::AlreadyLinked => println!("{} {} → {} (already linked)", icons.check.green(), source_str, target_str),
             DestinationStatus::NonExistent => {
                 if dry_run {
-                    println!("{} Would link {} → {} (dry run)", " ".green(), source_str, target_str);
+                    println!("{} Would link {} → {} (dry run)", icons.link.green(), source_str, target_str);
                 } else {
                     symlink_with_parents(&source_path, &target_path, dry_run).unwrap();
-                    println!("{} {} → {}", " ".green(), source_str, target_str);
+                    println!("{} {} → {}", icons.link.green(), source_str, target_str);
                 }
             }
             _ => {
@@ -171,9 +175,9 @@ fn process_links(
                 let action = match ConflictAction::from_str(default_conflict_strategy) {
                     Some(action) => action,
                     _ => {
-                        println!("{} Conflict: {} → {} ({})", " ".red(), source_str, target_str, kind);
+                        println!("{} Conflict: {} → {} ({})", icons.cross.red(), source_str, target_str, kind);
                         if dry_run {
-                            println!("  {} Skipping conflict resolution in dry run", "⚠️ ".yellow());
+                            println!("  {} Skipping conflict resolution in dry run", icons.warning.yellow());
                             ConflictAction::Skip
                         } else {
                             ConflictAction::prompt(kind).unwrap()
