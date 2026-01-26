@@ -3,7 +3,6 @@
 ## Spec
 
 - [ ] Write complete spec file for dotsy `dotsy.toml`
-  - ~~This file should decide how the configuration should look like~~
   - After finalizing the configuration file, write a `dotsy.json` file
     so taplo lsp can provide completions for it
 
@@ -26,7 +25,6 @@
 - [x] Provide meaningful error messages for:
   - Missing configs during switch.
   - Permission issues with symlinks.
-- [ ] Add confirmation prompts for destructive operations (e.g., purge).
 
 ## Documentation
 
@@ -36,8 +34,8 @@
 
 ## Future Enhancements
 
-- [ ] (--dry-run) Dry-run mode to preview changes before applying.
-- [ ] (--config) For specifying custom config path
+- [x] (--dry-run) Dry-run mode to preview changes before applying.
+- [x] (--config) For specifying custom config path
 - [ ] Auto-backup current dotfiles before switching or purging.
 - [ ] Cross-platform support improvements (macOS, Termux, W*ndows?(most likely not)).
 - [ ] Add tests for core functionality and edge cases.
