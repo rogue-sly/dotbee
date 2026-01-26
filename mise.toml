@@ -3,3 +3,16 @@
 [tools.rust]
 version = "1.92.0"
 components = "cargo,clippy,rust-src,rustc,rust-std,rustfmt,rust-analyzer"
+
+[tasks.build-container]
+run = """
+#!/bin/env bash
+docker build -t dotsy-dev .
+"""
+
+[tasks.run-container]
+run = """
+#!/bin/env bash
+cargo build
+docker run -it --rm -v $(pwd)/target/debug/dotsy:/usr/local/bin/dotsy:Z dotsy-dev
+"""
