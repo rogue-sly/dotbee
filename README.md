@@ -15,4 +15,25 @@ Initially, I wanted to make it so that the file system hierarchy acts as a way t
 
 This is still in development, so expect some bugs.
 
-If you don't wanna end up erasing precious files like I did, run dotsy in a container using docker, podman or whatever.
+## How to Use
+
+### Prerequisites
+
+- **Rust:** v1.92.0 (managed via `mise` or `rustup`).
+- **Mise:** Recommended for environment and task management. (simply run `mise use` to install rust version specific to this project)
+
+### Running in a container (using [mise](mi) ) (Recommended)
+
+To avoid accidental data loss on your host system during development or testing, it's highly recommended to run Dotsy in a container using `mise`.
+
+1. **Build the container image:**
+   ```bash
+   mise run build-container
+   ```
+2. **Run Dotsy inside the container:**
+   ```bash
+   mise run run-container
+   dotsy init
+   dotsy --help
+   dotsy switch something
+   ```
