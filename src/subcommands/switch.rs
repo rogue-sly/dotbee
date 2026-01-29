@@ -69,7 +69,7 @@ pub fn run(profile_name: String, config_path: Option<String>, dry_run: bool) -> 
     let config = Config::load(config_path)?;
     let mut state = State::load()?;
     let cwd = std::env::current_dir().unwrap();
-    let icon_style = config.settings.icon_style.as_deref().unwrap_or("nerdfonts");
+    let icon_style = config.settings.icon_style.as_deref().unwrap_or("text");
     let icons = Icons::new(icon_style);
 
     if dry_run {
@@ -145,14 +145,14 @@ fn process_links(
         let target_path = expand_path(target_str).unwrap();
 
         if !source_path.exists() {
-            println!("{} Source not found: {}", icons.cross.red(), source_path.display());
+            println!("{} Source not found: {}", icons.error.red(), source_path.display());
             continue;
         }
 
         let status = get_destination_status(&source_path, &target_path).unwrap();
 
         match status {
-            DestinationStatus::AlreadyLinked => println!("{} {} → {} (already linked)", icons.check.green(), source_str, target_str),
+            DestinationStatus::AlreadyLinked => println!("{} {} → {} (already linked)", icons.success.green(), source_str, target_str),
             DestinationStatus::NonExistent => {
                 if dry_run {
                     println!("{} Would link {} → {} (dry run)", icons.link.green(), source_str, target_str);
@@ -170,7 +170,7 @@ fn process_links(
                 let action = match ConflictAction::from_str(default_conflict_strategy) {
                     Some(action) => action,
                     _ => {
-                        println!("{} Conflict: {} → {} ({})", icons.cross.red(), source_str, target_str, kind);
+                        println!("{} Conflict: {} → {} ({})", icons.error.red(), source_str, target_str, kind);
                         if dry_run {
                             println!("  {} Skipping conflict resolution in dry run", icons.warning.yellow());
                             ConflictAction::Skip

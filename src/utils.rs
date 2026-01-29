@@ -1,5 +1,5 @@
-use crate::config::Profile;
 use crate::config::icons::Icons;
+use crate::config::Profile;
 use colored::Colorize;
 use indexmap::IndexMap;
 use std::fs;
@@ -102,10 +102,10 @@ pub fn unlink_profile_links(
             let actual_target = fs::read_link(&target_path)?;
             if actual_target == source_path {
                 if dry_run {
-                    println!("  {} Would unlink {} (dry run)", icons.cross.red(), target_str);
+                    println!("  {} Would unlink {} (dry run)", icons.delete.red(), target_str);
                 } else {
                     fs::remove_file(&target_path)?;
-                    println!("  {} Unlinked {}", icons.cross.red(), target_str);
+                    println!("  {} Unlinked {}", icons.delete.red(), target_str);
                 }
             }
         }

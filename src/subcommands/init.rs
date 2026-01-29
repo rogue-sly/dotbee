@@ -9,19 +9,19 @@ const DEFAULT_CONFIG: &str = include_str!("../config/dotsy.toml");
 pub fn run(config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Error>> {
     let path_string = config_path.unwrap_or("dotsy.toml".to_string());
     let config_path = Path::new(&path_string);
-    let icons = Icons::new("nerdfonts");
+    let icons = Icons::new("text");
 
     if config_path.exists() {
         println!(
             "{} {}",
-            icons.cross.red(),
+            icons.error.red(),
             format!("{} already exists in the current directory.", path_string).red()
         );
         return Ok(());
     }
 
     if dry_run {
-        println!("{} Would initialize {} (dry run)", icons.check.green(), path_string);
+        println!("{} Would initialize {} (dry run)", icons.success.green(), path_string);
         return Ok(());
     }
 
@@ -29,7 +29,7 @@ pub fn run(config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Err
 
     println!(
         "{} {}",
-        icons.check.green(),
+        icons.success.green(),
         format!("Successfully initialized {}", path_string).green()
     );
     println!(

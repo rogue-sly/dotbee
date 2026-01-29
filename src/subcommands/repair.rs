@@ -11,7 +11,7 @@ pub fn run(config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Err
     let config = Config::load(config_path)?;
     let state = State::load()?;
     let cwd = std::env::current_dir()?;
-    let icon_style = config.settings.icon_style.as_deref().unwrap_or("nerdfonts");
+    let icon_style = config.settings.icon_style.as_deref().unwrap_or("text");
     let icons = Icons::new(icon_style);
 
     if dry_run {
@@ -58,17 +58,17 @@ fn repair_links(links: &IndexMap<String, String>, cwd: &Path, dry_run: bool, ico
             DestinationStatus::AlreadyLinked => {}
             DestinationStatus::NonExistent => {
                 if dry_run {
-                    println!("  {} Would link {} -> {} (dry run)", icons.check.green(), source_str, target_str);
+                    println!("  {} Would link {} -> {} (dry run)", icons.success.green(), source_str, target_str);
                 } else {
-                    println!("  {} Linking {} -> {}", icons.check.green(), source_str, target_str);
+                    println!("  {} Linking {} -> {}", icons.success.green(), source_str, target_str);
                     symlink_with_parents(&source_path, &target_path, dry_run)?;
                 }
             }
             DestinationStatus::ConflictingSymlink => {
                 if dry_run {
-                    println!("  {} Would relink {} -> {} (dry run)", icons.check.green(), source_str, target_str);
+                    println!("  {} Would relink {} -> {} (dry run)", icons.success.green(), source_str, target_str);
                 } else {
-                    println!("  {} Relinking {} -> {}", icons.check.green(), source_str, target_str);
+                    println!("  {} Relinking {} -> {}", icons.success.green(), source_str, target_str);
                     if target_path.exists() || target_path.is_symlink() {
                         std::fs::remove_file(&target_path)?;
                     }
@@ -78,7 +78,7 @@ fn repair_links(links: &IndexMap<String, String>, cwd: &Path, dry_run: bool, ico
             DestinationStatus::ConflictingFileOrDir => {
                 println!(
                     "  {} Conflict at {} (File/Dir exists). Manual intervention required.",
-                    icons.cross.red(),
+                    icons.error.red(),
                     target_str
                 );
             }

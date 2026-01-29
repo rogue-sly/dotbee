@@ -11,7 +11,7 @@ pub fn run(config_path: Option<String>) -> Result<(), Box<dyn Error>> {
     let config = Config::load(config_path)?;
     let state = State::load()?;
     let cwd = std::env::current_dir()?;
-    let icon_style = config.settings.icon_style.as_deref().unwrap_or("nerdfonts");
+    let icon_style = config.settings.icon_style.as_deref().unwrap_or("text");
     let icons = Icons::new(icon_style);
 
     println!("{}", "Dotsy Doctor Report".bold().underline());
@@ -60,7 +60,7 @@ fn check_links(links: &IndexMap<String, String>, cwd: &Path, icons: &Icons) -> R
         let target_path = expand_path(target_str)?;
 
         if !source_path.exists() {
-            println!("  {} {} (Source missing: {})", icons.cross.red(), source_str, source_path.display());
+            println!("  {} {} (Source missing: {})", icons.error.red(), source_str, source_path.display());
             continue;
         }
 
@@ -68,7 +68,7 @@ fn check_links(links: &IndexMap<String, String>, cwd: &Path, icons: &Icons) -> R
 
         match status {
             DestinationStatus::AlreadyLinked => {
-                println!("  {} {} -> {}", icons.check.green(), source_str, target_str);
+                println!("  {} {} -> {}", icons.error.green(), source_str, target_str);
             }
             DestinationStatus::ConflictingSymlink => {
                 println!("  {} {} (Symlink points to wrong target)", icons.warning.yellow(), target_str);
