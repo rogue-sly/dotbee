@@ -1,7 +1,7 @@
 use crate::config::Config;
 use crate::config::icons::Icons;
 use crate::state::State;
-use crate::util::{DestinationStatus, expand_path, get_destination_status, resolve_active_profile, symlink_with_parents};
+use crate::utils::{DestinationStatus, expand_path, get_destination_status, resolve_active_profile, symlink_with_parents};
 use colored::Colorize;
 use indexmap::IndexMap;
 use std::error::Error;

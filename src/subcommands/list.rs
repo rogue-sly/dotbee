@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::state::State;
-use crate::util::is_profile_active;
+use crate::utils::is_profile_active;
 use colored::Colorize;
 use std::error::Error;
 

@@ -2,7 +2,7 @@ use crate::config::Config;
 use crate::config::hooks::execute_hook;
 use crate::config::icons::Icons;
 use crate::state::State;
-use crate::util::{
+use crate::utils::{
     DestinationStatus, expand_path, get_destination_status, resolve_active_profile, symlink_with_parents, unlink_profile_links,
 };
 use colored::Colorize;

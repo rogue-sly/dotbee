@@ -1,7 +1,7 @@
 use crate::config::Config;
 use crate::config::icons::Icons;
 use crate::state::State;
-use crate::util::{resolve_active_profile, unlink_profile_links};
+use crate::utils::{resolve_active_profile, unlink_profile_links};
 use colored::Colorize;
 use std::error::Error;
 

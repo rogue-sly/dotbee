@@ -2,7 +2,7 @@ mod cli;
 mod config;
 mod state;
 mod subcommands;
-mod util;
+mod utils;
 use clap::Parser;
 use cli::{Cli, SubCommand};
 use std::error::Error;
