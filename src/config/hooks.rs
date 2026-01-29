@@ -1,6 +1,6 @@
 use colored::Colorize;
-use serde::Deserialize;
 use indexmap::IndexMap;
+use serde::Deserialize;
 use std::error::Error;
 use std::process::Command;
 

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
 use std::io;
+use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct State {
@@ -11,9 +11,8 @@ pub struct State {
 impl State {
     fn get_path() -> PathBuf {
         // Use XDG_STATE_HOME (~/.local/state) or fallback
-        let mut path = dirs::state_dir().unwrap_or_else(|| {
-            dirs::home_dir().expect("Could not determine home directory").join(".local/state")
-        });
+        let mut path =
+            dirs::state_dir().unwrap_or_else(|| dirs::home_dir().expect("Could not determine home directory").join(".local/state"));
         path.push("dotsy");
         path.push("state.toml");
         path
@@ -44,7 +43,7 @@ impl State {
         self.active_profile = Some(profile);
         self.save()
     }
-    
+
     #[allow(dead_code)]
     pub fn clear_active_profile(&mut self) -> io::Result<()> {
         self.active_profile = None;

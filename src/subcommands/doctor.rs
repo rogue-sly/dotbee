@@ -1,7 +1,7 @@
-use crate::config::icons::Icons;
 use crate::config::Config;
+use crate::config::icons::Icons;
 use crate::state::State;
-use crate::util::{expand_path, get_destination_status, is_profile_active, resolve_active_profile, DestinationStatus};
+use crate::util::{DestinationStatus, expand_path, get_destination_status, is_profile_active, resolve_active_profile};
 use colored::Colorize;
 use indexmap::IndexMap;
 use std::error::Error;
@@ -27,7 +27,7 @@ pub fn run(config_path: Option<String>) -> Result<(), Box<dyn Error>> {
         if let Some(active_name) = resolve_active_profile(profiles, state.active_profile.as_ref(), &cwd) {
             let is_state_backed = state.active_profile.as_ref() == Some(active_name);
             let source_label = if is_state_backed { "State" } else { "Inferred" };
-            
+
             println!("Active Profile ({}): {}", source_label, active_name.cyan().bold());
 
             if let Some(profile) = profiles.get(active_name) {
@@ -39,7 +39,7 @@ pub fn run(config_path: Option<String>) -> Result<(), Box<dyn Error>> {
                 println!();
                 check_links(&profile.links, &cwd, &icons)?;
             } else {
-                 println!("  Status: Profile '{}' not found in config!", active_name.red());
+                println!("  Status: Profile '{}' not found in config!", active_name.red());
             }
         } else {
             println!("No active profile detected.");

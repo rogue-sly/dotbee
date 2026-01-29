@@ -3,9 +3,9 @@ use crate::config::icons::Icons;
 use crate::state::State;
 use crate::util::{DestinationStatus, expand_path, get_destination_status, resolve_active_profile, symlink_with_parents};
 use colored::Colorize;
+use indexmap::IndexMap;
 use std::error::Error;
 use std::path::Path;
-use indexmap::IndexMap;
 
 pub fn run(config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Error>> {
     let config = Config::load(config_path)?;
@@ -34,10 +34,10 @@ pub fn run(config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Err
                 println!("Checking active profile '{}'...", active_name.green());
                 repair_links(&profile.links, &cwd, dry_run, &icons)?;
             } else {
-                 println!("Active profile '{}' not found in config.", active_name);
+                println!("Active profile '{}' not found in config.", active_name);
             }
         } else {
-             println!("No active profile detected. Only global links were checked.");
+            println!("No active profile detected. Only global links were checked.");
         }
     }
 

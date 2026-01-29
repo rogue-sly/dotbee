@@ -2,8 +2,8 @@ pub mod hooks;
 pub mod icons;
 
 use hooks::Hooks;
-use serde::Deserialize;
 use indexmap::IndexMap;
+use serde::Deserialize;
 use std::error::Error;
 use std::fs;
 use std::path::Path;

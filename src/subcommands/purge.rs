@@ -26,13 +26,13 @@ pub fn run(config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Err
     if let Some(profiles) = &config.profiles {
         if let Some(active_name) = resolve_active_profile(profiles, state.active_profile.as_ref(), &cwd) {
             if let Some(profile) = profiles.get(active_name) {
-                 println!("Unlinking active profile '{}'...", active_name.yellow());
-                 unlink_profile_links(&profile.links, &cwd, dry_run, &icons)?;
+                println!("Unlinking active profile '{}'...", active_name.yellow());
+                unlink_profile_links(&profile.links, &cwd, dry_run, &icons)?;
             } else {
-                 println!("Active profile '{}' not found in config. Skipping.", active_name);
+                println!("Active profile '{}' not found in config. Skipping.", active_name);
             }
         } else {
-             // If resolve returns None, nothing to purge.
+            // If resolve returns None, nothing to purge.
         }
     }
 

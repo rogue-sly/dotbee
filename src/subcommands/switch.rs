@@ -2,16 +2,18 @@ use crate::config::Config;
 use crate::config::hooks::execute_hook;
 use crate::config::icons::Icons;
 use crate::state::State;
-use crate::util::{DestinationStatus, expand_path, get_destination_status, resolve_active_profile, symlink_with_parents, unlink_profile_links};
+use crate::util::{
+    DestinationStatus, expand_path, get_destination_status, resolve_active_profile, symlink_with_parents, unlink_profile_links,
+};
 use colored::Colorize;
 use demand::{DemandOption, Select, Theme};
+use indexmap::IndexMap;
 use std::{
     error::Error,
     fmt::{Display, Formatter},
     fs,
     path::{Path, PathBuf},
 };
-use indexmap::IndexMap;
 
 #[derive(Clone)]
 enum ConflictAction {
@@ -96,7 +98,7 @@ pub fn run(profile_name: String, config_path: Option<String>, dry_run: bool) -> 
                     println!("Unlinking active profile '{}'...", active_name.yellow());
                     unlink_profile_links(&profile.links, &cwd, dry_run, &icons).unwrap();
                 } else {
-                     println!("Warning: Active profile '{}' not found in config.", active_name);
+                    println!("Warning: Active profile '{}' not found in config.", active_name);
                 }
             }
         }
