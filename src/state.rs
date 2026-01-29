@@ -44,7 +44,6 @@ impl State {
         self.save()
     }
 
-    #[allow(dead_code)]
     pub fn clear_active_profile(&mut self) -> io::Result<()> {
         self.active_profile = None;
         self.save()
