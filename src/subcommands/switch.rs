@@ -203,7 +203,14 @@ fn handle_conflict(
                 println!("  Would overwrite: {} → {} (dry run)", source.display(), destination.display());
             } else {
                 if destination.is_symlink() || destination.is_file() || destination.is_dir() {
+                    #[cfg(not(target_os = "android"))]
                     trash::delete(destination).unwrap();
+                    #[cfg(target_os = "android")]
+                    if destination.is_dir() {
+                        fs::remove_dir_all(destination).unwrap();
+                    } else {
+                        fs::remove_file(destination).unwrap();
+                    }
                 }
                 symlink_with_parents(source, destination, dry_run).unwrap();
                 println!("  Overwrite: {} → {}", source.display(), destination.display());
@@ -221,7 +228,14 @@ fn handle_conflict(
                 // if the source file already exists in repo, trash it before adopting the system one?
                 // "Adopt" implies the system one is the truth.
                 if adopt_target.exists() {
+                    #[cfg(not(target_os = "android"))]
                     trash::delete(&adopt_target).unwrap();
+                    #[cfg(target_os = "android")]
+                    if adopt_target.is_dir() {
+                        fs::remove_dir_all(&adopt_target).unwrap();
+                    } else {
+                        fs::remove_file(&adopt_target).unwrap();
+                    }
                 }
                 // move the file from destination (system) to source (repo)
                 // rename might fail across filesystems, so copy+delete is safer, but rename is atomic on same FS.
