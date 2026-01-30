@@ -1,9 +1,6 @@
 [tools]
+rust = "system"
 "github:bahdotsh/wrkflw" = "latest"
-
-[tools.rust]
-version = "1.92.0"
-components = "cargo,clippy,rust-src,rustc,rust-std,rustfmt,rust-analyzer"
 
 [tasks.build-container]
 run = '''
