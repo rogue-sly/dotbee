@@ -18,6 +18,12 @@
 
 ## Installation
 
+### Using [Mise](https://mise.jdx.dev/)
+
+```bash
+mise use gitlab:rogue87/dotsy
+```
+
 ### From Source
 
 ```bash
@@ -42,15 +48,29 @@ cargo install --git https://gitlab.com/rogue87/dotsy
    "~/.config/i3/config" = "i3/config"
    ```
 
-3. **Switch Profile:**
+3. **List Available Profiles:**
+
+   ```bash
+   dotsy list
+   ```
+
+4. **Switch Profile:**
+
    ```bash
    dotsy switch desktop
    ```
 
-4. **Check Status:**
-   ```bash
-   dotsy doctor
-   ```
+5. **Check Status:**
+
+```bash
+dotsy doctor
+```
+
+6. **Remove All Symlinks:**
+
+```bash
+dotsy purge
+```
 
 ## Configuration
 
