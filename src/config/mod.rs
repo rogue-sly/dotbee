@@ -23,6 +23,7 @@ pub struct Config {
 pub struct Settings {
     pub on_conflict: Option<ConflictAction>,
     pub icon_style: Option<IconStyle>,
+    pub auto_detect_profile: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]

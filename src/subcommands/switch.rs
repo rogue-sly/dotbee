@@ -1,10 +1,11 @@
-use crate::config::hooks::execute_hook;
-use crate::config::icons::Icons;
 use crate::config::Config;
 use crate::config::ConflictAction;
+use crate::config::hooks::execute_hook;
+use crate::config::icons::Icons;
 use crate::state::State;
 use crate::utils::{
-    expand_path, find_active_profile, get_destination_status, symlink_with_parents, unlink_profile_links, DestinationStatus,
+    DestinationStatus, expand_path, find_active_profile, get_destination_status, get_hostname, symlink_with_parents,
+    unlink_profile_links,
 };
 use colored::Colorize;
 use indexmap::IndexMap;
@@ -14,12 +15,28 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub fn run(profile_name: String, config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Error>> {
+pub fn run(profile_name: Option<String>, config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Error>> {
     let config = Config::load(config_path)?;
     let mut state = State::load()?;
     let cwd = std::env::current_dir().unwrap();
     let icon_style = config.settings.icon_style.unwrap_or_default();
     let icons = Icons::new(icon_style);
+
+    let profile_name = match profile_name {
+        Some(name) => name,
+        None => {
+            if config.settings.auto_detect_profile.unwrap_or(false) {
+                if let Some(hostname) = get_hostname() {
+                    println!("{} No profile specified. Auto-detecting profile from hostname: '{}'", icons.info.blue(), hostname);
+                    hostname
+                } else {
+                    return Err("Failed to auto-detect hostname.".into());
+                }
+            } else {
+                return Err("No profile specified and auto_detect_profile is disabled.".into());
+            }
+        }
+    };
 
     if dry_run {
         println!("{}", "Switching profile (dry run)...".bold().yellow());

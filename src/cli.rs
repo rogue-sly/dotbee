@@ -59,7 +59,7 @@ pub enum SubCommand {
     /// select profile
     Switch {
         /// profile to switch to
-        profile: String,
+        profile: Option<String>,
 
         /// custom config file path
         #[clap(short, long, value_name = "FILE", global = true)]

@@ -1,5 +1,5 @@
-use crate::config::Profile;
 use crate::config::icons::Icons;
+use crate::config::Profile;
 use colored::Colorize;
 use indexmap::IndexMap;
 use std::fs;
@@ -121,4 +121,24 @@ pub fn symlink_with_parents(source: &Path, destination: &PathBuf, dry_run: bool)
         fs::create_dir_all(parent)?;
     }
     std::os::unix::fs::symlink(source, destination)
+}
+
+pub fn get_hostname() -> Option<String> {
+    if let Ok(hostname) = std::env::var("HOSTNAME") {
+        return Some(hostname);
+    }
+    if let Ok(hostname) = std::env::var("HOST") {
+        return Some(hostname);
+    }
+
+    std::process::Command::new("hostname")
+        .output()
+        .ok()
+        .and_then(|output| {
+            if output.status.success() {
+                String::from_utf8(output.stdout).ok().map(|s| s.trim().to_string())
+            } else {
+                None
+            }
+        })
 }
