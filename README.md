@@ -1,39 +1,81 @@
 # Dotsy
 
-Easy to use dotfiles manager.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://gitlab.com/rogue87/dotsy)
+
+**Dotsy** is a simple, symlink-based dotfiles manager written in Rust. It focuses on doing one thing well: managing your configuration files without the complexity of shell scripts or bloated feature sets.
 
 > [!WARNING]
-> Dotsy is still in early development
-> I highly recommend trying it in a docker or podman container for now
-> You can use `mise tasks` to easily setup a container and run it
+> Dotsy is in **Alpha (`v0.1.0`)**. While functional, it is recommended to back up your dotfiles before use. For testing, use the provided containerized environment.
 
-## Motivation
+## Features
 
-I've tried soo many dotfiles managers, and most of the time they require shell scripts to be used effectively (I'm looking at you stow), do too many things (ahem ahem chezmoi), or just too complicated. All I want is just a simple, symlink-based dotfiles manager that is easy to use, configure and does one thing well which is managing dotfiles and nothing else :D
+- **Profile Support:** Switch between different environments (e.g., Desktop, Server, Termux).
+- **Global Configs:** Define links that apply across all profiles.
+- **Hooks:** Run custom scripts before or after switching profiles.
+- **Health Checks:** `dotsy doctor` and `repair` help you identify and fix broken symlinks.
+- **LSP Support:** Full JSON schema provided for autocompletion in `dotsy.toml`.
+- **Dry Run:** Preview changes with `--dry-run` before applying them.
 
-Initially, I wanted to make it so that the file system hierarchy acts as a way to configure dotsy but I realized it's too hard to implement (skill issues ig), and has some edge cases. I decided to scrap all that junk and just use TOML for configuration :D
+## Installation
 
-This is still in development, so expect some bugs.
+### From Source
 
-## How to Use
+```bash
+cargo install --git https://gitlab.com/rogue87/dotsy
+```
 
-### Prerequisites
+## Quick Start
 
-- **Rust:** v1.92.0 (managed via `mise` or `rustup`).
-- **Mise:** Recommended for environment and task management. (simply run `mise use` to install rust version specific to this project)
-
-### Running in a container (using [mise](mi) ) (Recommended)
-
-To avoid accidental data loss on your host system during development or testing, it's highly recommended to run Dotsy in a container using `mise`.
-
-1. **Build the container image:**
+1. **Initialize:**
    ```bash
-   mise run build-container
-   ```
-2. **Run Dotsy inside the container:**
-   ```bash
-   mise run run-container
    dotsy init
-   dotsy --help
-   dotsy switch something
    ```
+   This creates a default `dotsy.toml` in your current directory.
+
+2. **Configure:**
+   Edit `dotsy.toml` to define your links.
+   ```toml
+   [global.links]
+   "~/.gitconfig" = "git/gitconfig"
+
+   [profiles.desktop.links]
+   "~/.config/i3/config" = "i3/config"
+   ```
+
+3. **Switch Profile:**
+   ```bash
+   dotsy switch desktop
+   ```
+
+4. **Check Status:**
+   ```bash
+   dotsy doctor
+   ```
+
+## Configuration
+
+Dotsy uses TOML for configuration.
+
+### Example `dotsy.toml`
+
+```toml
+[settings]
+on_conflict = "ask"
+icon_style = "nerdfont"
+
+[hooks.post]
+reload_i3 = "i3-msg reload"
+
+[global.links]
+"~/.bashrc" = "bashrc"
+```
+
+## Development & Testing
+
+To avoid accidental data loss on your host system during development, use the provided `mise` tasks to run Dotsy in a container:
+
+```bash
+mise run build-container
+mise run run-container
+```
