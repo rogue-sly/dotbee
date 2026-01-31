@@ -62,15 +62,15 @@ cargo install --git https://gitlab.com/rogue87/dotsy
 
 5. **Check Status:**
 
-```bash
-dotsy doctor
-```
+   ```bash
+   dotsy doctor
+   ```
 
 6. **Remove All Symlinks:**
 
-```bash
-dotsy purge
-```
+   ```bash
+   dotsy purge
+   ```
 
 ## Configuration
 
