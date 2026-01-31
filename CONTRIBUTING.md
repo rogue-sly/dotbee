@@ -42,7 +42,7 @@ cargo run -- <command>
 
 ### ⚠️ Safe Development (Recommended)
 
-Since Dotsy creates and removes symlinks, **we strongly recommend running it inside a container** during development to avoid accidentally modifying your personal dotfiles.
+Since Dotsy creates and removes symlinks, **I strongly recommend running it inside a container** during development to avoid accidentally modifying your personal dotfiles.
 
 I've provided `mise` tasks to simplify this process:
 
