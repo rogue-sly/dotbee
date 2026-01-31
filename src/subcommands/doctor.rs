@@ -1,7 +1,7 @@
-use crate::config::icons::Icons;
 use crate::config::Config;
+use crate::config::icons::Icons;
 use crate::state::State;
-use crate::utils::{expand_path, find_active_profile, get_destination_status, is_profile_active, DestinationStatus};
+use crate::utils::{DestinationStatus, expand_path, find_active_profile, get_destination_status, is_profile_active};
 use colored::Colorize;
 use indexmap::IndexMap;
 use std::error::Error;

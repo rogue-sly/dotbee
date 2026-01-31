@@ -4,8 +4,7 @@ use crate::config::ConflictAction;
 use crate::config::icons::Icons;
 use crate::state::State;
 use crate::utils::{
-    DestinationStatus, expand_path, find_active_profile, get_destination_status, get_hostname, symlink_with_parents,
-    unlink_profile_links,
+    DestinationStatus, expand_path, find_active_profile, get_destination_status, get_hostname, symlink_with_parents, unlink_profile_links,
 };
 use colored::Colorize;
 use indexmap::IndexMap;
@@ -27,7 +26,11 @@ pub fn run(profile_name: Option<String>, config_path: Option<String>, dry_run: b
         None => {
             if config.settings.auto_detect_profile.unwrap_or(false) {
                 if let Some(hostname) = get_hostname() {
-                    println!("{} No profile specified. Auto-detecting profile from hostname: '{}'", icons.info.blue(), hostname);
+                    println!(
+                        "{} No profile specified. Auto-detecting profile from hostname: '{}'",
+                        icons.info.blue(),
+                        hostname
+                    );
                     hostname
                 } else {
                     return Err("Failed to auto-detect hostname.".into());
@@ -41,8 +44,6 @@ pub fn run(profile_name: Option<String>, config_path: Option<String>, dry_run: b
     if dry_run {
         println!("{}", "Switching profile (dry run)...".bold().yellow());
     }
-
-
 
     // apply global symlinks
     if let Some(global) = &config.global {
@@ -75,8 +76,6 @@ pub fn run(profile_name: Option<String>, config_path: Option<String>, dry_run: b
     } else {
         println!("No profiles defined in config.");
     }
-
-
 
     if dry_run {
         println!("{}", "Switch dry run complete.".green());

@@ -1,5 +1,5 @@
-use crate::config::icons::Icons;
 use crate::config::Profile;
+use crate::config::icons::Icons;
 use colored::Colorize;
 use indexmap::IndexMap;
 use std::fs;
@@ -131,14 +131,11 @@ pub fn get_hostname() -> Option<String> {
         return Some(hostname);
     }
 
-    std::process::Command::new("hostname")
-        .output()
-        .ok()
-        .and_then(|output| {
-            if output.status.success() {
-                String::from_utf8(output.stdout).ok().map(|s| s.trim().to_string())
-            } else {
-                None
-            }
-        })
+    std::process::Command::new("hostname").output().ok().and_then(|output| {
+        if output.status.success() {
+            String::from_utf8(output.stdout).ok().map(|s| s.trim().to_string())
+        } else {
+            None
+        }
+    })
 }
