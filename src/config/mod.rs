@@ -1,6 +1,8 @@
+pub mod conflict;
 pub mod hooks;
 pub mod icons;
 
+pub use conflict::ConflictAction;
 use hooks::Hooks;
 use icons::IconStyle;
 use indexmap::IndexMap;
@@ -19,7 +21,7 @@ pub struct Config {
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {
-    pub on_conflict: String,
+    pub on_conflict: Option<ConflictAction>,
     pub icon_style: Option<IconStyle>,
 }
 

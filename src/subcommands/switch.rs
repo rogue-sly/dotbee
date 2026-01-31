@@ -1,69 +1,18 @@
-use crate::config::Config;
 use crate::config::hooks::execute_hook;
 use crate::config::icons::Icons;
+use crate::config::Config;
+use crate::config::ConflictAction;
 use crate::state::State;
 use crate::utils::{
-    DestinationStatus, expand_path, find_active_profile, get_destination_status, symlink_with_parents, unlink_profile_links,
+    expand_path, find_active_profile, get_destination_status, symlink_with_parents, unlink_profile_links, DestinationStatus,
 };
 use colored::Colorize;
-use demand::{DemandOption, Select, Theme};
 use indexmap::IndexMap;
 use std::{
     error::Error,
-    fmt::{Display, Formatter},
     fs,
     path::{Path, PathBuf},
 };
-
-#[derive(Clone)]
-enum ConflictAction {
-    Abort,
-    Adopt,
-    Overwrite,
-    Skip,
-}
-
-impl Display for ConflictAction {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                ConflictAction::Abort => "abort",
-                ConflictAction::Adopt => "adopt",
-                ConflictAction::Overwrite => "overwrite",
-                ConflictAction::Skip => "skip",
-            }
-        )
-    }
-}
-
-impl ConflictAction {
-    fn prompt(kind: &str) -> Result<ConflictAction, Box<dyn Error>> {
-        let selection = Select::new("Conflict")
-            .description(format!("Conflict occurred of kind: {kind}.\nhow do you want to handle it?").as_str())
-            .theme(&Theme::base16())
-            .options(vec![
-                DemandOption::new(ConflictAction::Abort).description("Stop switching"),
-                DemandOption::new(ConflictAction::Adopt).description("Replace the file in dotfiles with the conflicting one"),
-                DemandOption::new(ConflictAction::Overwrite).description("Overwrite conflicting file"),
-                DemandOption::new(ConflictAction::Skip).description("Don't symlink this file"),
-            ])
-            .run()?;
-
-        Ok(selection)
-    }
-
-    fn from_str(s: &str) -> Option<Self> {
-        match s.to_lowercase().as_str() {
-            "abort" => Some(ConflictAction::Abort),
-            "adopt" => Some(ConflictAction::Adopt),
-            "overwrite" => Some(ConflictAction::Overwrite),
-            "skip" => Some(ConflictAction::Skip),
-            _ => None, // "ask" or invalid goes here
-        }
-    }
-}
 
 pub fn run(profile_name: String, config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Error>> {
     let config = Config::load(config_path)?;
@@ -136,7 +85,7 @@ pub fn run(profile_name: String, config_path: Option<String>, dry_run: bool) -> 
 fn process_links(
     links: &IndexMap<String, String>,
     cwd: &Path,
-    default_conflict_strategy: &str,
+    default_conflict_strategy: &Option<ConflictAction>,
     dry_run: bool,
     icons: &Icons,
 ) -> Result<(), Box<dyn Error>> {
@@ -167,9 +116,9 @@ fn process_links(
                     _ => "File/Dir",
                 };
 
-                let action = match ConflictAction::from_str(default_conflict_strategy) {
-                    Some(action) => action,
-                    _ => {
+                // Resolve the action based on config or prompt
+                let action = match default_conflict_strategy {
+                    Some(ConflictAction::Ask) | None => {
                         println!("{} Conflict: {} → {} ({})", icons.error.red(), source_str, target_str, kind);
                         if dry_run {
                             println!("  {} Skipping conflict resolution in dry run", icons.warning.yellow());
@@ -178,6 +127,7 @@ fn process_links(
                             ConflictAction::prompt(kind).unwrap()
                         }
                     }
+                    Some(action) => action.clone(),
                 };
 
                 handle_conflict(action, &source_path, &target_path, cwd, Path::new(source_str), dry_run).unwrap();
@@ -247,6 +197,7 @@ fn handle_conflict(
                 println!("  Adopted: {} → {}", source.display(), destination.display());
             }
         }
+        ConflictAction::Ask => panic!("'Ask' action should have been resolved before handling conflict"),
     }
 
     Ok(())
