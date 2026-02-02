@@ -3,7 +3,7 @@ use std::fs;
 use std::io;
 use std::path::PathBuf;
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct State {
     pub active_profile: Option<String>,
 }

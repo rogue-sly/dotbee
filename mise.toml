@@ -1,6 +1,8 @@
 [tools]
-rust = "system"
 "github:bahdotsh/wrkflw" = "latest"
+
+[settings]
+disable_tools = ["rust"]
 
 [tasks.build-container]
 run = '''

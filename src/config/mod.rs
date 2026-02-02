@@ -1,57 +1,52 @@
 pub mod conflict;
-
 pub mod icons;
 
+use self::icons::IconStyle;
 pub use conflict::ConflictAction;
-
-use icons::IconStyle;
 use indexmap::IndexMap;
 use serde::Deserialize;
 use std::error::Error;
 use std::fs;
 use std::path::Path;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default, Clone)]
+#[serde(default)]
 pub struct Config {
     pub settings: Settings,
     pub global: Option<Global>,
     pub profiles: Option<IndexMap<String, Profile>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default, Clone)]
+#[serde(default)]
 pub struct Settings {
     pub on_conflict: Option<ConflictAction>,
     pub icon_style: Option<IconStyle>,
     pub auto_detect_profile: Option<bool>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Global {
     pub links: IndexMap<String, String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Profile {
     pub links: IndexMap<String, String>,
 }
 
 impl Config {
-    /// my stupid brain be like
-    /// "should I rename `path` parameter to `path_string`?"
-    /// wait a minute, I could just do lsp hover!
-    /// wait no that's clear enough...
-    /// hmm no...
-    /// man screw this shit
     pub fn load(path: Option<String>) -> Result<Config, Box<dyn Error>> {
-        let path = path.unwrap_or("dotsy.toml".to_string());
+        let path_str = path.unwrap_or_else(|| "dotsy.toml".to_string());
+        let config_path = Path::new(&path_str);
 
-        let config_path = Path::new(&path);
         if !config_path.exists() {
-            return Err(format!("dotsy.toml not found. Run 'dotsy init' first.").into());
+            // If no config, return a default empty config.
+            return Ok(Config::default());
         }
 
-        let content = fs::read_to_string(config_path).unwrap();
-        let config = toml::from_str(&content).unwrap();
+        let content = fs::read_to_string(config_path)?;
+        let config: Config = toml::from_str(&content)?;
         Ok(config)
     }
 }

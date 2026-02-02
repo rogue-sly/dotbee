@@ -9,6 +9,7 @@ pub enum IconStyle {
     NerdFont,
 }
 
+#[derive(Debug, Clone)]
 pub struct Icons {
     pub success: String,
     pub error: String,
@@ -53,9 +54,5 @@ impl Icons {
                 delete  : "DEL   ".to_string(),
             },
         }
-    }
-
-    pub fn default() -> Self {
-        Self::new(IconStyle::default())
     }
 }

@@ -1,31 +1,27 @@
-use crate::config::Config;
 use crate::config::icons::Icons;
-use crate::state::State;
+use crate::context::Context;
 use crate::utils::{DestinationStatus, expand_path, find_active_profile, get_destination_status, is_profile_active};
 use colored::Colorize;
 use indexmap::IndexMap;
 use std::error::Error;
-use std::path::Path;
+use std::path::Path; // Added this import
 
-pub fn run(config_path: Option<String>) -> Result<(), Box<dyn Error>> {
-    let config = Config::load(config_path)?;
-    let state = State::load()?;
+pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     let cwd = std::env::current_dir()?;
-    let icon_style = config.settings.icon_style.unwrap_or_default();
-    let icons = Icons::new(icon_style);
+    let icons = &context.icons;
 
     println!("{}", "Dotsy Doctor Report".bold().underline());
     println!();
 
-    if let Some(global) = &config.global {
+    if let Some(global) = &context.config.global {
         println!("{}", "Global Links:".blue().bold());
-        check_links(&global.links, &cwd, &icons)?;
+        check_links(&global.links, &cwd, icons)?;
         println!();
     }
 
-    if let Some(profiles) = &config.profiles {
-        if let Some(active_name) = find_active_profile(profiles, state.active_profile.as_ref(), &cwd) {
-            let is_state_backed = state.active_profile.as_ref() == Some(active_name);
+    if let Some(profiles) = &context.config.profiles {
+        if let Some(active_name) = find_active_profile(profiles, context.state.active_profile.as_ref(), &cwd) {
+            let is_state_backed = context.state.active_profile.as_ref() == Some(active_name);
             let source_label = if is_state_backed { "State" } else { "Inferred" };
 
             println!("Active Profile ({}): {}", source_label, active_name.cyan().bold());
@@ -37,7 +33,7 @@ pub fn run(config_path: Option<String>) -> Result<(), Box<dyn Error>> {
                     println!("  Status: {}", "Broken / Partially Applied".yellow());
                 }
                 println!();
-                check_links(&profile.links, &cwd, &icons)?;
+                check_links(&profile.links, &cwd, icons)?;
             } else {
                 println!("  Status: Profile '{}' not found in config!", active_name.red());
             }

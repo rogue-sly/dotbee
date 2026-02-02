@@ -5,68 +5,36 @@ use clap::{Parser, Subcommand};
 pub struct Cli {
     #[command(subcommand)]
     pub subcommand: SubCommand,
+
+    /// custom config file path
+    #[clap(short, long, value_name = "FILE", global = true)]
+    pub config: Option<String>,
+
+    /// do not perform any actions, just print what would be done
+    #[clap(long, global = true)]
+    pub dry_run: bool,
 }
 
 #[derive(Subcommand)]
 pub enum SubCommand {
     /// show currently used configs and symlinks status
-    Doctor {
-        /// custom config file path
-        #[clap(short, long, value_name = "FILE", global = true)]
-        config: Option<String>,
-    },
+    Doctor,
 
     /// init dotsy :3
-    Init {
-        /// custom config file path
-        #[clap(short, long, value_name = "FILE", global = true)]
-        config: Option<String>,
-
-        /// do not perform any actions
-        #[clap(long)]
-        dry_run: bool,
-    },
+    Init,
 
     /// list all available configs
-    List {
-        /// custom config file path
-        #[clap(short, long, value_name = "FILE", global = true)]
-        config: Option<String>,
-    },
+    List,
 
     /// purge symlinks
-    Purge {
-        /// custom config file path
-        #[clap(short, long, value_name = "FILE", global = true)]
-        config: Option<String>,
-
-        /// do not perform any actions
-        #[clap(long)]
-        dry_run: bool,
-    },
+    Purge,
 
     /// attempt to fix broken symlinks
-    Repair {
-        /// custom config file path
-        #[clap(short, long, value_name = "FILE", global = true)]
-        config: Option<String>,
-
-        /// do not perform any actions
-        #[clap(long)]
-        dry_run: bool,
-    },
+    Repair,
 
     /// select profile
     Switch {
         /// profile to switch to
         profile: Option<String>,
-
-        /// custom config file path
-        #[clap(short, long, value_name = "FILE", global = true)]
-        config: Option<String>,
-
-        /// do not perform any actions
-        #[clap(long)]
-        dry_run: bool,
     },
 }

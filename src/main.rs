@@ -1,22 +1,26 @@
 mod cli;
 mod config;
+mod context;
 mod state;
 mod subcommands;
 mod utils;
+
 use clap::Parser;
 use cli::{Cli, SubCommand};
+use context::Context;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let dotsy = Cli::parse();
+    let mut context = Context::new(dotsy.config, dotsy.dry_run)?;
 
     match dotsy.subcommand {
-        SubCommand::Doctor { config } => subcommands::doctor::run(config)?,
-        SubCommand::Init { config, dry_run } => subcommands::init::run(config, dry_run)?,
-        SubCommand::List { config } => subcommands::list::run(config)?,
-        SubCommand::Purge { config, dry_run } => subcommands::purge::run(config, dry_run)?,
-        SubCommand::Repair { config, dry_run } => subcommands::repair::run(config, dry_run)?,
-        SubCommand::Switch { profile, config, dry_run } => subcommands::switch::run(profile, config, dry_run)?,
+        SubCommand::Doctor => subcommands::doctor::run(&context)?,
+        SubCommand::Init => subcommands::init::run(&context)?,
+        SubCommand::List => subcommands::list::run(&context)?,
+        SubCommand::Purge => subcommands::purge::run(&mut context)?,
+        SubCommand::Repair => subcommands::repair::run(&mut context)?,
+        SubCommand::Switch { profile } => subcommands::switch::run(profile, &mut context)?,
     }
 
     Ok(())
