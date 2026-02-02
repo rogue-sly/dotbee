@@ -1,10 +1,9 @@
-use crate::config::Config;
 use crate::config::ConflictAction;
-
 use crate::config::icons::Icons;
-use crate::state::State;
+use crate::context::Context;
 use crate::utils::{
-    DestinationStatus, expand_path, find_active_profile, get_destination_status, get_hostname, symlink_with_parents, unlink_profile_links,
+    expand_path, find_active_profile, get_destination_status, get_hostname, symlink_with_parents,
+    unlink_profile_links, DestinationStatus,
 };
 use colored::Colorize;
 use indexmap::IndexMap;
@@ -14,17 +13,14 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub fn run(profile_name: Option<String>, config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Error>> {
-    let config = Config::load(config_path)?;
-    let mut state = State::load()?;
+pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Box<dyn Error>> {
     let cwd = std::env::current_dir().unwrap();
-    let icon_style = config.settings.icon_style.unwrap_or_default();
-    let icons = Icons::new(icon_style);
+    let icons = &context.icons;
 
     let profile_name = match profile_name {
         Some(name) => name,
         None => {
-            if config.settings.auto_detect_profile.unwrap_or(false) {
+            if context.config.settings.auto_detect_profile.unwrap_or(false) {
                 if let Some(hostname) = get_hostname() {
                     println!(
                         "{} No profile specified. Auto-detecting profile from hostname: '{}'",
@@ -41,23 +37,32 @@ pub fn run(profile_name: Option<String>, config_path: Option<String>, dry_run: b
         }
     };
 
-    if dry_run {
+    if context.dry_run {
         println!("{}", "Switching profile (dry run)...".bold().yellow());
     }
 
     // apply global symlinks
-    if let Some(global) = &config.global {
+    if let Some(global) = &context.config.global {
         println!("{}", "Processing global links...".blue());
-        process_links(&global.links, &cwd, &config.settings.on_conflict, dry_run, &icons).unwrap();
+        process_links(
+            &global.links,
+            &cwd,
+            &context.config.settings.on_conflict,
+            context.dry_run,
+            icons,
+        )
+        .unwrap();
     }
 
     // unlink other active profiles
-    if let Some(profiles) = &config.profiles {
-        if let Some(active_name) = find_active_profile(profiles, state.active_profile.as_ref(), &cwd) {
+    if let Some(profiles) = &context.config.profiles {
+        if let Some(active_name) =
+            find_active_profile(profiles, context.state.active_profile.as_ref(), &cwd)
+        {
             if active_name != &profile_name {
                 if let Some(profile) = profiles.get(active_name) {
                     println!("Unlinking active profile '{}'...", active_name.yellow());
-                    unlink_profile_links(&profile.links, &cwd, dry_run, &icons).unwrap();
+                    unlink_profile_links(&profile.links, &cwd, context.dry_run, icons).unwrap();
                 } else {
                     println!("Warning: Active profile '{}' not found in config.", active_name);
                 }
@@ -66,10 +71,17 @@ pub fn run(profile_name: Option<String>, config_path: Option<String>, dry_run: b
     }
 
     // apply profile symlinks
-    if let Some(profiles) = &config.profiles {
+    if let Some(profiles) = &context.config.profiles {
         if let Some(profile) = profiles.get(&profile_name) {
             println!("Processing profile '{}'...", profile_name.green());
-            process_links(&profile.links, &cwd, &config.settings.on_conflict, dry_run, &icons).unwrap();
+            process_links(
+                &profile.links,
+                &cwd,
+                &context.config.settings.on_conflict,
+                context.dry_run,
+                icons,
+            )
+            .unwrap();
         } else {
             return Err(format!("Profile '{}' not found in configuration.", profile_name).into());
         }
@@ -77,10 +89,10 @@ pub fn run(profile_name: Option<String>, config_path: Option<String>, dry_run: b
         println!("No profiles defined in config.");
     }
 
-    if dry_run {
+    if context.dry_run {
         println!("{}", "Switch dry run complete.".green());
     } else {
-        state.set_active_profile(profile_name)?;
+        context.state.set_active_profile(profile_name)?;
     }
 
     Ok(())

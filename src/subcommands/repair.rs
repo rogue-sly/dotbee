@@ -1,35 +1,31 @@
-use crate::config::Config;
 use crate::config::icons::Icons;
-use crate::state::State;
+use crate::context::Context;
 use crate::utils::{DestinationStatus, expand_path, find_active_profile, get_destination_status, symlink_with_parents};
 use colored::Colorize;
 use indexmap::IndexMap;
 use std::error::Error;
-use std::path::Path;
+use std::path::Path; // Added this import
 
-pub fn run(config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Error>> {
-    let config = Config::load(config_path)?;
-    let state = State::load()?;
+pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     let cwd = std::env::current_dir()?;
-    let icon_style = config.settings.icon_style.unwrap_or_default();
-    let icons = Icons::new(icon_style);
+    let icons = &context.icons;
 
-    if dry_run {
+    if context.dry_run {
         println!("{}", "Repairing symlinks (dry run)...".bold().blue());
     } else {
         println!("{}", "Repairing symlinks...".bold().blue());
     }
 
-    if let Some(global) = &config.global {
+    if let Some(global) = &context.config.global {
         println!("Checking global links...");
-        repair_links(&global.links, &cwd, dry_run, &icons)?;
+        repair_links(&global.links, &cwd, context.dry_run, icons)?;
     }
 
-    if let Some(profiles) = &config.profiles {
-        if let Some(active_name) = find_active_profile(profiles, state.active_profile.as_ref(), &cwd) {
+    if let Some(profiles) = &context.config.profiles {
+        if let Some(active_name) = find_active_profile(profiles, context.state.active_profile.as_ref(), &cwd) {
             if let Some(profile) = profiles.get(active_name) {
                 println!("Checking active profile '{}'...", active_name.green());
-                repair_links(&profile.links, &cwd, dry_run, &icons)?;
+                repair_links(&profile.links, &cwd, context.dry_run, icons)?;
             } else {
                 println!("Active profile '{}' not found in config.", active_name);
             }

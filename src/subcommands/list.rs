@@ -1,24 +1,21 @@
-use crate::config::Config;
-use crate::state::State;
+use crate::context::Context;
 use crate::utils::{find_active_profile, is_profile_active};
 use colored::Colorize;
 use std::error::Error;
 
-pub fn run(config_path: Option<String>) -> Result<(), Box<dyn Error>> {
-    let config = Config::load(config_path)?;
-    let state = State::load()?;
+pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     let cwd = std::env::current_dir()?;
 
-    let active_profile_name = if let Some(profiles) = &config.profiles {
-        find_active_profile(profiles, state.active_profile.as_ref(), &cwd)
+    let active_profile_name = if let Some(profiles) = &context.config.profiles {
+        find_active_profile(profiles, context.state.active_profile.as_ref(), &cwd)
     } else {
         None
     };
 
-    if let Some(profiles) = &config.profiles {
+    if let Some(profiles) = &context.config.profiles {
         for (name, profile) in profiles {
             let is_resolved_active = active_profile_name == Some(&name);
-            let is_active_in_state = state.active_profile.as_ref() == Some(&name);
+            let is_active_in_state = context.state.active_profile.as_ref() == Some(&name);
             let is_physically_active = is_profile_active(&profile, &cwd);
 
             let title = if is_resolved_active {

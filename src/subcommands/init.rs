@@ -1,4 +1,4 @@
-use crate::config::icons::Icons;
+use crate::context::Context;
 use colored::Colorize;
 use std::error::Error;
 use std::fs;
@@ -6,10 +6,10 @@ use std::path::Path;
 
 const DEFAULT_CONFIG: &str = include_str!("../config/dotsy.toml");
 
-pub fn run(config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Error>> {
-    let path_string = config_path.unwrap_or("dotsy.toml".to_string());
+pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
+    let path_string = context.config_path.clone().unwrap_or("dotsy.toml".to_string());
     let config_path = Path::new(&path_string);
-    let icons = Icons::default();
+    let icons = &context.icons;
 
     if config_path.exists() {
         println!(
@@ -20,7 +20,7 @@ pub fn run(config_path: Option<String>, dry_run: bool) -> Result<(), Box<dyn Err
         return Ok(());
     }
 
-    if dry_run {
+    if context.dry_run {
         println!("{} Would initialize {} (dry run)", icons.success.green(), path_string);
         return Ok(());
     }
