@@ -1,7 +1,7 @@
 use colored::Colorize;
 use dotsy::context::Context;
 use dotsy::message::Message;
-use dotsy::utils::{expand_path, find_active_profile, get_destination_status, symlink_with_parents, DestinationStatus};
+use dotsy::utils::{DestinationStatus, expand_path, find_active_profile, get_destination_status, symlink_with_parents};
 use indexmap::IndexMap;
 use std::error::Error;
 use std::path::Path;
