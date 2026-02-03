@@ -1,6 +1,6 @@
-use crate::context::Context;
-use crate::utils::{find_active_profile, unlink_profile_links};
 use colored::Colorize;
+use dotsy::context::Context;
+use dotsy::utils::{find_active_profile, unlink_profile_links};
 use std::error::Error;
 
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {

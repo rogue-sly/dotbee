@@ -1,5 +1,5 @@
-use crate::context::Context;
 use colored::Colorize;
+use dotsy::context::Context;
 use std::error::Error;
 use std::fs;
 use std::path::Path;

@@ -1,10 +1,10 @@
-use crate::config::ConflictAction;
-use crate::context::Context;
-use crate::message::Message;
-use crate::utils::{
+use colored::Colorize;
+use dotsy::config::ConflictAction;
+use dotsy::context::Context;
+use dotsy::message::Message;
+use dotsy::utils::{
     DestinationStatus, expand_path, find_active_profile, get_destination_status, get_hostname, symlink_with_parents, unlink_profile_links,
 };
-use colored::Colorize;
 use indexmap::IndexMap;
 use std::{
     error::Error,

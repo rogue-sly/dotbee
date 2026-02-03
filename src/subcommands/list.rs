@@ -1,6 +1,6 @@
-use crate::context::Context;
-use crate::utils::{find_active_profile, is_profile_active};
 use colored::Colorize;
+use dotsy::context::Context;
+use dotsy::utils::{find_active_profile, is_profile_active};
 use std::error::Error;
 
 pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {

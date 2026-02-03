@@ -1,7 +1,6 @@
-use crate::context::Context;
-use crate::message::Message;
-use crate::utils::{DestinationStatus, expand_path, find_active_profile, get_destination_status, is_profile_active};
 use colored::Colorize;
+use dotsy::context::Context;
+use dotsy::utils::{DestinationStatus, expand_path, find_active_profile, get_destination_status, is_profile_active};
 use indexmap::IndexMap;
 use std::error::Error;
 use std::path::Path;
@@ -15,7 +14,7 @@ pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
 
     if let Some(global) = &context.config.global {
         println!("{}", "Global Links:".blue().bold());
-        check_links(&global.links, &cwd, message)?;
+        check_links(&global.links, &cwd, context)?;
         println!();
     }
 
@@ -33,7 +32,7 @@ pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
                     message.warning("Status: Broken / Partially Applied");
                 }
                 println!();
-                check_links(&profile.links, &cwd, message)?;
+                check_links(&profile.links, &cwd, &context)?;
             } else {
                 message.error(&format!("Status: Profile '{}' not found in config!", active_name.red()));
             }
@@ -47,7 +46,9 @@ pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn check_links(links: &IndexMap<String, String>, cwd: &Path, message: &Message) -> Result<(), Box<dyn Error>> {
+fn check_links(links: &IndexMap<String, String>, cwd: &Path, context: &Context) -> Result<(), Box<dyn Error>> {
+    let message = &context.message;
+
     let mut sorted_links: Vec<_> = links.iter().collect();
     sorted_links.sort_by_key(|(k, _)| k.as_str());
 

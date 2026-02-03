@@ -1,14 +1,9 @@
 mod cli;
-mod config;
-mod context;
-mod message;
-mod state;
 mod subcommands;
-mod utils;
 
 use clap::Parser;
 use cli::{Cli, SubCommand};
-use context::Context;
+use dotsy::context::Context;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {

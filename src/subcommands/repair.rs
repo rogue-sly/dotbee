@@ -1,10 +1,10 @@
-use crate::context::Context;
-use crate::message::Message;
-use crate::utils::{DestinationStatus, expand_path, find_active_profile, get_destination_status, symlink_with_parents};
 use colored::Colorize;
+use dotsy::context::Context;
+use dotsy::message::Message;
+use dotsy::utils::{DestinationStatus, expand_path, find_active_profile, get_destination_status, symlink_with_parents};
 use indexmap::IndexMap;
 use std::error::Error;
-use std::path::Path; // Added this import
+use std::path::Path;
 
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     let cwd = std::env::current_dir()?;
