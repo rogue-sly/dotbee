@@ -11,6 +11,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut context = Context::new(dotsy.config, dotsy.dry_run)?;
 
     match dotsy.subcommand {
+        SubCommand::Completion { shell } => subcommands::completion::run(shell)?,
         SubCommand::Doctor => subcommands::doctor::run(&context)?,
         SubCommand::Init => subcommands::init::run(&context)?,
         SubCommand::List => subcommands::list::run(&context)?,

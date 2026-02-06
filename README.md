@@ -72,6 +72,47 @@ cargo install --git https://gitlab.com/rogue87/dotsy
    dotsy purge
    ```
 
+## Shell Completions
+
+Dotsy can generate completion scripts for your shell.
+
+```bash
+dotsy completion <SHELL>
+```
+
+Supported shells: `bash`, `zsh`, `fish`, `elvish`.
+
+### Permanent Installation
+
+| Shell      | Command                                                                    |
+| :--------- | :------------------------------------------------------------------------- |
+| **Bash**   | `dotsy completion bash > ~/.local/share/bash-completion/completions/dotsy` |
+| **Zsh**    | `dotsy completion zsh > ~/.zfunc/_dotsy`                                   |
+| **Fish**   | `dotsy completion fish > ~/.config/fish/completions/dotsy.fish`            |
+| **Elvish** | `dotsy completion elvish > ~/.config/elvish/lib/dotsy.elv`                 |
+
+### On the fly
+
+You can also load completions directly into your current session:
+
+> [!TIP]
+> For **Zsh**, ensure `~/.zfunc` is in your `$fpath` by adding `fpath+=~/.zfunc` to your `.zshrc` before calling `compinit`.
+> For **Elvish**, after permanent installation, add `use dotsy` to your `rc.elv`.
+
+```bash
+# Fish
+dotsy completion fish | source
+
+# Bash
+source <(dotsy completion bash)
+
+# Zsh
+source <(dotsy completion zsh)
+
+# Elvish
+eval (dotsy completion elvish | slurp)
+```
+
 ## Configuration
 
 Dotsy uses TOML for configuration.

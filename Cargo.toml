@@ -20,6 +20,7 @@ taplo = "0.14.0"
 toml = { version = "0.9.10", features = ["parse"] }
 usage-lib = { version = "2.11.0", features = ["clap"] }
 indexmap = { version = "2.2.6", features = ["serde"] }
+clap_complete = "4.5.65"
 
 [target.'cfg(not(target_os = "android"))'.dependencies]
 trash = "5.2.2"

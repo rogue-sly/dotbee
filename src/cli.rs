@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 
 #[derive(Parser)]
 #[command(name = "Dotsy", about = "Easy to use dotfiles manager", version, author)]
@@ -15,8 +15,34 @@ pub struct Cli {
     pub dry_run: bool,
 }
 
+#[derive(ValueEnum, Clone, Copy, Debug)]
+pub enum Shell {
+    Bash,
+    Zsh,
+    Fish,
+    Elvish,
+}
+
+impl From<Shell> for clap_complete::Shell {
+    fn from(shell: Shell) -> Self {
+        match shell {
+            Shell::Bash => clap_complete::Shell::Bash,
+            Shell::Zsh => clap_complete::Shell::Zsh,
+            Shell::Fish => clap_complete::Shell::Fish,
+            Shell::Elvish => clap_complete::Shell::Elvish,
+        }
+    }
+}
+
 #[derive(Subcommand)]
 pub enum SubCommand {
+    /// generate shell completions
+    #[command(visible_alias = "c")]
+    Completion {
+        /// shell to generate completions for
+        shell: Shell,
+    },
+
     /// show currently used configs and symlinks status
     #[command(visible_alias = "dr")]
     Doctor,
