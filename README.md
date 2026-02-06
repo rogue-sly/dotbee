@@ -1,12 +1,12 @@
 # Dotsy
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://gitlab.com/rogue87/dotsy)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://gitlab.com/rogue87/dotsy)
 
 **Dotsy** is a simple, symlink-based dotfiles manager written in Rust. It focuses on doing one thing well: managing your configuration files without the complexity of shell scripts or bloated feature sets.
 
 > [!WARNING]
-> Dotsy is in **Alpha (`v0.1.0`)**. While functional, it is recommended to back up your dotfiles before use. For testing, use the provided containerized environment.
+> Dotsy is in **Alpha**. While functional, it is recommended to back up your dotfiles before use. For testing, use the provided containerized environment.
 
 ## Features
 

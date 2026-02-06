@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-02-06
+
+### Added
+- New `completion` command to generate shell completion scripts (Bash, Zsh, Fish, Elvish, PowerShell).
+- Command aliases for improved developer experience:
+    - `ls` for `list`
+    - `sw` for `switch`
+    - `dr` for `doctor`
+- `CONTRIBUTING.md` guide for new contributors.
+
+### Changed
+- **Major Refactor:** Modularized the codebase and separated application logic from the library.
+- **Context Pattern:** Introduced a `Context` module to manage shared state (config, paths, flags) across subcommands more efficiently.
+- **Messaging System:** Centralized output handling in a dedicated `message` module, improving consistency and allowing for easier styling updates.
+- **CI/CD:** Simplified release process by using `musl` as the default target for all Linux builds.
+
 ## [0.1.0] - 2026-01-31
 
 ### Added

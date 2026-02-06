@@ -1,6 +1,6 @@
 [package]
 name = "dotsy"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Rogue87 <rogue87@tuta.io>"]
 description = "Dotfiles manager designed for ease of use"
 edition = "2024"
