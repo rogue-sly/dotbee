@@ -2,8 +2,8 @@
 #USAGE flag "-p --profile <profile>" help="Build with the specified profile" default="dev" {
 #USAGE   choices "dev" "release"
 #USAGE }
-#USAGE flag "-t --target <target>" help="The target to build" default="x86_64-unknown-linux-gnu" {
-#USAGE   choices "aarch64-apple-darwin" "aarch64-linux-android" "aarch64-unknown-linux-gnu" "aarch64-unknown-linux-musl" "x86_64-unknown-linux-gnu" "x86_64-unknown-linux-musl"
+#USAGE flag "-t --target <target>" help="The target to build" default="x86_64-unknown-linux-musl" {
+#USAGE   choices "aarch64-apple-darwin" "aarch64-linux-android" "aarch64-unknown-linux-musl" "x86_64-unknown-linux-musl"
 #USAGE }
 
 set -e
