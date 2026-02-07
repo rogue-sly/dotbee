@@ -1,6 +1,6 @@
 FROM fedora:latest
 
-RUN dnf install -y vim neovim git fastfetch tree bat hostname && dnf clean all
+RUN dnf install -y vim neovim git fastfetch tree bat hostname fish && dnf clean all
 
 # dotsy can't be used by root and I will not support that
 RUN useradd -m -s /bin/bash testuser
@@ -12,4 +12,4 @@ COPY --chown=testuser:testuser example /home/testuser/dotfiles
 USER testuser
 WORKDIR /home/testuser/dotfiles
 
-CMD ["/bin/bash"]
+CMD ["/bin/fish"]
