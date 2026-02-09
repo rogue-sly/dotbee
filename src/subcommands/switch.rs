@@ -19,19 +19,17 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
     let profile_name = match profile_name {
         Some(name) => name,
         None => {
-            if context.config.settings.auto_detect_profile.unwrap_or(false) {
-                if let Some(hostname) = get_hostname() {
-                    message.info(&format!(
-                        "No profile specified. Auto-detecting profile from hostname: '{}'",
-                        hostname
-                    ));
-                    hostname
-                } else {
-                    return Err("Failed to auto-detect hostname.".into());
-                }
-            } else {
+            if !context.config.settings.auto_detect_profile.unwrap_or(false) {
                 return Err("No profile specified and auto_detect_profile is disabled.".into());
             }
+
+            let hostname = get_hostname();
+            message.info(&format!(
+                "No profile specified. Auto-detecting profile from hostname: '{}'",
+                hostname
+            ));
+
+            hostname
         }
     };
 
