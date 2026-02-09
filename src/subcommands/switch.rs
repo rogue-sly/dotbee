@@ -66,7 +66,8 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
             return Err(format!("Profile '{}' not found in configuration.", profile_name).into());
         }
     } else {
-        message.info("No profiles defined in config.");
+        message.error("No profiles defined in config.");
+        std::process::exit(1)
     }
 
     if context.dry_run {
