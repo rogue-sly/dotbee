@@ -105,14 +105,11 @@ pub fn symlink_with_parents(source: &Path, destination: &PathBuf, dry_run: bool)
     std::os::unix::fs::symlink(source, destination)
 }
 
-// HACK: I should probably use hostname or nix crate for this
-pub fn get_hostname() -> Option<String> {
-    std::process::Command::new("hostname")
-        .output()
-        .ok()
-        .filter(|output| output.status.success())
-        .and_then(|output| String::from_utf8(output.stdout).ok())
-        .map(|s| s.trim().to_string())
+pub fn get_hostname() -> String {
+    use nix::unistd::gethostname;
+    let hostname = gethostname().expect("Couldn't get hostname");
+    let hostname_string = hostname.into_string().expect("failed to convert from OsString to String");
+    hostname_string
 }
 
 #[cfg(test)]
