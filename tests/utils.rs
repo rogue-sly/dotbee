@@ -1,5 +1,5 @@
-use super::*;
-use std::fs;
+use std::{fs, path::PathBuf};
+use dotsy::utils::{DestinationStatus, expand_path, get_destination_status};
 use tempfile::tempdir;
 
 #[test]
