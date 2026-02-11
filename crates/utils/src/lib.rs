@@ -1,4 +1,4 @@
-use config::Profile;
+
 use context::message::Message;
 use indexmap::IndexMap;
 use std::fs;
@@ -25,37 +25,7 @@ pub fn expand_path(path_str: &str) -> PathBuf {
     PathBuf::from(path_str)
 }
 
-pub fn is_links_active(links: &IndexMap<String, String>, cwd: &Path) -> bool {
-    if links.is_empty() {
-        return false;
-    }
 
-    links.iter().all(|(target_str, source_str)| {
-        let target_path = expand_path(target_str);
-        let source_path = cwd.join(source_str);
-
-        target_path.is_symlink() && fs::read_link(&target_path).map_or(false, |p| p == source_path)
-    })
-}
-
-pub fn is_profile_active(profile: &Profile, cwd: &Path) -> bool {
-    is_links_active(&profile.links, cwd)
-}
-
-pub fn find_active_profile<'a>(
-    profiles: &'a IndexMap<String, Profile>,
-    state_active_profile: Option<&'a String>,
-    cwd: &Path,
-) -> Option<&'a String> {
-    if let Some(name) = state_active_profile {
-        return Some(name);
-    }
-
-    profiles
-        .iter()
-        .find(|(_, profile)| is_profile_active(profile, cwd))
-        .map(|(name, _)| name)
-}
 
 pub fn get_destination_status(source: &Path, destination: &Path) -> DestinationStatus {
     if !destination.exists() && !destination.is_symlink() {

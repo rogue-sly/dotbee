@@ -2,9 +2,7 @@ use colored::Colorize;
 use config::ConflictAction;
 use context::Context;
 use context::message::Message;
-use utils::{
-    expand_path, find_active_profile, get_destination_status, get_hostname, symlink_with_parents, unlink_profile_links, DestinationStatus,
-};
+use utils::{expand_path, get_destination_status, get_hostname, symlink_with_parents, unlink_profile_links, DestinationStatus,};
 use indexmap::IndexMap;
 use std::{
     error::Error,
@@ -45,7 +43,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
 
     // unlink other active profiles
     if let Some(profiles) = &context.config.profiles {
-        if let Some(active_name) = find_active_profile(profiles, context.state.active_profile.as_ref(), &cwd) {
+        if let Some(active_name) = context.state.active_profile.as_ref() {
             if active_name != &profile_name {
                 if let Some(profile) = profiles.get(active_name) {
                     message.info(&format!("Unlinking active profile '{}'...", active_name.yellow()));

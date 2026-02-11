@@ -1,7 +1,7 @@
 use colored::Colorize;
 use context::Context;
 use context::message::Message;
-use utils::{DestinationStatus, expand_path, find_active_profile, get_destination_status, symlink_with_parents};
+use utils::{DestinationStatus, expand_path, get_destination_status, symlink_with_parents};
 use indexmap::IndexMap;
 use std::error::Error;
 use std::path::Path;
@@ -22,7 +22,7 @@ pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     }
 
     if let Some(profiles) = &context.config.profiles {
-        if let Some(active_name) = find_active_profile(profiles, context.state.active_profile.as_ref(), &cwd) {
+        if let Some(active_name) = context.state.active_profile.as_ref() {
             if let Some(profile) = profiles.get(active_name) {
                 message.info(&format!("Checking active profile '{}'...", active_name.green()));
                 repair_links(&profile.links, &cwd, context.dry_run, message)?;

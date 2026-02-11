@@ -1,6 +1,6 @@
 use colored::Colorize;
 use context::Context;
-use utils::{DestinationStatus, expand_path, find_active_profile, get_destination_status, is_profile_active};
+use utils::{DestinationStatus, expand_path, get_destination_status};
 use indexmap::IndexMap;
 use std::error::Error;
 use std::path::Path;
@@ -19,18 +19,10 @@ pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     }
 
     if let Some(profiles) = &context.config.profiles {
-        if let Some(active_name) = find_active_profile(profiles, context.state.active_profile.as_ref(), &cwd) {
-            let is_state_backed = context.state.active_profile.as_ref() == Some(active_name);
-            let source_label = if is_state_backed { "State" } else { "Inferred" };
-
-            message.info(&format!("Active Profile ({}): {}", source_label, active_name.cyan().bold()));
+        if let Some(active_name) = context.state.active_profile.as_ref() {
+            message.info(&format!("Active Profile (State): {}", active_name.cyan().bold()));
 
             if let Some(profile) = profiles.get(active_name) {
-                if is_profile_active(profile, &cwd) {
-                    message.success("Status: Healthy");
-                } else {
-                    message.warning("Status: Broken / Partially Applied");
-                }
                 println!();
                 check_links(&profile.links, &cwd, &context)?;
             } else {
@@ -74,7 +66,7 @@ fn check_links(links: &IndexMap<String, String>, cwd: &Path, context: &Context) 
                 message.error(&format!("{} (Conflict: File/Dir exists)", target_str));
             }
             DestinationStatus::NonExistent => {
-                message.info(&format!("{} (Not linked)", source_str));
+                message.warning(&format!("{} (Not linked)", source_str));
             }
         }
     }

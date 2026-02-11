@@ -1,39 +1,25 @@
 use colored::Colorize;
 use context::Context;
-use utils::{find_active_profile, is_profile_active};
+
 use indexmap::IndexMap;
 use std::error::Error;
 
 pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
-    let cwd = std::env::current_dir()?;
+
 
     if let Some(global) = &context.config.global {
         println!("{}", "global".yellow().bold());
         print_links(&global.links);
     }
 
-    let active_profile_name = if let Some(profiles) = &context.config.profiles {
-        find_active_profile(profiles, context.state.active_profile.as_ref(), &cwd)
-    } else {
-        None
-    };
+    let active_profile_name = context.state.active_profile.as_ref();
 
     if let Some(profiles) = &context.config.profiles {
         for (name, profile) in profiles {
-            let is_resolved_active = active_profile_name == Some(&name);
-            let is_active_in_state = context.state.active_profile.as_ref() == Some(&name);
-            let is_physically_active = is_profile_active(&profile, &cwd);
+            let is_active_in_state = active_profile_name == Some(&name);
 
-            let title = if is_resolved_active {
-                if is_active_in_state {
-                    if is_physically_active {
-                        format!("{} (active)", name).green().bold()
-                    } else {
-                        format!("{} (active - broken)", name).yellow().bold()
-                    }
-                } else {
-                    format!("{} (active - inferred)", name).cyan().bold()
-                }
+            let title = if is_active_in_state {
+                format!("{} (active)", name).green().bold()
             } else {
                 name.bold()
             };

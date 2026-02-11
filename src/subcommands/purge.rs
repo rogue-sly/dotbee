@@ -1,6 +1,6 @@
 use colored::Colorize;
 use context::Context;
-use utils::{find_active_profile, unlink_profile_links};
+use utils::{unlink_profile_links};
 use std::error::Error;
 
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
@@ -19,7 +19,7 @@ pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     }
 
     if let Some(profiles) = &context.config.profiles {
-        if let Some(active_name) = find_active_profile(profiles, context.state.active_profile.as_ref(), &cwd) {
+        if let Some(active_name) = context.state.active_profile.as_ref() {
             if let Some(profile) = profiles.get(active_name) {
                 message.info(&format!("Unlinking active profile '{}'...", active_name.yellow()));
                 unlink_profile_links(&profile.links, &cwd, context.dry_run, message)?;
