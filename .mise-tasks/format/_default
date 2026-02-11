@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE alias=["fmt"]
+#MISE depends=["format:rust", "format:toml"]
+
+set -eu
