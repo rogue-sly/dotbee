@@ -4,38 +4,31 @@ use std::error::Error;
 use utils::unlink_profile_links;
 
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
-    let cwd = std::env::current_dir()?;
-    let message = &context.message;
+    let msg = &context.message;
 
     if context.dry_run {
-        println!("{}", "Purging active links (dry run)...".bold().red());
+        println!("{}", "Purging all managed links (dry run)...".bold().red());
     } else {
-        println!("{}", "Purging active links...".bold().red());
+        println!("{}", "Purging all managed links...".bold().red());
     }
 
     if let Some(global) = &context.config.global {
-        println!("Unlinking global links...");
-        unlink_profile_links(&global.links, &cwd, context.dry_run, message)?;
+        msg.info("Unlinking global links...");
+        unlink_profile_links(&global.links, context.dry_run, msg)?;
     }
 
     if let Some(profiles) = &context.config.profiles {
-        if let Some(active_name) = context.state.active_profile.as_ref() {
-            if let Some(profile) = profiles.get(active_name) {
-                message.info(&format!("Unlinking active profile '{}'...", active_name.yellow()));
-                unlink_profile_links(&profile.links, &cwd, context.dry_run, message)?;
-            } else {
-                message.info(&format!("Active profile '{}' not found in config. Skipping.", active_name));
-            }
-        } else {
-            // If resolve returns None, nothing to purge.
+        for (name, profile) in profiles {
+            msg.info(&format!("Unlinking profile '{}'...", name.yellow()));
+            unlink_profile_links(&profile.links, context.dry_run, msg)?;
         }
     }
 
     if context.dry_run {
-        message.success("Purge dry run complete.");
+        msg.success("Purge dry run complete.");
     } else {
         context.state.clear_active_profile()?;
-        message.success("Purge complete.");
+        msg.success("Purge complete.");
     }
 
     Ok(())

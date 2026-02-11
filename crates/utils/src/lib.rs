@@ -42,10 +42,11 @@ pub fn get_destination_status(source: &Path, destination: &Path) -> DestinationS
 
 pub fn unlink_profile_links(
     links: &IndexMap<String, String>,
-    cwd: &Path,
     dry_run: bool,
     message: &Message,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let cwd = std::env::current_dir()?;
+
     for (target_str, source_str) in links {
         let target_path = expand_path(target_str);
         let source_path = cwd.join(source_str);

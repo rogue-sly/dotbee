@@ -1,13 +1,12 @@
 use colored::Colorize;
-use context::Context;
 use context::message::Message;
+use context::Context;
 use indexmap::IndexMap;
 use std::error::Error;
 use std::path::Path;
-use utils::{DestinationStatus, expand_path, get_destination_status, symlink_with_parents};
+use utils::{expand_path, get_destination_status, symlink_with_parents, DestinationStatus};
 
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
-    let cwd = std::env::current_dir()?;
     let message = &context.message;
 
     if context.dry_run {
@@ -18,14 +17,14 @@ pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
 
     if let Some(global) = &context.config.global {
         println!("Checking global links...");
-        repair_links(&global.links, &cwd, context.dry_run, message)?;
+        repair_links(&global.links, context.dry_run, message)?;
     }
 
     if let Some(profiles) = &context.config.profiles {
         if let Some(active_name) = context.state.active_profile.as_ref() {
             if let Some(profile) = profiles.get(active_name) {
                 message.info(&format!("Checking active profile '{}'...", active_name.green()));
-                repair_links(&profile.links, &cwd, context.dry_run, message)?;
+                repair_links(&profile.links, context.dry_run, message)?;
             } else {
                 message.info(&format!("Active profile '{}' not found in config.", active_name));
             }
@@ -38,7 +37,9 @@ pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn repair_links(links: &IndexMap<String, String>, cwd: &Path, dry_run: bool, message: &Message) -> Result<(), Box<dyn Error>> {
+fn repair_links(links: &IndexMap<String, String>, dry_run: bool, message: &Message) -> Result<(), Box<dyn Error>> {
+    let cwd = std::env::current_dir()?;
+
     for (target_str, source_str) in links {
         let source_path = cwd.join(source_str);
         let target_path = expand_path(target_str);

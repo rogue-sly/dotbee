@@ -1,17 +1,16 @@
 use colored::Colorize;
 use config::ConflictAction;
-use context::Context;
 use context::message::Message;
+use context::Context;
 use indexmap::IndexMap;
 use std::{
     error::Error,
     fs,
     path::{Path, PathBuf},
 };
-use utils::{DestinationStatus, expand_path, get_destination_status, get_hostname, symlink_with_parents, unlink_profile_links};
+use utils::{expand_path, get_destination_status, get_hostname, symlink_with_parents, unlink_profile_links, DestinationStatus};
 
 pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Box<dyn Error>> {
-    let cwd = std::env::current_dir().unwrap();
     let message = &context.message;
 
     let profile_name = match profile_name {
@@ -38,7 +37,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
     // apply global symlinks
     if let Some(global) = &context.config.global {
         println!("{}", "Processing global links...".blue());
-        process_links(&global.links, &cwd, &context.config.settings.on_conflict, context.dry_run, message).unwrap();
+        process_links(&global.links, &context.config.settings.on_conflict, context.dry_run, message).unwrap();
     }
 
     // unlink other active profiles
@@ -47,7 +46,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
             if active_name != &profile_name {
                 if let Some(profile) = profiles.get(active_name) {
                     message.info(&format!("Unlinking active profile '{}'...", active_name.yellow()));
-                    unlink_profile_links(&profile.links, &cwd, context.dry_run, message).unwrap();
+                    unlink_profile_links(&profile.links, context.dry_run, message).unwrap();
                 } else {
                     message.warning(&format!("Active profile '{}' not found in config.", active_name));
                 }
@@ -59,7 +58,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
     if let Some(profiles) = &context.config.profiles {
         if let Some(profile) = profiles.get(profile_name.as_str()) {
             message.info(&format!("Processing profile '{}'...", profile_name.green()));
-            process_links(&profile.links, &cwd, &context.config.settings.on_conflict, context.dry_run, message).unwrap();
+            process_links(&profile.links, &context.config.settings.on_conflict, context.dry_run, message).unwrap();
         } else {
             return Err(format!("Profile '{}' not found in configuration.", profile_name).into());
         }
@@ -79,11 +78,12 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
 
 fn process_links(
     links: &IndexMap<String, String>,
-    cwd: &Path,
     default_conflict_strategy: &Option<ConflictAction>,
     dry_run: bool,
     message: &Message,
 ) -> Result<(), Box<dyn Error>> {
+    let cwd = std::env::current_dir()?;
+
     for (target_str, source_str) in links {
         let source_path = cwd.join(source_str);
         let target_path = expand_path(target_str);
@@ -125,7 +125,7 @@ fn process_links(
                     Some(action) => action.clone(),
                 };
 
-                handle_conflict(action, &source_path, &target_path, cwd, Path::new(source_str), dry_run).unwrap();
+                handle_conflict(action, &source_path, &target_path, Path::new(source_str), dry_run).unwrap();
             }
         }
     }
@@ -136,10 +136,11 @@ fn handle_conflict(
     action: ConflictAction,
     source: &Path,
     destination: &PathBuf,
-    repo_root: &Path,
     rel_source: &Path,
     dry_run: bool,
 ) -> Result<(), Box<dyn Error>> {
+    let repo_root = std::env::current_dir()?;
+
     match action {
         ConflictAction::Skip => println!("  Skipped {}", destination.display()),
         ConflictAction::Abort => return Err("Operation aborted by user.".into()),
