@@ -1,6 +1,5 @@
 use colored::Colorize;
 use config::ConflictAction;
-use context::message::Message;
 use context::Context;
 use indexmap::IndexMap;
 use std::{
@@ -11,8 +10,6 @@ use std::{
 use utils::{expand_path, get_destination_status, get_hostname, symlink_with_parents, unlink_profile_links, DestinationStatus};
 
 pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Box<dyn Error>> {
-    let message = &context.message;
-
     let profile_name = match profile_name {
         Some(name) => name,
         None => {
@@ -21,7 +18,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
             }
 
             let hostname = get_hostname();
-            message.info(&format!(
+            context.message.info(&format!(
                 "No profile specified. Auto-detecting profile from hostname: '{}'",
                 hostname
             ));
@@ -37,18 +34,27 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
     // apply global symlinks
     if let Some(global) = &context.config.global {
         println!("{}", "Processing global links...".blue());
-        process_links(&global.links, &context.config.settings.on_conflict, context.dry_run, message).unwrap();
+        let links = global.links.clone();
+        let strategy = context.config.settings.on_conflict.clone();
+        process_links(&links, &strategy, context).unwrap();
     }
 
     // unlink other active profiles
     if let Some(profiles) = &context.config.profiles {
-        if let Some(active_name) = context.state.active_profile.as_ref() {
-            if active_name != &profile_name {
-                if let Some(profile) = profiles.get(active_name) {
-                    message.info(&format!("Unlinking active profile '{}'...", active_name.yellow()));
-                    unlink_profile_links(&profile.links, context.dry_run, message).unwrap();
+        if let Some(active_name) = context.state.active_profile.clone() {
+            if active_name != profile_name {
+                if let Some(profile) = profiles.get(&active_name) {
+                    let name_yellow = active_name.yellow();
+                    context.message.info(&format!("Unlinking active profile '{}'...", name_yellow));
+                    let links = profile.links.clone();
+                    unlink_profile_links(&links, context.dry_run, &context.message).unwrap();
+                    if !context.dry_run {
+                        for (target, _) in &links {
+                            context.state.managed_links.retain(|l| &l.target != target);
+                        }
+                    }
                 } else {
-                    message.warning(&format!("Active profile '{}' not found in config.", active_name));
+                    context.message.warning(&format!("Active profile '{}' not found in config.", active_name));
                 }
             }
         }
@@ -57,18 +63,21 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
     // apply profile symlinks
     if let Some(profiles) = &context.config.profiles {
         if let Some(profile) = profiles.get(profile_name.as_str()) {
-            message.info(&format!("Processing profile '{}'...", profile_name.green()));
-            process_links(&profile.links, &context.config.settings.on_conflict, context.dry_run, message).unwrap();
+            let name_green = profile_name.green();
+            context.message.info(&format!("Processing profile '{}'...", name_green));
+            let links = profile.links.clone();
+            let strategy = context.config.settings.on_conflict.clone();
+            process_links(&links, &strategy, context).unwrap();
         } else {
             return Err(format!("Profile '{}' not found in configuration.", profile_name).into());
         }
     } else {
-        message.error("No profiles defined in config.");
+        context.message.error("No profiles defined in config.");
         std::process::exit(1)
     }
 
     if context.dry_run {
-        message.success("Switch dry run complete.");
+        context.message.success("Switch dry run complete.");
     } else {
         context.state.set_active_profile(profile_name)?;
     }
@@ -79,30 +88,44 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
 fn process_links(
     links: &IndexMap<String, String>,
     default_conflict_strategy: &Option<ConflictAction>,
-    dry_run: bool,
-    message: &Message,
+    context: &mut Context,
 ) -> Result<(), Box<dyn Error>> {
     let cwd = std::env::current_dir()?;
+    let dry_run = context.dry_run;
 
     for (target_str, source_str) in links {
         let source_path = cwd.join(source_str);
         let target_path = expand_path(target_str);
 
         if !source_path.exists() {
-            message.error(&format!("Source not found: {}", source_path.display()));
+            context.message.error(&format!("Source not found: {}", source_path.display()));
             continue;
         }
 
         let status = get_destination_status(&source_path, &target_path);
 
         match status {
-            DestinationStatus::AlreadyLinked => message.success(&format!("{} → {} (already linked)", source_str, target_str)),
+            DestinationStatus::AlreadyLinked => {
+                context.message.success(&format!("{} → {} (already linked)", source_str, target_str));
+                if !dry_run {
+                    context.state.add_managed_link(
+                        source_str.clone(),
+                        target_str.clone(),
+                        source_path.is_dir(),
+                    );
+                }
+            }
             DestinationStatus::NonExistent => {
                 if dry_run {
-                    message.link(&format!("Would link {} → {} (dry run)", source_str, target_str));
+                    context.message.link(&format!("Would link {} → {} (dry run)", source_str, target_str));
                 } else {
                     symlink_with_parents(&source_path, &target_path, dry_run).unwrap();
-                    message.link(&format!("{} → {}", source_str, target_str));
+                    context.message.link(&format!("{} → {}", source_str, target_str));
+                    context.state.add_managed_link(
+                        source_str.clone(),
+                        target_str.clone(),
+                        source_path.is_dir(),
+                    );
                 }
             }
             _ => {
@@ -114,9 +137,9 @@ fn process_links(
                 // Resolve the action based on config or prompt
                 let action = match default_conflict_strategy {
                     Some(ConflictAction::Ask) | None => {
-                        message.error(&format!("Conflict: {} → {} ({})", source_str, target_str, kind));
+                        context.message.error(&format!("Conflict: {} → {} ({})", source_str, target_str, kind));
                         if dry_run {
-                            message.warning("Skipping conflict resolution in dry run");
+                            context.message.warning("Skipping conflict resolution in dry run");
                             ConflictAction::Skip
                         } else {
                             ConflictAction::prompt(kind).unwrap()
@@ -125,7 +148,14 @@ fn process_links(
                     Some(action) => action.clone(),
                 };
 
-                handle_conflict(action, &source_path, &target_path, Path::new(source_str), dry_run).unwrap();
+                handle_conflict(action.clone(), &source_path, &target_path, Path::new(source_str), dry_run).unwrap();
+                if !dry_run && (action == ConflictAction::Overwrite || action == ConflictAction::Adopt) {
+                     context.state.add_managed_link(
+                        source_str.clone(),
+                        target_str.clone(),
+                        source_path.is_dir(),
+                    );
+                }
             }
         }
     }
