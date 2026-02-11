@@ -3,7 +3,7 @@ pub mod message;
 use crate::message::Message;
 use config::Config;
 use config::icons::IconStyle;
-use state::State;
+pub use state::{ManagedLink, State};
 use std::error::Error;
 
 #[derive(Debug, Clone)]

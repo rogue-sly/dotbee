@@ -3,9 +3,17 @@ use std::fs;
 use std::io;
 use std::path::PathBuf;
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct ManagedLink {
+    pub source: String,
+    pub target: String,
+    pub is_dir: bool,
+}
+
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct State {
     pub active_profile: Option<String>,
+    pub managed_links: Vec<ManagedLink>,
 }
 
 impl State {
@@ -47,5 +55,20 @@ impl State {
     pub fn clear_active_profile(&mut self) -> io::Result<()> {
         self.active_profile = None;
         self.save()
+    }
+
+    pub fn add_managed_link(&mut self, source: String, target: String, is_dir: bool) {
+        let link = ManagedLink {
+            source,
+            target,
+            is_dir,
+        };
+        if !self.managed_links.contains(&link) {
+            self.managed_links.push(link);
+        }
+    }
+
+    pub fn clear_managed_links(&mut self) {
+        self.managed_links.clear();
     }
 }
