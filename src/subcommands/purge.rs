@@ -1,7 +1,7 @@
 use colored::Colorize;
 use context::Context;
-use utils::{unlink_profile_links};
 use std::error::Error;
+use utils::unlink_profile_links;
 
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     let cwd = std::env::current_dir()?;

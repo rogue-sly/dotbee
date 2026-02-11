@@ -1,8 +1,8 @@
 pub mod message;
 
-use config::icons::IconStyle;
-use config::Config;
 use crate::message::Message;
+use config::Config;
+use config::icons::IconStyle;
 use state::State;
 use std::error::Error;
 

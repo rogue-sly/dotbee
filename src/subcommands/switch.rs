@@ -2,13 +2,13 @@ use colored::Colorize;
 use config::ConflictAction;
 use context::Context;
 use context::message::Message;
-use utils::{expand_path, get_destination_status, get_hostname, symlink_with_parents, unlink_profile_links, DestinationStatus,};
 use indexmap::IndexMap;
 use std::{
     error::Error,
     fs,
     path::{Path, PathBuf},
 };
+use utils::{DestinationStatus, expand_path, get_destination_status, get_hostname, symlink_with_parents, unlink_profile_links};
 
 pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Box<dyn Error>> {
     let cwd = std::env::current_dir().unwrap();

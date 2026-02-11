@@ -5,8 +5,6 @@ use indexmap::IndexMap;
 use std::error::Error;
 
 pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
-
-
     if let Some(global) = &context.config.global {
         println!("{}", "global".yellow().bold());
         print_links(&global.links);

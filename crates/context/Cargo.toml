@@ -13,4 +13,4 @@ serde = { workspace = true }
 toml = { workspace = true }
 # members deps
 state = { path = "../state/" }
-config = {path = "../config/"}
+config = { path = "../config/" }

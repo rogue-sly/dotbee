@@ -1,9 +1,9 @@
 use colored::Colorize;
 use context::Context;
-use utils::{DestinationStatus, expand_path, get_destination_status};
 use indexmap::IndexMap;
 use std::error::Error;
 use std::path::Path;
+use utils::{DestinationStatus, expand_path, get_destination_status};
 
 pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     let cwd = std::env::current_dir()?;

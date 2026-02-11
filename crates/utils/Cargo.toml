@@ -7,5 +7,5 @@ edition = "2024"
 indexmap = { workspace = true }
 dirs = { workspace = true }
 nix = { workspace = true }
-config = {path="../config/"}
-context = {path = "../context/"}
+config = { path = "../config/" }
+context = { path = "../context/" }

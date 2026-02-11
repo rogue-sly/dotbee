@@ -1,5 +1,5 @@
-use config::icons::{IconStyle, Icons};
 use colored::Colorize;
+use config::icons::{IconStyle, Icons};
 
 #[derive(Debug, Clone)]
 pub struct Message {

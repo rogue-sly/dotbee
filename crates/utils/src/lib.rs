@@ -1,4 +1,3 @@
-
 use context::message::Message;
 use indexmap::IndexMap;
 use std::fs;
@@ -24,8 +23,6 @@ pub fn expand_path(path_str: &str) -> PathBuf {
     }
     PathBuf::from(path_str)
 }
-
-
 
 pub fn get_destination_status(source: &Path, destination: &Path) -> DestinationStatus {
     if !destination.exists() && !destination.is_symlink() {
