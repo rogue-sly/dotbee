@@ -22,7 +22,7 @@ impl State {
         let mut path =
             dirs::state_dir().unwrap_or_else(|| dirs::home_dir().expect("Could not determine home directory").join(".local/state"));
         path.push("dotsy");
-        path.push("state.toml");
+        path.push("state.json");
         path
     }
 
@@ -34,7 +34,7 @@ impl State {
         let content = fs::read_to_string(path)?;
         // If parsing fails (e.g. empty file or corrupt), return default (empty state)
         // or we could error out. For resilience, default might be better but logging error is good.
-        let state: State = toml::from_str(&content).unwrap_or_default();
+        let state: State = serde_json::from_str(&content).unwrap_or_default();
         Ok(state)
     }
 
@@ -43,7 +43,7 @@ impl State {
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
         }
-        let content = toml::to_string_pretty(self).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        let content = serde_json::to_string_pretty(self).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         fs::write(path, content)
     }
 

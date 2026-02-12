@@ -56,7 +56,7 @@
 -   **Formatting:** Follows standard Rust formatting (`rustfmt.toml` is present). Run `cargo fmt` before committing.
 -   **Configuration:** Uses TOML (`dotsy.toml`) for user configuration, validated against `schema/dotsy.json`.
 -   **Safety:** Due to the nature of file system operations (symlinking, deletion), testing in a container is highly encouraged.
--   **State:** Uses `~/.local/state/dotsy/state.toml` to persist information like the currently active profile.
+-   **State:** Uses `~/.local/state/dotsy/state.json` to persist information like the currently active profile.
 
 ## CLI Commands (`src/cli.rs`)
 
