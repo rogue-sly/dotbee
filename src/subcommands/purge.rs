@@ -1,7 +1,8 @@
 use colored::Colorize;
-use context::Context;
-use std::{error::Error, fs, io};
-use utils::expand_tilde;
+use crate::context::Context;
+use crate::state::ManagedLink;
+use std::{error::Error, fs, io, path::PathBuf};
+use crate::utils::expand_tilde;
 
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     let msg = &context.message;

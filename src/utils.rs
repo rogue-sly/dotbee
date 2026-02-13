@@ -1,6 +1,4 @@
-use context::Context;
-use indexmap::IndexMap;
-use std::error::Error;
+use crate::context::Context;
 use std::fs;
 use std::path::{Path, PathBuf};
 

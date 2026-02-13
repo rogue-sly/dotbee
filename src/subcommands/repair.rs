@@ -1,8 +1,8 @@
 use colored::Colorize;
-use context::Context;
-use indexmap::IndexMap;
+use crate::context::Context;
 use std::error::Error;
-use utils::{expand_tilde, get_destination_status, symlink_with_parents, DestinationStatus};
+use std::path::PathBuf;
+use crate::utils::{DestinationStatus, expand_tilde, get_destination_status, symlink_with_parents};
 
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     if context.dry_run {

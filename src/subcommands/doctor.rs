@@ -1,8 +1,8 @@
 use colored::Colorize;
-use context::Context;
+use crate::context::Context;
 use indexmap::IndexMap;
 use std::error::Error;
-use utils::{expand_tilde, get_destination_status, DestinationStatus};
+use crate::utils::{expand_tilde, get_destination_status, DestinationStatus};
 
 pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     let message = &context.message;

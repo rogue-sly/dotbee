@@ -1,9 +1,9 @@
 pub mod message;
 
-use crate::message::Message;
-use config::Config;
-use config::icons::IconStyle;
-pub use state::{ManagedLink, State};
+use crate::config::Config;
+use crate::config::icons::IconStyle;
+use crate::state::{State};
+use message::Message;
 use std::error::Error;
 
 #[derive(Debug, Clone)]

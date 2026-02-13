@@ -1,13 +1,14 @@
 use colored::Colorize;
-use config::ConflictAction;
-use context::Context;
+use crate::config::ConflictAction;
+use crate::context::Context;
 use indexmap::IndexMap;
 use std::{
     error::Error,
     fs,
     path::{Path, PathBuf},
 };
-use utils::{DestinationStatus, expand_tilde, get_destination_status, get_hostname, symlink_with_parents};
+
+use crate::utils::{DestinationStatus, expand_tilde, get_destination_status, get_hostname, symlink_with_parents};
 
 pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Box<dyn Error>> {
     let profile_name = match profile_name {
