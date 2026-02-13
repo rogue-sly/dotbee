@@ -18,22 +18,8 @@
       "$VIMRUNTIME",
       "${3rd}/luv/library",
       "${3rd}/busted/library",
-      "~/.local/share/nvim/lazy/blink.cmp/",
-      "~/.local/share/nvim/lazy/cord.nvim/",
-      "~/.local/share/nvim/lazy/gitsigns.nvim/",
-      "~/.local/share/nvim/lazy/guard.nvim/",
-      "~/.local/share/nvim/lazy/kanagawa.nvim/",
-      "~/.local/share/nvim/lazy/lazy.nvim/",
-      "~/.local/share/nvim/lazy/markdown-plus.nvim/",
-      "~/.local/share/nvim/lazy/mini.icons/",
-      "~/.local/share/nvim/lazy/nightfox.nvim/",
-      "~/.local/share/nvim/lazy/noice.nvim/",
-      "~/.local/share/nvim/lazy/nvim-dap-view/",
-      "~/.local/share/nvim/lazy/nvim-dap/",
-      "~/.local/share/nvim/lazy/nvim-treesitter/",
-      "~/.local/share/nvim/lazy/snacks.nvim/",
-      "~/.local/share/nvim/lazy/render-markdown.nvim/",
-      "~/.local/share/nvim/lazy/which-key.nvim/"
+      "~/.local/share/nvim/lazy/"
+
     ]
   }
 }
