@@ -29,7 +29,7 @@ require("lazy").setup({
     { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
 
     -- Syntax Highlighting
-    { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+    { "nvim-treesitter/nvim-treesitter", branch = "master", build = ":TSUpdate" },
 
     -- Fuzzy Finder (The "Everything" Searcher)
     {
