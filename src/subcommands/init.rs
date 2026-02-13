@@ -26,7 +26,7 @@ pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     message.success(&format!("Successfully initialized {}", path_string));
     println!(
         "Edit the file to configure your dotfiles, then run {} to apply.",
-        format!("dotsy switch <profile>").yellow()
+        "dotsy switch <profile>".yellow()
     );
 
     Ok(())

@@ -5,11 +5,13 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum ConflictAction {
     Abort,
     Adopt,
     Overwrite,
     Skip,
+    #[default]
     Ask,
 }
 
@@ -26,12 +28,6 @@ impl Display for ConflictAction {
                 ConflictAction::Ask => "ask",
             }
         )
-    }
-}
-
-impl Default for ConflictAction {
-    fn default() -> Self {
-        ConflictAction::Ask
     }
 }
 

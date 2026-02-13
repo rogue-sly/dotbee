@@ -35,7 +35,7 @@ pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     match profiles.get(active_profile) {
         Some(profile) => {
             println!("{} ({}){}", "Active Profile".bold(), active_profile.cyan().bold(), ":".bold());
-            check_links(&profile.links, &context)?
+            check_links(&profile.links, context)?
         }
         None => {
             message.error(&format!("Status: Profile '{}' not found in config!", active_profile.red()));

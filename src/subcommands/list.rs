@@ -14,7 +14,7 @@ pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     let active_profile = context.state.active_profile.as_ref();
     if let Some(profiles) = &context.config.profiles {
         for (name, profile) in profiles {
-            let is_active = active_profile == Some(&name);
+            let is_active = active_profile == Some(name);
 
             let title = if is_active {
                 format!("{} (active)", name).green().bold()

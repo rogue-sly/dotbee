@@ -73,6 +73,5 @@ pub fn symlink_with_parents(source: &Path, destination: &PathBuf, dry_run: bool)
 pub fn get_hostname() -> String {
     use nix::unistd::gethostname;
     let hostname = gethostname().expect("Couldn't get hostname");
-    let hostname_string = hostname.into_string().expect("Failed to parse hostname");
-    hostname_string
+    hostname.into_string().expect("Failed to parse hostname")
 }

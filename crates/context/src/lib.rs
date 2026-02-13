@@ -19,7 +19,7 @@ impl Context {
     pub fn new(config_path: Option<String>, dry_run: bool) -> Result<Self, Box<dyn Error>> {
         let config = Config::load(config_path.clone())?;
         let state = State::load()?;
-        let icon_style = config.settings.icon_style.clone().unwrap_or(IconStyle::Text);
+        let icon_style = config.settings.icon_style.unwrap_or(IconStyle::Text);
         let message = Message::new(icon_style);
 
         Ok(Context {
