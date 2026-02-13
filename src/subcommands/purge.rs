@@ -1,7 +1,7 @@
 use colored::Colorize;
 use context::Context;
 use std::{error::Error, fs, io};
-use utils::expand_path;
+use utils::expand_tilde;
 
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     let msg = &context.message;
@@ -20,7 +20,7 @@ pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     }
 
     for link in &links_to_unlink {
-        let target_path = expand_path(&link.target); // Resolve target path from state
+        let target_path = expand_tilde(&link.target); // Resolve target path from state
 
         if target_path.is_symlink() {
             // Optionally, one could check if target_path.read_link() == expand_path(&link.source)

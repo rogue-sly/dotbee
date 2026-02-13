@@ -7,7 +7,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-use utils::{expand_path, get_destination_status, get_hostname, symlink_with_parents, unlink_profile_links, DestinationStatus};
+use utils::{expand_tilde, get_destination_status, get_hostname, symlink_with_parents, unlink_profile_links, DestinationStatus};
 
 pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Box<dyn Error>> {
     let profile_name = match profile_name {
@@ -95,7 +95,7 @@ fn process_links(
 
     for (target_str, source_str) in links {
         let source_path = cwd.join(source_str);
-        let target_path = expand_path(target_str);
+        let target_path = expand_tilde(target_str);
 
         if !source_path.exists() {
             context.message.error(&format!("Source not found: {}", source_path.display()));

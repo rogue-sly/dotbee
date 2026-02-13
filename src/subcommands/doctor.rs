@@ -2,7 +2,7 @@ use colored::Colorize;
 use context::Context;
 use indexmap::IndexMap;
 use std::error::Error;
-use utils::{expand_path, get_destination_status, DestinationStatus};
+use utils::{expand_tilde, get_destination_status, DestinationStatus};
 
 pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     let message = &context.message;
@@ -55,7 +55,7 @@ fn check_links(links: &IndexMap<String, String>, context: &Context) -> Result<()
 
     for (target_str, source_str) in sorted_links {
         let source_path = cwd.join(source_str);
-        let target_path = expand_path(target_str);
+        let target_path = expand_tilde(target_str);
 
         if !source_path.exists() {
             msg.error(&format!("{} (Source missing: {})", source_str, source_path.display()));

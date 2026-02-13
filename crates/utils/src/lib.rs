@@ -11,14 +11,15 @@ pub enum DestinationStatus {
     NonExistent,
 }
 
-pub fn expand_path(path_str: &str) -> PathBuf {
-    if path_str.starts_with('~') {
-        if let Some(home) = dirs::home_dir() {
-            if path_str == "~" {
-                return home;
-            }
-            // safely strip prefix
-            return home.join(path_str.trim_start_matches("~/"));
+/// expands tilde to $HOME; otherwise, returns the same path
+pub fn expand_tilde(path_str: &str) -> PathBuf {
+    if let Some(home) = dirs::home_dir() {
+        if path_str == "~" {
+            return home;
+        }
+
+        if let Some(stripped) = path_str.strip_prefix("~/") {
+            return home.join(stripped);
         }
     }
     PathBuf::from(path_str)
@@ -40,15 +41,11 @@ pub fn get_destination_status(source: &Path, destination: &Path) -> DestinationS
     }
 }
 
-pub fn unlink_profile_links(
-    links: &IndexMap<String, String>,
-    dry_run: bool,
-    message: &Message,
-) -> Result<(), Box<dyn std::error::Error>> {
+pub fn unlink_profile_links(links: &IndexMap<String, String>, dry_run: bool, message: &Message) -> Result<(), Box<dyn std::error::Error>> {
     let cwd = std::env::current_dir()?;
 
     for (target_str, source_str) in links {
-        let target_path = expand_path(target_str);
+        let target_path = expand_tilde(target_str);
         let source_path = cwd.join(source_str);
 
         if target_path.is_symlink() && fs::read_link(&target_path)? == source_path {

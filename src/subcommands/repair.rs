@@ -2,7 +2,7 @@ use colored::Colorize;
 use context::Context;
 use indexmap::IndexMap;
 use std::error::Error;
-use utils::{expand_path, get_destination_status, symlink_with_parents, DestinationStatus};
+use utils::{expand_tilde, get_destination_status, symlink_with_parents, DestinationStatus};
 
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     if context.dry_run {
@@ -47,7 +47,7 @@ fn repair_links(links: &IndexMap<String, String>, context: &mut Context) -> Resu
 
     for (target_str, source_str) in links {
         let source_path = cwd.join(source_str);
-        let target_path = expand_path(target_str);
+        let target_path = expand_tilde(target_str);
 
         if !source_path.exists() {
             message.unlink(&format!("Source missing: {}", source_path.display()));
