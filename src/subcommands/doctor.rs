@@ -9,9 +9,14 @@ pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
 
     println!("{}", "Dotsy Doctor Report\n".bold().underline());
 
+    let mut config_links = indexmap::IndexMap::new();
+
     // Check global symlinks
     if let Some(global) = &context.config.global {
         println!("{}", "Global Links:".bold());
+        for (k, v) in &global.links {
+            config_links.insert(k.clone(), v.clone());
+        }
         check_links(&global.links, context)?;
     }
 
@@ -20,6 +25,7 @@ pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
         Some(profiles) => profiles,
         None => {
             message.info("No profiles defined in dotsy.toml.");
+            check_ghost_links(&config_links, context)?;
             return Ok(());
         }
     };
@@ -28,6 +34,7 @@ pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
         Some(active_profile) => active_profile,
         None => {
             message.info("No active profile detected.");
+            check_ghost_links(&config_links, context)?;
             return Ok(());
         }
     };
@@ -35,12 +42,40 @@ pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     match profiles.get(active_profile) {
         Some(profile) => {
             println!("{} ({}){}", "Active Profile".bold(), active_profile.cyan().bold(), ":".bold());
+            for (k, v) in &profile.links {
+                config_links.insert(k.clone(), v.clone());
+            }
             check_links(&profile.links, context)?
         }
         None => {
             message.error(&format!("Status: Profile '{}' not found in config!", active_profile.red()));
+            check_ghost_links(&config_links, context)?;
             std::process::exit(1)
         }
+    }
+
+    check_ghost_links(&config_links, context)?;
+
+    Ok(())
+}
+
+fn check_ghost_links(config_links: &IndexMap<String, String>, context: &Context) -> Result<(), Box<dyn Error>> {
+    let mut ghosts = Vec::new();
+    for managed in &context.state.managed_links {
+        if !config_links.contains_key(&managed.target) {
+            ghosts.push(managed);
+        }
+    }
+
+    if !ghosts.is_empty() {
+        println!("{}", "Ghost Links (in state but not in current config):".bold().yellow());
+        for ghost in ghosts {
+            context.message.warning(&format!(
+                "{} (formerly linked to {})",
+                ghost.target, ghost.source
+            ));
+        }
+        println!("{}", "\nRun 'dotsy switch' to clean up ghost links.".italic().dimmed());
     }
 
     Ok(())

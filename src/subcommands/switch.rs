@@ -12,7 +12,7 @@ use crate::utils::{DestinationStatus, expand_tilde, get_destination_status, get_
 
 /// Actions for the switch command.
 pub enum SwitchAction {
-    UnlinkOld {
+    UnlinkGhost {
         target_display: String,
         target_path: PathBuf,
     },
@@ -80,39 +80,19 @@ fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<SwitchAc
         .clone()
         .unwrap_or_else(|| std::env::current_dir().expect("Failed to get current directory"));
 
-    // Phase A: Unlink old active profile (if switching to a different one)
-    if let Some(active_name) = &context.state.active_profile
-        && active_name != target_profile
-        && let Some(profiles) = &context.config.profiles
-        && let Some(profile) = profiles.get(active_name)
-    {
-        for (target_str, source_str) in &profile.links {
-            let target_path = expand_tilde(target_str);
-            let source_path = dotfiles_root.join(source_str);
-
-            // Only unlink if it actually points to our repo source
-            if target_path.is_symlink() && fs::read_link(&target_path)? == source_path {
-                plan.push(SwitchAction::UnlinkOld {
-                    target_display: target_str.clone(),
-                    target_path,
-                });
-            }
-        }
-    }
-
-    // Phase B: Process Global Links and Target Profile Links
-    let mut links_to_process = indexmap::IndexMap::new();
+    // 1. Resolve all links that SHOULD exist in the target configuration
+    let mut desired_links = indexmap::IndexMap::new();
 
     if let Some(global) = &context.config.global {
         for (k, v) in &global.links {
-            links_to_process.insert(k.clone(), v.clone());
+            desired_links.insert(k.clone(), v.clone());
         }
     }
 
     if let Some(profiles) = &context.config.profiles {
         if let Some(profile) = profiles.get(target_profile) {
             for (k, v) in &profile.links {
-                links_to_process.insert(k.clone(), v.clone());
+                desired_links.insert(k.clone(), v.clone());
             }
         } else {
             return Err(format!("Profile '{}' not found in configuration.", target_profile).into());
@@ -121,7 +101,24 @@ fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<SwitchAc
         return Err("No profiles defined in config.".into());
     }
 
-    for (target_str, source_str) in links_to_process {
+    // 2. Phase A: Identify Ghost Links (links in state but not in desired config)
+    for managed in &context.state.managed_links {
+        if !desired_links.contains_key(&managed.target) {
+            let target_path = expand_tilde(&managed.target);
+            let source_path = dotfiles_root.join(&managed.source);
+
+            // Safety check: Only unlink if it actually points to our source
+            if target_path.is_symlink() && fs::read_link(&target_path)? == source_path {
+                plan.push(SwitchAction::UnlinkGhost {
+                    target_display: managed.target.clone(),
+                    target_path,
+                });
+            }
+        }
+    }
+
+    // 3. Phase B: Process desired links
+    for (target_str, source_str) in desired_links {
         let source_path = dotfiles_root.join(&source_str);
         let target_path = expand_tilde(&target_str);
 
@@ -185,8 +182,8 @@ fn execute_dry(plan: &[SwitchAction], target_profile: &str, context: &Context) {
 
     for action in plan {
         match action {
-            SwitchAction::UnlinkOld { target_display, .. } => {
-                msg.delete(&format!("Would unlink old: {}", target_display));
+            SwitchAction::UnlinkGhost { target_display, .. } => {
+                msg.delete(&format!("Would unlink ghost (missing from config): {}", target_display));
             }
             SwitchAction::LinkNew {
                 source_display,
@@ -227,12 +224,12 @@ fn execute(plan: Vec<SwitchAction>, target_profile: &str, context: &mut Context)
 
     for action in plan {
         match action {
-            SwitchAction::UnlinkOld {
+            SwitchAction::UnlinkGhost {
                 target_display,
                 target_path,
             } => {
                 fs::remove_file(&target_path)?;
-                msg.delete(&format!("Unlinked old: {}", target_display));
+                msg.delete(&format!("Unlinked ghost: {}", target_display));
                 context.state.managed_links.retain(|l| l.target != target_display);
             }
             SwitchAction::LinkNew {
