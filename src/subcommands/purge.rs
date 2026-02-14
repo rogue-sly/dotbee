@@ -4,60 +4,136 @@ use crate::state::ManagedLink;
 use std::{error::Error, fs, io, path::PathBuf};
 use crate::utils::expand_tilde;
 
+/// The types of actions our purge command can take.
+pub enum PurgeAction {
+    Delete {
+        target_display: String,
+        path: PathBuf,
+        link_state: ManagedLink,
+    },
+    NotifyMissing {
+        target_display: String,
+        link_state: ManagedLink,
+    },
+    NotifyNotASymlink {
+        target_display: String,
+        _path: PathBuf,
+    },
+}
+
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     let msg = &context.message;
+    // 1. GENERATE THE PLAN
+    // This always runs, fixing the previous dry-run bug.
+    let plan = generate_plan(context);
 
-    println!("{}", "Purging all managed links from state...".bold().red());
-
-    let mut links_to_remove = vec![];
-    if !context.dry_run {
-        // Clone links from state before clearing it in memory
-        links_to_remove = context.state.managed_links.clone();
-        context.state.managed_links.clear(); // Clear state in memory
+    if plan.is_empty() {
+        msg.info("No managed links found to purge.");
+        return Ok(());
     }
 
-    for link in &links_to_remove {
-        let target_path = expand_tilde(&link.target); // Resolve target path from state
+    // 2. DISPATCH
+    if context.dry_run {
+        execute_dry(&plan, context);
+    } else {
+        execute(plan, context)?;
+    }
 
-        if target_path.is_symlink() {
-            // Optionally, one could check if target_path.read_link() == expand_path(&link.source)
-            // For a robust purge, we assume anything recorded in state as a symlink should be removed.
+    Ok(())
+}
 
-            if context.dry_run {
-                msg.delete(&format!("Would remove {} (dry run)", link.target));
-            } else {
-                // Attempt to remove the symlink
-                match fs::remove_file(&target_path) {
-                    Ok(_) => msg.delete(&format!("Removed {}", link.target)),
-                    Err(e) => {
-                        // Handle errors: target might be gone, or permissions issues
-                        if e.kind() == io::ErrorKind::NotFound {
-                            // Target was not found but was in state. Log a warning.
-                            msg.warning(&format!("Target '{}' not found but was in state.", link.target));
-                        } else {
-                            // Other errors like permission denied
-                            msg.error(&format!("Failed to remove {}: {}", link.target, e));
-                        }
+fn generate_plan(context: &Context) -> Vec<PurgeAction> {
+    let mut plan: Vec<PurgeAction> = vec![];
+
+    for link in &context.state.managed_links {
+        let target_path = expand_tilde(&link.target);
+
+        // Check if the path exists or is a broken symlink
+        if !target_path.exists() && !target_path.is_symlink() {
+            plan.push(PurgeAction::NotifyMissing {
+                target_display: link.target.clone(),
+                link_state: link.clone(),
+            });
+            continue;
+        }
+
+        // Safety check: Is it actually a symlink?
+        if !target_path.is_symlink() {
+            plan.push(PurgeAction::NotifyNotASymlink {
+                target_display: link.target.clone(),
+                _path: target_path,
+            });
+            continue;
+        }
+
+        plan.push(PurgeAction::Delete {
+            target_display: link.target.clone(),
+            path: target_path,
+            link_state: link.clone(),
+        });
+    }
+
+    plan
+}
+
+fn execute(plan: Vec<PurgeAction>, context: &mut Context) -> Result<(), Box<dyn Error>> {
+    let msg = &context.message;
+    println!("{}", "Executing Purge...".bold().red());
+
+    for action in plan {
+        match action {
+            PurgeAction::Delete {
+                path,
+                target_display,
+                link_state,
+            } => match fs::remove_file(&path) {
+                Ok(_) => {
+                    msg.delete(&format!("Removed {}", target_display));
+                    context.state.managed_links.retain(|l| l != &link_state);
+                }
+                Err(e) => {
+                    if e.kind() == io::ErrorKind::NotFound {
+                        msg.warning(&format!("Target '{}' disappeared during execution.", target_display));
+                        context.state.managed_links.retain(|l| l != &link_state);
+                    } else {
+                        msg.error(&format!("Failed to remove {}: {}", target_display, e));
                     }
                 }
+            },
+            PurgeAction::NotifyMissing {
+                target_display,
+                link_state,
+            } => {
+                msg.warning(&format!("Cleaning up stale state for missing link: {}", target_display));
+                context.state.managed_links.retain(|l| l != &link_state);
             }
-        } else {
-            // Path in state is not a symlink or does not exist. Log a warning.
-            if !context.dry_run {
-                msg.warning(&format!("Path '{}' in state is not a symlink or does not exist.", link.target));
+            PurgeAction::NotifyNotASymlink { target_display, .. } => {
+                msg.error(&format!("Aborting removal of {}: path is a real file/directory.", target_display));
             }
         }
     }
 
-    if context.dry_run {
-        msg.success("Purge dry run complete.");
-    } else {
-        // Save the cleared managed_links list
-        context.state.save()?;
-        // Also clear active profile as per original behavior
-        context.state.clear_active_profile()?;
-        msg.success("Purge complete.");
-    }
-
+    context.state.save()?;
+    context.state.clear_active_profile()?; // This also calls save()
+    msg.success("Purge complete.");
     Ok(())
+}
+
+fn execute_dry(plan: &[PurgeAction], context: &Context) {
+    let msg = &context.message;
+    println!("{}", "Purge Plan (Dry Run):".bold().yellow());
+
+    for action in plan {
+        match action {
+            PurgeAction::Delete { target_display, .. } => {
+                msg.delete(&format!("Would remove {}", target_display));
+            }
+            PurgeAction::NotifyMissing { target_display, .. } => {
+                msg.warning(&format!("{} is already missing from disk.", target_display));
+            }
+            PurgeAction::NotifyNotASymlink { target_display, .. } => {
+                msg.error(&format!("SKIPPING {}: not a symlink.", target_display));
+            }
+        }
+    }
 }

@@ -4,104 +4,224 @@ use std::error::Error;
 use std::path::PathBuf;
 use crate::utils::{DestinationStatus, expand_tilde, get_destination_status, symlink_with_parents};
 
+/// Actions that the repair command can take.
+pub enum RepairAction {
+    Link {
+        source_display: String,
+        target_display: String,
+        source_path: PathBuf,
+        target_path: PathBuf,
+        is_dir: bool,
+    },
+    Relink {
+        source_display: String,
+        target_display: String,
+        source_path: PathBuf,
+        target_path: PathBuf,
+        is_dir: bool,
+    },
+    UpdateState {
+        source_display: String,
+        target_display: String,
+        is_dir: bool,
+    },
+    NotifyConflict {
+        target_display: String,
+    },
+    NotifySourceMissing {
+        source_display: String,
+        source_path: PathBuf,
+    },
+}
+
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
+    // 1. GENERATE THE PLAN
+    let plan = generate_plan(context)?;
+
+    if plan.is_empty() {
+        context.message.success("No repairs needed. All symlinks are healthy.");
+        return Ok(());
+    }
+
+    // 2. DISPATCH
     if context.dry_run {
-        println!("{}", "Repairing symlinks (dry run)...".bold().blue());
+        execute_dry_run(&plan, context);
     } else {
-        println!("{}", "Repairing symlinks...".bold().blue());
+        execute_real_run(plan, context)?;
     }
 
-    if let Some(global) = &context.config.global {
-        println!("Checking global links...");
-        let links = global.links.clone();
-        repair_links(&links, context)?;
-    }
-
-    if let Some(profiles) = &context.config.profiles {
-        if let Some(active_name) = context.state.active_profile.clone() {
-            if let Some(profile) = profiles.get(&active_name) {
-                let name_yellow = active_name.green();
-                context.message.info(&format!("Checking active profile '{}'...", name_yellow));
-                let links = profile.links.clone();
-                repair_links(&links, context)?;
-            } else {
-                context.message.info(&format!("Active profile '{}' not found in config.", active_name));
-            }
-        } else {
-            context.message.info("No active profile detected. Only global links were checked.");
-        }
-    }
-
-    if !context.dry_run {
-        context.state.save()?;
-    }
-
-    context.message.success("Repair complete.");
     Ok(())
 }
 
-fn repair_links(links: &IndexMap<String, String>, context: &mut Context) -> Result<(), Box<dyn Error>> {
+fn generate_plan(context: &Context) -> Result<Vec<RepairAction>, Box<dyn Error>> {
+    let mut plan = Vec::new();
     let cwd = std::env::current_dir()?;
-    let dry_run = context.dry_run;
-    let message = &context.message;
 
-    for (target_str, source_str) in links {
-        let source_path = cwd.join(source_str);
-        let target_path = expand_tilde(target_str);
+    // Helper to process a set of links
+    let process_links = |links: &indexmap::IndexMap<String, String>, plan: &mut Vec<RepairAction>| {
+        for (target_str, source_str) in links {
+            let source_path = cwd.join(source_str);
+            let target_path = expand_tilde(target_str);
 
-        if !source_path.exists() {
-            message.unlink(&format!("Source missing: {}", source_path.display()));
-            continue;
-        }
-
-        let status = get_destination_status(&source_path, &target_path);
-
-        match status {
-            DestinationStatus::AlreadyLinked => {
-                if !dry_run {
-                    context.state.add_managed_link(
-                        source_str.clone(),
-                        target_str.clone(),
-                        source_path.is_dir(),
-                    );
-                }
+            if !source_path.exists() {
+                plan.push(RepairAction::NotifySourceMissing {
+                    source_display: source_str.clone(),
+                    source_path,
+                });
+                continue;
             }
-            DestinationStatus::NonExistent => {
-                if dry_run {
-                    message.success(&format!("Would link {} -> {} (dry run)", source_str, target_str));
-                } else {
-                    message.success(&format!("Linking {} -> {}", source_str, target_str));
-                    symlink_with_parents(&source_path, &target_path, context)?;
-                    context.state.add_managed_link(
-                        source_str.clone(),
-                        target_str.clone(),
-                        source_path.is_dir(),
-                    );
-                }
-            }
-            DestinationStatus::ConflictingSymlink => {
-                if dry_run {
-                    message.success(&format!("Would relink {} -> {} (dry run)", source_str, target_str));
-                } else {
-                    message.success(&format!("Relinking {} -> {}", source_str, target_str));
-                    if target_path.exists() || target_path.is_symlink() {
-                        std::fs::remove_file(&target_path)?;
+
+            let status = get_destination_status(&source_path, &target_path);
+            let is_dir = source_path.is_dir();
+
+            match status {
+                DestinationStatus::AlreadyLinked => {
+                    // Check if it's in state. If not, we should update state.
+                    let in_state = context.state.managed_links.iter().any(|l| l.target == *target_str);
+                    if !in_state {
+                        plan.push(RepairAction::UpdateState {
+                            source_display: source_str.clone(),
+                            target_display: target_str.clone(),
+                            is_dir,
+                        });
                     }
-                    symlink_with_parents(&source_path, &target_path, context)?;
-                    context.state.add_managed_link(
-                        source_str.clone(),
-                        target_str.clone(),
-                        source_path.is_dir(),
-                    );
+                }
+                DestinationStatus::NonExistent => {
+                    plan.push(RepairAction::Link {
+                        source_display: source_str.clone(),
+                        target_display: target_str.clone(),
+                        source_path,
+                        target_path,
+                        is_dir,
+                    });
+                }
+                DestinationStatus::ConflictingSymlink => {
+                    plan.push(RepairAction::Relink {
+                        source_display: source_str.clone(),
+                        target_display: target_str.clone(),
+                        source_path,
+                        target_path,
+                        is_dir,
+                    });
+                }
+                DestinationStatus::ConflictingFileOrDir => {
+                    plan.push(RepairAction::NotifyConflict {
+                        target_display: target_str.clone(),
+                    });
                 }
             }
-            DestinationStatus::ConflictingFileOrDir => {
-                message.error(&format!(
-                    "Conflict at {} (File/Dir exists). Manual intervention required.",
-                    target_str
-                ));
+        }
+    };
+
+    // Global links
+    if let Some(global) = &context.config.global {
+        process_links(&global.links, &mut plan);
+    }
+
+    // Active profile links
+    if let Some(profiles) = &context.config.profiles {
+        if let Some(active_name) = &context.state.active_profile {
+            if let Some(profile) = profiles.get(active_name) {
+                process_links(&profile.links, &mut plan);
             }
         }
     }
+
+    Ok(plan)
+}
+
+fn execute_dry_run(plan: &[RepairAction], context: &Context) {
+    let msg = &context.message;
+    println!("{}", "Repair Plan (Dry Run):".bold().blue());
+
+    for action in plan {
+        match action {
+            RepairAction::Link {
+                source_display,
+                target_display,
+                ..
+            } => {
+                msg.success(&format!("Would link {} -> {} (dry run)", source_display, target_display));
+            }
+            RepairAction::Relink {
+                source_display,
+                target_display,
+                ..
+            } => {
+                msg.success(&format!("Would relink {} -> {} (dry run)", source_display, target_display));
+            }
+            RepairAction::UpdateState {
+                source_display,
+                target_display,
+                ..
+            } => {
+                msg.info(&format!("Would add to state: {} -> {} (dry run)", source_display, target_display));
+            }
+            RepairAction::NotifyConflict { target_display } => {
+                msg.error(&format!(
+                    "Conflict at {}: File/Dir exists. Manual intervention required.",
+                    target_display
+                ));
+            }
+            RepairAction::NotifySourceMissing { source_display, .. } => {
+                msg.unlink(&format!("Source missing: {}", source_display));
+            }
+        }
+    }
+}
+
+fn execute_real_run(plan: Vec<RepairAction>, context: &mut Context) -> Result<(), Box<dyn Error>> {
+    let msg = &context.message;
+    println!("{}", "Executing Repair...".bold().blue());
+
+    for action in plan {
+        match action {
+            RepairAction::Link {
+                source_display,
+                target_display,
+                source_path,
+                target_path,
+                is_dir,
+            } => {
+                msg.success(&format!("Linking {} -> {}", source_display, target_display));
+                symlink_with_parents(&source_path, &target_path, context)?;
+                context.state.add_managed_link(source_display, target_display, is_dir);
+            }
+            RepairAction::Relink {
+                source_display,
+                target_display,
+                source_path,
+                target_path,
+                is_dir,
+            } => {
+                msg.success(&format!("Relinking {} -> {}", source_display, target_display));
+                if target_path.exists() || target_path.is_symlink() {
+                    std::fs::remove_file(&target_path)?;
+                }
+                symlink_with_parents(&source_path, &target_path, context)?;
+                context.state.add_managed_link(source_display, target_display, is_dir);
+            }
+            RepairAction::UpdateState {
+                source_display,
+                target_display,
+                is_dir,
+            } => {
+                msg.info(&format!("Updating state for: {} -> {}", source_display, target_display));
+                context.state.add_managed_link(source_display, target_display, is_dir);
+            }
+            RepairAction::NotifyConflict { target_display } => {
+                msg.error(&format!(
+                    "Conflict at {}: File/Dir exists. Manual intervention required.",
+                    target_display
+                ));
+            }
+            RepairAction::NotifySourceMissing { source_display, .. } => {
+                msg.unlink(&format!("Source missing: {}", source_display));
+            }
+        }
+    }
+
+    context.state.save()?;
+    msg.success("Repair complete.");
     Ok(())
 }

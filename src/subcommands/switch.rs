@@ -10,8 +10,39 @@ use std::{
 
 use crate::utils::{DestinationStatus, expand_tilde, get_destination_status, get_hostname, symlink_with_parents};
 
+/// Actions for the switch command.
+pub enum SwitchAction {
+    UnlinkOld {
+        target_display: String,
+        target_path: PathBuf,
+    },
+    LinkNew {
+        source_display: String,
+        target_display: String,
+        source_path: PathBuf,
+        target_path: PathBuf,
+        is_dir: bool,
+    },
+    UpdateState {
+        source_display: String,
+        target_display: String,
+        is_dir: bool,
+    },
+    Conflict {
+        source_display: String,
+        target_display: String,
+        source_path: PathBuf,
+        target_path: PathBuf,
+        kind: String, // "Symlink" or "File/Dir"
+    },
+    SourceMissing {
+        source_display: String,
+        _source_path: PathBuf,
+    },
+}
+
 pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Box<dyn Error>> {
-    let profile_name = match profile_name {
+    let target_profile = match profile_name {
         Some(name) => name,
         None => {
             if !context.config.settings.auto_detect_profile.unwrap_or(false) {
@@ -28,140 +59,228 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
         }
     };
 
+    // 1. GENERATE THE PLAN
+    let plan = generate_plan(&target_profile, context)?;
+
+    // 2. DISPATCH
     if context.dry_run {
-        println!("{}", "Switching profile (dry run)...".bold().yellow());
-    }
-
-    // apply global symlinks
-    if let Some(global) = &context.config.global {
-        println!("{}", "Processing global links...".blue());
-        let links = global.links.clone();
-        let strategy = context.config.settings.on_conflict.clone();
-        process_links(&links, &strategy, context).unwrap();
-    }
-
-    // unlink other active profiles
-    if let Some(profiles) = &context.config.profiles {
-        if let Some(active_name) = context.state.active_profile.clone() {
-            if active_name != profile_name {
-                if let Some(profile) = profiles.get(&active_name) {
-                    let name_yellow = active_name.yellow();
-                    context.message.info(&format!("Unlinking active profile '{}'...", name_yellow));
-                    let links = profile.links.clone();
-                    remove_profile_links(&links, context).unwrap();
-                    if !context.dry_run {
-                        for (target, _) in &links {
-                            context.state.managed_links.retain(|l| &l.target != target);
-                        }
-                    }
-                } else {
-                    context
-                        .message
-                        .warning(&format!("Active profile '{}' not found in config.", active_name));
-                }
-            }
-        }
-    }
-
-    // apply profile symlinks
-    if let Some(profiles) = &context.config.profiles {
-        if let Some(profile) = profiles.get(profile_name.as_str()) {
-            let name_green = profile_name.green();
-            context.message.info(&format!("Processing profile '{}'...", name_green));
-            let links = profile.links.clone();
-            let strategy = context.config.settings.on_conflict.clone();
-            process_links(&links, &strategy, context).unwrap();
-        } else {
-            return Err(format!("Profile '{}' not found in configuration.", profile_name).into());
-        }
+        execute_dry(&plan, &target_profile, context);
     } else {
-        context.message.error("No profiles defined in config.");
-        std::process::exit(1)
-    }
-
-    if context.dry_run {
-        context.message.success("Switch dry run complete.");
-    } else {
-        context.state.set_active_profile(profile_name)?;
+        execute(plan, &target_profile, context)?;
     }
 
     Ok(())
 }
 
-fn process_links(
-    links: &IndexMap<String, String>,
-    default_conflict_strategy: &Option<ConflictAction>,
-    context: &mut Context,
-) -> Result<(), Box<dyn Error>> {
+fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<SwitchAction>, Box<dyn Error>> {
+    let mut plan = Vec::new();
     let cwd = std::env::current_dir()?;
-    let dry_run = context.dry_run;
 
-    for (target_str, source_str) in links {
-        let source_path = cwd.join(source_str);
-        let target_path = expand_tilde(target_str);
+    // Phase A: Unlink old active profile (if switching to a different one)
+    if let Some(active_name) = &context.state.active_profile
+        && active_name != target_profile
+        && let Some(profiles) = &context.config.profiles
+        && let Some(profile) = profiles.get(active_name)
+    {
+        for (target_str, source_str) in &profile.links {
+            let target_path = expand_tilde(target_str);
+            let source_path = cwd.join(source_str);
+
+            // Only unlink if it actually points to our repo source
+            if target_path.is_symlink() && fs::read_link(&target_path)? == source_path {
+                plan.push(SwitchAction::UnlinkOld {
+                    target_display: target_str.clone(),
+                    target_path,
+                });
+            }
+        }
+    }
+
+    // Phase B: Process Global Links and Target Profile Links
+    let mut links_to_process = indexmap::IndexMap::new();
+
+    if let Some(global) = &context.config.global {
+        for (k, v) in &global.links {
+            links_to_process.insert(k.clone(), v.clone());
+        }
+    }
+
+    if let Some(profiles) = &context.config.profiles {
+        if let Some(profile) = profiles.get(target_profile) {
+            for (k, v) in &profile.links {
+                links_to_process.insert(k.clone(), v.clone());
+            }
+        } else {
+            return Err(format!("Profile '{}' not found in configuration.", target_profile).into());
+        }
+    } else {
+        return Err("No profiles defined in config.".into());
+    }
+
+    for (target_str, source_str) in links_to_process {
+        let source_path = cwd.join(&source_str);
+        let target_path = expand_tilde(&target_str);
 
         if !source_path.exists() {
-            context.message.error(&format!("Source not found: {}", source_path.display()));
+            plan.push(SwitchAction::SourceMissing {
+                source_display: source_str.clone(),
+                _source_path: source_path,
+            });
             continue;
         }
 
         let status = get_destination_status(&source_path, &target_path);
+        let is_dir = source_path.is_dir();
 
         match status {
             DestinationStatus::AlreadyLinked => {
-                context
-                    .message
-                    .success(&format!("{} → {} (already linked)", source_str, target_str));
-                if !dry_run {
-                    context
-                        .state
-                        .add_managed_link(source_str.clone(), target_str.clone(), source_path.is_dir());
-                }
+                plan.push(SwitchAction::UpdateState {
+                    source_display: source_str.clone(),
+                    target_display: target_str.clone(),
+                    is_dir,
+                });
             }
             DestinationStatus::NonExistent => {
-                if dry_run {
-                    context
-                        .message
-                        .link(&format!("Would link {} → {} (dry run)", source_str, target_str));
-                } else {
-                    symlink_with_parents(&source_path, &target_path, context).unwrap();
-                    context.message.link(&format!("{} → {}", source_str, target_str));
-                    context
-                        .state
-                        .add_managed_link(source_str.clone(), target_str.clone(), source_path.is_dir());
-                }
+                plan.push(SwitchAction::LinkNew {
+                    source_display: source_str.clone(),
+                    target_display: target_str.clone(),
+                    source_path,
+                    target_path,
+                    is_dir,
+                });
             }
-            _ => {
-                let kind = match status {
-                    DestinationStatus::ConflictingSymlink => "Symlink",
-                    _ => "File/Dir",
+            DestinationStatus::ConflictingSymlink | DestinationStatus::ConflictingFileOrDir => {
+                let kind = if status == DestinationStatus::ConflictingSymlink {
+                    "Symlink"
+                } else {
+                    "File/Dir"
                 };
 
-                // Resolve the action based on config or prompt
-                let action = match default_conflict_strategy {
-                    Some(ConflictAction::Ask) | None => {
-                        context
-                            .message
-                            .error(&format!("Conflict: {} → {} ({})", source_str, target_str, kind));
-                        if dry_run {
-                            context.message.warning("Skipping conflict resolution in dry run");
-                            ConflictAction::Skip
-                        } else {
-                            ConflictAction::prompt(kind).unwrap()
-                        }
-                    }
-                    Some(action) => action.clone(),
-                };
-
-                handle_conflict(action.clone(), &source_path, &target_path, Path::new(source_str), context).unwrap();
-                if !dry_run && (action == ConflictAction::Overwrite || action == ConflictAction::Adopt) {
-                    context
-                        .state
-                        .add_managed_link(source_str.clone(), target_str.clone(), source_path.is_dir());
-                }
+                plan.push(SwitchAction::Conflict {
+                    source_display: source_str.clone(),
+                    target_display: target_str.clone(),
+                    source_path,
+                    target_path,
+                    kind: kind.to_string(),
+                });
             }
         }
     }
+
+    Ok(plan)
+}
+
+fn execute_dry(plan: &[SwitchAction], target_profile: &str, context: &Context) {
+    let msg = &context.message;
+    println!(
+        "{} {} {}",
+        "Switching to profile".yellow(),
+        target_profile.bold().cyan(),
+        "(dry run)".yellow()
+    );
+
+    for action in plan {
+        match action {
+            SwitchAction::UnlinkOld { target_display, .. } => {
+                msg.delete(&format!("Would unlink old: {}", target_display));
+            }
+            SwitchAction::LinkNew {
+                source_display,
+                target_display,
+                ..
+            } => {
+                msg.link(&format!("Would link {} -> {}", source_display, target_display));
+            }
+            SwitchAction::UpdateState {
+                source_display,
+                target_display,
+                ..
+            } => {
+                msg.success(&format!("{} -> {} (already linked)", source_display, target_display));
+            }
+            SwitchAction::Conflict {
+                source_display,
+                target_display,
+                kind,
+                ..
+            } => {
+                msg.warning(&format!(
+                    "Conflict at {}: {} exists. Strategy will be applied.",
+                    target_display, kind
+                ));
+                msg.info(&format!("  Source: {}", source_display));
+            }
+            SwitchAction::SourceMissing { source_display, .. } => {
+                msg.error(&format!("Source missing: {}", source_display));
+            }
+        }
+    }
+}
+
+fn execute(plan: Vec<SwitchAction>, target_profile: &str, context: &mut Context) -> Result<(), Box<dyn Error>> {
+    let msg = &context.message;
+    let strategy = context.config.settings.on_conflict.clone();
+
+    for action in plan {
+        match action {
+            SwitchAction::UnlinkOld {
+                target_display,
+                target_path,
+            } => {
+                fs::remove_file(&target_path)?;
+                msg.delete(&format!("Unlinked old: {}", target_display));
+                context.state.managed_links.retain(|l| l.target != target_display);
+            }
+            SwitchAction::LinkNew {
+                source_display,
+                target_display,
+                source_path,
+                target_path,
+                is_dir,
+            } => {
+                symlink_with_parents(&source_path, &target_path, context)?;
+                msg.link(&format!("{} -> {}", source_display, target_display));
+                context.state.add_managed_link(source_display, target_display, is_dir);
+            }
+            SwitchAction::UpdateState {
+                source_display,
+                target_display,
+                is_dir,
+            } => {
+                msg.success(&format!("{} -> {} (already linked)", source_display, target_display));
+                context.state.add_managed_link(source_display, target_display, is_dir);
+            }
+            SwitchAction::Conflict {
+                source_display,
+                target_display,
+                source_path,
+                target_path,
+                kind,
+            } => {
+                let action = match &strategy {
+                    Some(ConflictAction::Ask) | None => {
+                        msg.error(&format!("Conflict: {} -> {} ({})", source_display, target_display, kind));
+                        ConflictAction::prompt(&kind).unwrap()
+                    }
+                    Some(a) => a.clone(),
+                };
+
+                handle_conflict(action.clone(), &source_path, &target_path, &source_display, context)?;
+
+                if action == ConflictAction::Overwrite || action == ConflictAction::Adopt {
+                    let is_dir = source_path.is_dir();
+                    context.state.add_managed_link(source_display, target_display, is_dir);
+                }
+            }
+            SwitchAction::SourceMissing { source_display, .. } => {
+                msg.error(&format!("Source missing: {}", source_display));
+            }
+        }
+    }
+
+    context.state.set_active_profile(target_profile.to_string())?;
+    msg.success(&format!("Switched to profile '{}'", target_profile));
+
     Ok(())
 }
 
@@ -169,7 +288,7 @@ fn handle_conflict(
     action: ConflictAction,
     source: &Path,
     destination: &PathBuf,
-    rel_source: &Path,
+    rel_source: &str,
     context: &Context,
 ) -> Result<(), Box<dyn Error>> {
     let repo_root = std::env::current_dir()?;
@@ -178,61 +297,47 @@ fn handle_conflict(
         ConflictAction::Skip => println!("  Skipped {}", destination.display()),
         ConflictAction::Abort => return Err("Operation aborted by user.".into()),
         ConflictAction::Overwrite => {
-            if context.dry_run {
-                println!("  Would overwrite: {} → {} (dry run)", source.display(), destination.display());
-            } else {
-                if destination.is_symlink() || destination.is_file() || destination.is_dir() {
-                    #[cfg(not(target_os = "android"))]
-                    trash::delete(destination).unwrap();
-                    #[cfg(target_os = "android")]
-                    if destination.is_dir() {
-                        fs::remove_dir_all(destination).unwrap();
-                    } else {
-                        fs::remove_file(destination).unwrap();
-                    }
+            if destination.is_symlink() || destination.is_file() || destination.is_dir() {
+                #[cfg(not(target_os = "android"))]
+                trash::delete(destination)?;
+                #[cfg(target_os = "android")]
+                if destination.is_dir() {
+                    fs::remove_dir_all(destination).unwrap();
+                } else {
+                    fs::remove_file(destination).unwrap();
                 }
-                symlink_with_parents(source, destination, context).unwrap();
-                println!("  Overwrite: {} → {}", source.display(), destination.display());
             }
+            symlink_with_parents(source, destination, context).unwrap();
+            println!("  Overwrite: {} → {}", source.display(), destination.display());
         }
         ConflictAction::Adopt => {
-            if context.dry_run {
-                println!("  Would adopt: {} → {} (dry run)", source.display(), destination.display());
-            } else {
-                let adopt_target = repo_root.join(rel_source);
-                // ensure parent exists in repo (it should if source exists, but checking just in case)
-                if let Some(parent) = adopt_target.parent() {
-                    fs::create_dir_all(parent).unwrap();
-                }
-                // if the source file already exists in repo, trash it before adopting the system one?
-                // "Adopt" implies the system one is the truth.
-                if adopt_target.exists() {
-                    #[cfg(not(target_os = "android"))]
-                    trash::delete(&adopt_target).unwrap();
-                    #[cfg(target_os = "android")]
-                    if adopt_target.is_dir() {
-                        fs::remove_dir_all(&adopt_target).unwrap();
-                    } else {
-                        fs::remove_file(&adopt_target).unwrap();
-                    }
-                }
-                // move the file from destination (system) to source (repo)
-                // rename might fail across filesystems, so copy+delete is safer, but rename is atomic on same FS.
-                // let's try rename first, fallback to copy/delete if needed?
-                // for now, simple rename :D
-                fs::rename(destination, &adopt_target).unwrap();
-                // Now link back
-                symlink_with_parents(source, destination, context).unwrap();
-                println!("  Adopted: {} → {}", source.display(), destination.display());
+            let adopt_target = repo_root.join(rel_source);
+            if let Some(parent) = adopt_target.parent() {
+                fs::create_dir_all(parent).unwrap();
             }
+            if adopt_target.exists() {
+                #[cfg(not(target_os = "android"))]
+                trash::delete(&adopt_target).unwrap();
+                #[cfg(target_os = "android")]
+                if adopt_target.is_dir() {
+                    fs::remove_dir_all(&adopt_target).unwrap();
+                } else {
+                    fs::remove_file(&adopt_target).unwrap();
+                }
+            }
+            fs::rename(destination, &adopt_target).unwrap();
+            symlink_with_parents(source, destination, context).unwrap();
+            println!("  Adopted: {} → {}", source.display(), destination.display());
         }
-        ConflictAction::Ask => panic!("'Ask' action should have been resolved before handling conflict"),
+        ConflictAction::Ask => {
+            panic!("'Ask' action should have been resolved before handling conflict")
+        }
     }
 
     Ok(())
 }
 
-pub fn remove_profile_links(links: &IndexMap<String, String>,  context: &Context) -> Result<(), Box<dyn Error>> {
+pub fn remove_profile_links(links: &IndexMap<String, String>, context: &Context) -> Result<(), Box<dyn Error>> {
     let cwd = std::env::current_dir()?;
 
     for (target_str, source_str) in links {
@@ -250,4 +355,3 @@ pub fn remove_profile_links(links: &IndexMap<String, String>,  context: &Context
     }
     Ok(())
 }
-
