@@ -2,7 +2,7 @@ pub mod message;
 
 use crate::config::Config;
 use crate::config::icons::IconStyle;
-use crate::state::{State};
+use crate::state::State;
 use message::Message;
 use std::error::Error;
 
@@ -22,7 +22,10 @@ impl Context {
         // Determine effective config path
         let effective_config_path = match config_path.as_ref() {
             Some(p) => Some(p.clone()),
-            None => state.dotfiles_path.as_ref().map(|p| p.join("dotsy.toml").to_string_lossy().to_string()),
+            None => state
+                .dotfiles_path
+                .as_ref()
+                .map(|p| p.join("dotsy.toml").to_string_lossy().to_string()),
         };
 
         let (config, loaded_path) = Config::load(effective_config_path)?;

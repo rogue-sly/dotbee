@@ -1,7 +1,6 @@
-use colored::Colorize;
 use crate::config::ConflictAction;
 use crate::context::Context;
-use indexmap::IndexMap;
+use colored::Colorize;
 use std::{
     error::Error,
     fs,
@@ -11,7 +10,7 @@ use std::{
 use crate::utils::{DestinationStatus, expand_tilde, get_destination_status, get_hostname, symlink_with_parents};
 
 /// Actions for the switch command.
-pub enum SwitchAction {
+pub enum Action {
     UnlinkGhost {
         target_display: String,
         target_path: PathBuf,
@@ -72,7 +71,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> Result<(), Bo
     Ok(())
 }
 
-fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<SwitchAction>, Box<dyn Error>> {
+fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<Action>, Box<dyn Error>> {
     let mut plan = Vec::new();
     let dotfiles_root = context
         .state
@@ -109,7 +108,7 @@ fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<SwitchAc
 
             // Safety check: Only unlink if it actually points to our source
             if target_path.is_symlink() && fs::read_link(&target_path)? == source_path {
-                plan.push(SwitchAction::UnlinkGhost {
+                plan.push(Action::UnlinkGhost {
                     target_display: managed.target.clone(),
                     target_path,
                 });
@@ -123,7 +122,7 @@ fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<SwitchAc
         let target_path = expand_tilde(&target_str);
 
         if !source_path.exists() {
-            plan.push(SwitchAction::SourceMissing {
+            plan.push(Action::SourceMissing {
                 source_display: source_str.clone(),
                 _source_path: source_path,
             });
@@ -135,14 +134,14 @@ fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<SwitchAc
 
         match status {
             DestinationStatus::AlreadyLinked => {
-                plan.push(SwitchAction::UpdateState {
+                plan.push(Action::UpdateState {
                     source_display: source_str.clone(),
                     target_display: target_str.clone(),
                     is_dir,
                 });
             }
             DestinationStatus::NonExistent => {
-                plan.push(SwitchAction::LinkNew {
+                plan.push(Action::LinkNew {
                     source_display: source_str.clone(),
                     target_display: target_str.clone(),
                     source_path,
@@ -157,7 +156,7 @@ fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<SwitchAc
                     "File/Dir"
                 };
 
-                plan.push(SwitchAction::Conflict {
+                plan.push(Action::Conflict {
                     source_display: source_str.clone(),
                     target_display: target_str.clone(),
                     source_path,
@@ -171,7 +170,7 @@ fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<SwitchAc
     Ok(plan)
 }
 
-fn execute_dry(plan: &[SwitchAction], target_profile: &str, context: &Context) {
+fn execute_dry(plan: &[Action], target_profile: &str, context: &Context) {
     let msg = &context.message;
     println!(
         "{} {} {}",
@@ -182,24 +181,24 @@ fn execute_dry(plan: &[SwitchAction], target_profile: &str, context: &Context) {
 
     for action in plan {
         match action {
-            SwitchAction::UnlinkGhost { target_display, .. } => {
+            Action::UnlinkGhost { target_display, .. } => {
                 msg.delete(&format!("Would unlink ghost (missing from config): {}", target_display));
             }
-            SwitchAction::LinkNew {
+            Action::LinkNew {
                 source_display,
                 target_display,
                 ..
             } => {
                 msg.link(&format!("Would link {} -> {}", source_display, target_display));
             }
-            SwitchAction::UpdateState {
+            Action::UpdateState {
                 source_display,
                 target_display,
                 ..
             } => {
                 msg.success(&format!("{} -> {} (already linked)", source_display, target_display));
             }
-            SwitchAction::Conflict {
+            Action::Conflict {
                 source_display,
                 target_display,
                 kind,
@@ -211,20 +210,20 @@ fn execute_dry(plan: &[SwitchAction], target_profile: &str, context: &Context) {
                 ));
                 msg.info(&format!("  Source: {}", source_display));
             }
-            SwitchAction::SourceMissing { source_display, .. } => {
+            Action::SourceMissing { source_display, .. } => {
                 msg.error(&format!("Source missing: {}", source_display));
             }
         }
     }
 }
 
-fn execute(plan: Vec<SwitchAction>, target_profile: &str, context: &mut Context) -> Result<(), Box<dyn Error>> {
+fn execute(plan: Vec<Action>, target_profile: &str, context: &mut Context) -> Result<(), Box<dyn Error>> {
     let msg = &context.message;
     let strategy = context.config.settings.on_conflict.clone();
 
     for action in plan {
         match action {
-            SwitchAction::UnlinkGhost {
+            Action::UnlinkGhost {
                 target_display,
                 target_path,
             } => {
@@ -232,7 +231,7 @@ fn execute(plan: Vec<SwitchAction>, target_profile: &str, context: &mut Context)
                 msg.delete(&format!("Unlinked ghost: {}", target_display));
                 context.state.managed_links.retain(|l| l.target != target_display);
             }
-            SwitchAction::LinkNew {
+            Action::LinkNew {
                 source_display,
                 target_display,
                 source_path,
@@ -243,7 +242,7 @@ fn execute(plan: Vec<SwitchAction>, target_profile: &str, context: &mut Context)
                 msg.link(&format!("{} -> {}", source_display, target_display));
                 context.state.add_managed_link(source_display, target_display, is_dir);
             }
-            SwitchAction::UpdateState {
+            Action::UpdateState {
                 source_display,
                 target_display,
                 is_dir,
@@ -251,7 +250,7 @@ fn execute(plan: Vec<SwitchAction>, target_profile: &str, context: &mut Context)
                 msg.success(&format!("{} -> {} (already linked)", source_display, target_display));
                 context.state.add_managed_link(source_display, target_display, is_dir);
             }
-            SwitchAction::Conflict {
+            Action::Conflict {
                 source_display,
                 target_display,
                 source_path,
@@ -273,7 +272,7 @@ fn execute(plan: Vec<SwitchAction>, target_profile: &str, context: &mut Context)
                     context.state.add_managed_link(source_display, target_display, is_dir);
                 }
             }
-            SwitchAction::SourceMissing { source_display, .. } => {
+            Action::SourceMissing { source_display, .. } => {
                 msg.error(&format!("Source missing: {}", source_display));
             }
         }
@@ -339,28 +338,5 @@ fn handle_conflict(
         }
     }
 
-    Ok(())
-}
-
-pub fn remove_profile_links(links: &IndexMap<String, String>, context: &Context) -> Result<(), Box<dyn Error>> {
-    let dotfiles_root = context
-        .state
-        .dotfiles_path
-        .clone()
-        .unwrap_or_else(|| std::env::current_dir().expect("Failed to get current directory"));
-
-    for (target_str, source_str) in links {
-        let target_path = expand_tilde(target_str);
-        let source_path = dotfiles_root.join(source_str);
-
-        if target_path.is_symlink() && fs::read_link(&target_path)? == source_path {
-            if context.dry_run {
-                context.message.delete(&format!("Would unlink {} (dry run)", target_str));
-            } else {
-                fs::remove_file(&target_path)?;
-                context.message.delete(&format!("Unlinked {}", target_str));
-            }
-        }
-    }
     Ok(())
 }

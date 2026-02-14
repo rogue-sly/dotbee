@@ -1,11 +1,11 @@
-use colored::Colorize;
 use crate::context::Context;
+use crate::utils::{DestinationStatus, expand_tilde, get_destination_status, symlink_with_parents};
+use colored::Colorize;
 use std::error::Error;
 use std::path::PathBuf;
-use crate::utils::{DestinationStatus, expand_tilde, get_destination_status, symlink_with_parents};
 
 /// Actions that the repair command can take.
-pub enum RepairAction {
+pub enum Action {
     Link {
         source_display: String,
         target_display: String,
@@ -30,7 +30,7 @@ pub enum RepairAction {
     },
     NotifySourceMissing {
         source_display: String,
-        source_path: PathBuf,
+        _source_path: PathBuf,
     },
 }
 
@@ -53,7 +53,7 @@ pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn generate_plan(context: &Context) -> Result<Vec<RepairAction>, Box<dyn Error>> {
+fn generate_plan(context: &Context) -> Result<Vec<Action>, Box<dyn Error>> {
     let mut plan = Vec::new();
     let dotfiles_root = context
         .state
@@ -62,15 +62,15 @@ fn generate_plan(context: &Context) -> Result<Vec<RepairAction>, Box<dyn Error>>
         .unwrap_or_else(|| std::env::current_dir().expect("Failed to get current directory"));
 
     // Helper to process a set of links
-    let process_links = |links: &indexmap::IndexMap<String, String>, plan: &mut Vec<RepairAction>| {
+    let process_links = |links: &indexmap::IndexMap<String, String>, plan: &mut Vec<Action>| {
         for (target_str, source_str) in links {
             let source_path = dotfiles_root.join(source_str);
             let target_path = expand_tilde(target_str);
 
             if !source_path.exists() {
-                plan.push(RepairAction::NotifySourceMissing {
+                plan.push(Action::NotifySourceMissing {
                     source_display: source_str.clone(),
-                    source_path,
+                    _source_path: source_path,
                 });
                 continue;
             }
@@ -83,7 +83,7 @@ fn generate_plan(context: &Context) -> Result<Vec<RepairAction>, Box<dyn Error>>
                     // Check if it's in state. If not, we should update state.
                     let in_state = context.state.managed_links.iter().any(|l| l.target == *target_str);
                     if !in_state {
-                        plan.push(RepairAction::UpdateState {
+                        plan.push(Action::UpdateState {
                             source_display: source_str.clone(),
                             target_display: target_str.clone(),
                             is_dir,
@@ -91,7 +91,7 @@ fn generate_plan(context: &Context) -> Result<Vec<RepairAction>, Box<dyn Error>>
                     }
                 }
                 DestinationStatus::NonExistent => {
-                    plan.push(RepairAction::Link {
+                    plan.push(Action::Link {
                         source_display: source_str.clone(),
                         target_display: target_str.clone(),
                         source_path,
@@ -100,7 +100,7 @@ fn generate_plan(context: &Context) -> Result<Vec<RepairAction>, Box<dyn Error>>
                     });
                 }
                 DestinationStatus::ConflictingSymlink => {
-                    plan.push(RepairAction::Relink {
+                    plan.push(Action::Relink {
                         source_display: source_str.clone(),
                         target_display: target_str.clone(),
                         source_path,
@@ -109,7 +109,7 @@ fn generate_plan(context: &Context) -> Result<Vec<RepairAction>, Box<dyn Error>>
                     });
                 }
                 DestinationStatus::ConflictingFileOrDir => {
-                    plan.push(RepairAction::NotifyConflict {
+                    plan.push(Action::NotifyConflict {
                         target_display: target_str.clone(),
                     });
                 }
@@ -134,53 +134,53 @@ fn generate_plan(context: &Context) -> Result<Vec<RepairAction>, Box<dyn Error>>
     Ok(plan)
 }
 
-fn execute_dry_run(plan: &[RepairAction], context: &Context) {
+fn execute_dry_run(plan: &[Action], context: &Context) {
     let msg = &context.message;
     println!("{}", "Repair Plan (Dry Run):".bold().blue());
 
     for action in plan {
         match action {
-            RepairAction::Link {
+            Action::Link {
                 source_display,
                 target_display,
                 ..
             } => {
                 msg.success(&format!("Would link {} -> {} (dry run)", source_display, target_display));
             }
-            RepairAction::Relink {
+            Action::Relink {
                 source_display,
                 target_display,
                 ..
             } => {
                 msg.success(&format!("Would relink {} -> {} (dry run)", source_display, target_display));
             }
-            RepairAction::UpdateState {
+            Action::UpdateState {
                 source_display,
                 target_display,
                 ..
             } => {
                 msg.info(&format!("Would add to state: {} -> {} (dry run)", source_display, target_display));
             }
-            RepairAction::NotifyConflict { target_display } => {
+            Action::NotifyConflict { target_display } => {
                 msg.error(&format!(
                     "Conflict at {}: File/Dir exists. Manual intervention required.",
                     target_display
                 ));
             }
-            RepairAction::NotifySourceMissing { source_display, .. } => {
+            Action::NotifySourceMissing { source_display, .. } => {
                 msg.unlink(&format!("Source missing: {}", source_display));
             }
         }
     }
 }
 
-fn execute_real_run(plan: Vec<RepairAction>, context: &mut Context) -> Result<(), Box<dyn Error>> {
+fn execute_real_run(plan: Vec<Action>, context: &mut Context) -> Result<(), Box<dyn Error>> {
     let msg = &context.message;
     println!("{}", "Executing Repair...".bold().blue());
 
     for action in plan {
         match action {
-            RepairAction::Link {
+            Action::Link {
                 source_display,
                 target_display,
                 source_path,
@@ -191,7 +191,7 @@ fn execute_real_run(plan: Vec<RepairAction>, context: &mut Context) -> Result<()
                 symlink_with_parents(&source_path, &target_path, context)?;
                 context.state.add_managed_link(source_display, target_display, is_dir);
             }
-            RepairAction::Relink {
+            Action::Relink {
                 source_display,
                 target_display,
                 source_path,
@@ -205,7 +205,7 @@ fn execute_real_run(plan: Vec<RepairAction>, context: &mut Context) -> Result<()
                 symlink_with_parents(&source_path, &target_path, context)?;
                 context.state.add_managed_link(source_display, target_display, is_dir);
             }
-            RepairAction::UpdateState {
+            Action::UpdateState {
                 source_display,
                 target_display,
                 is_dir,
@@ -213,13 +213,13 @@ fn execute_real_run(plan: Vec<RepairAction>, context: &mut Context) -> Result<()
                 msg.info(&format!("Updating state for: {} -> {}", source_display, target_display));
                 context.state.add_managed_link(source_display, target_display, is_dir);
             }
-            RepairAction::NotifyConflict { target_display } => {
+            Action::NotifyConflict { target_display } => {
                 msg.error(&format!(
                     "Conflict at {}: File/Dir exists. Manual intervention required.",
                     target_display
                 ));
             }
-            RepairAction::NotifySourceMissing { source_display, .. } => {
+            Action::NotifySourceMissing { source_display, .. } => {
                 msg.unlink(&format!("Source missing: {}", source_display));
             }
         }

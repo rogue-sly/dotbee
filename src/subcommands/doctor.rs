@@ -1,8 +1,8 @@
-use colored::Colorize;
 use crate::context::Context;
+use crate::utils::{DestinationStatus, expand_tilde, get_destination_status};
+use colored::Colorize;
 use indexmap::IndexMap;
 use std::error::Error;
-use crate::utils::{expand_tilde, get_destination_status, DestinationStatus};
 
 pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     let message = &context.message;
@@ -70,10 +70,9 @@ fn check_ghost_links(config_links: &IndexMap<String, String>, context: &Context)
     if !ghosts.is_empty() {
         println!("{}", "Ghost Links (in state but not in current config):".bold().yellow());
         for ghost in ghosts {
-            context.message.warning(&format!(
-                "{} (formerly linked to {})",
-                ghost.target, ghost.source
-            ));
+            context
+                .message
+                .warning(&format!("{} (formerly linked to {})", ghost.target, ghost.source));
         }
         println!("{}", "\nRun 'dotsy switch' to clean up ghost links.".italic().dimmed());
     }

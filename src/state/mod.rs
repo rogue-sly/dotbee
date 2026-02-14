@@ -59,11 +59,7 @@ impl State {
     }
 
     pub fn add_managed_link(&mut self, source: String, target: String, is_dir: bool) {
-        let link = ManagedLink {
-            source,
-            target,
-            is_dir,
-        };
+        let link = ManagedLink { source, target, is_dir };
         if !self.managed_links.contains(&link) {
             self.managed_links.push(link);
         }

@@ -1,5 +1,5 @@
-use colored::Colorize;
 use crate::context::Context;
+use colored::Colorize;
 use indexmap::IndexMap;
 use std::error::Error;
 

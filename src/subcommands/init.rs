@@ -1,5 +1,5 @@
-use colored::Colorize;
 use crate::context::Context;
+use colored::Colorize;
 use std::error::Error;
 use std::fs;
 use std::path::Path;
@@ -24,11 +24,11 @@ pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     fs::write(config_path, DEFAULT_CONFIG)?;
 
     // Update state to remember this dotfiles directory
-    if let Ok(abs_config_path) = fs::canonicalize(config_path) {
-        if let Some(parent) = abs_config_path.parent() {
-            context.state.dotfiles_path = Some(parent.to_path_buf());
-            context.state.save()?;
-        }
+    if let Ok(abs_config_path) = fs::canonicalize(config_path)
+        && let Some(parent) = abs_config_path.parent()
+    {
+        context.state.dotfiles_path = Some(parent.to_path_buf());
+        context.state.save()?;
     }
 
     message.success(&format!("Successfully initialized {}", path_string));
