@@ -7,15 +7,17 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::utils::{DestinationStatus, expand_tilde, get_destination_status, get_hostname, symlink_with_parents};
+use crate::utils::{DestinationStatus, expand_tilde, get_destination_status, get_hostname, symlink};
 
 /// Actions for the switch command.
+/// These are possible list of actions that
+/// the switch command might do.
 pub enum Action {
-    UnlinkGhost {
+    RemoveGhostLink {
         target_display: String,
         target_path: PathBuf,
     },
-    LinkNew {
+    CreateNewLink {
         source_display: String,
         target_display: String,
         source_path: PathBuf,
@@ -101,15 +103,15 @@ fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<Action>,
     }
 
     // 2. Phase A: Identify Ghost Links (links in state but not in desired config)
-    for managed in &context.state.managed_links {
-        if !desired_links.contains_key(&managed.target) {
-            let target_path = expand_tilde(&managed.target);
-            let source_path = dotfiles_root.join(&managed.source);
+    for link in &context.state.managed_links {
+        if !desired_links.contains_key(&link.target) {
+            let target_path = expand_tilde(&link.target);
+            let source_path = dotfiles_root.join(&link.source);
 
-            // Safety check: Only unlink if it actually points to our source
+            // Safety check: Only remove if it actually points to our source
             if target_path.is_symlink() && fs::read_link(&target_path)? == source_path {
-                plan.push(Action::UnlinkGhost {
-                    target_display: managed.target.clone(),
+                plan.push(Action::RemoveGhostLink {
+                    target_display: link.target.clone(),
                     target_path,
                 });
             }
@@ -141,7 +143,7 @@ fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<Action>,
                 });
             }
             DestinationStatus::NonExistent => {
-                plan.push(Action::LinkNew {
+                plan.push(Action::CreateNewLink {
                     source_display: source_str.clone(),
                     target_display: target_str.clone(),
                     source_path,
@@ -181,10 +183,10 @@ fn execute_dry(plan: &[Action], target_profile: &str, context: &Context) {
 
     for action in plan {
         match action {
-            Action::UnlinkGhost { target_display, .. } => {
-                msg.delete(&format!("Would unlink ghost (missing from config): {}", target_display));
+            Action::RemoveGhostLink { target_display, .. } => {
+                msg.delete(&format!("Would remove ghost link (missing from config): {}", target_display));
             }
-            Action::LinkNew {
+            Action::CreateNewLink {
                 source_display,
                 target_display,
                 ..
@@ -223,22 +225,22 @@ fn execute(plan: Vec<Action>, target_profile: &str, context: &mut Context) -> Re
 
     for action in plan {
         match action {
-            Action::UnlinkGhost {
+            Action::RemoveGhostLink {
                 target_display,
                 target_path,
             } => {
                 fs::remove_file(&target_path)?;
-                msg.delete(&format!("Unlinked ghost: {}", target_display));
+                msg.delete(&format!("Removed ghost link: {}", target_display));
                 context.state.managed_links.retain(|l| l.target != target_display);
             }
-            Action::LinkNew {
+            Action::CreateNewLink {
                 source_display,
                 target_display,
                 source_path,
                 target_path,
                 is_dir,
             } => {
-                symlink_with_parents(&source_path, &target_path, context)?;
+                symlink(&source_path, &target_path, context)?;
                 msg.link(&format!("{} -> {}", source_display, target_display));
                 context.state.add_managed_link(source_display, target_display, is_dir);
             }
@@ -311,7 +313,7 @@ fn handle_conflict(
                     fs::remove_file(destination).unwrap();
                 }
             }
-            symlink_with_parents(source, destination, context).unwrap();
+            symlink(source, destination, context).unwrap();
             println!("  Overwrite: {} → {}", source.display(), destination.display());
         }
         ConflictAction::Adopt => {
@@ -330,7 +332,7 @@ fn handle_conflict(
                 }
             }
             fs::rename(destination, &adopt_target).unwrap();
-            symlink_with_parents(source, destination, context).unwrap();
+            symlink(source, destination, context).unwrap();
             println!("  Adopted: {} → {}", source.display(), destination.display());
         }
         ConflictAction::Ask => {

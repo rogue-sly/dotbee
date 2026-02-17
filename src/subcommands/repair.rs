@@ -1,5 +1,5 @@
 use crate::context::Context;
-use crate::utils::{DestinationStatus, expand_tilde, get_destination_status, symlink_with_parents};
+use crate::utils::{DestinationStatus, expand_tilde, get_destination_status, symlink};
 use colored::Colorize;
 use std::error::Error;
 use std::path::PathBuf;
@@ -188,7 +188,7 @@ fn execute(plan: Vec<Action>, context: &mut Context) -> Result<(), Box<dyn Error
                 is_dir,
             } => {
                 msg.success(&format!("Linking {} -> {}", source_display, target_display));
-                symlink_with_parents(&source_path, &target_path, context)?;
+                symlink(&source_path, &target_path, context)?;
                 context.state.add_managed_link(source_display, target_display, is_dir);
             }
             Action::Relink {
@@ -202,7 +202,7 @@ fn execute(plan: Vec<Action>, context: &mut Context) -> Result<(), Box<dyn Error
                 if target_path.exists() || target_path.is_symlink() {
                     std::fs::remove_file(&target_path)?;
                 }
-                symlink_with_parents(&source_path, &target_path, context)?;
+                symlink(&source_path, &target_path, context)?;
                 context.state.add_managed_link(source_display, target_display, is_dir);
             }
             Action::UpdateState {
