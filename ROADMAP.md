@@ -22,6 +22,7 @@ _Goal: Solidify the core specification and ensure reliability._
 _Goal: Ensure users can trust Dotsy with their configuration files._
 
 - [ ] **Auto-Backup System:** Automatically back up existing files before they are replaced or modified by a `switch`.
+- [ ] **Android/Termux Safety:** Implement a custom Trash implementation (Freedesktop.org spec) for Android/Termux to avoid permanent deletion.
 - [ ] **Atomic Switching:** Optimize `switch` to only update changed links and avoid unnecessary deletions.
 - [ ] **Robust File Operations:** Handle cross-filesystem moves in `Adopt` strategy and remove unsafe `.unwrap()` calls.
 - [ ] **Execution Safety:** Re-verify file types immediately before deletion to prevent race conditions.
