@@ -2,7 +2,7 @@
 
 [settings]
 auto_detect_profile = true
-on_conflict = "ask"
+on_conflict = "ask" # Options: "abort", "adopt", "overwrite", "skip", "ask". Default: "ask"
 icon_style = "nerdfont"
 
 [global.links]

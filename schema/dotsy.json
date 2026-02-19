@@ -11,7 +11,7 @@
       "properties": {
         "on_conflict": {
           "type": "string",
-          "description": "How to handle conflicts when a file already exists at the symlink destination",
+          "description": "How to handle conflicts. Options: 'overwrite', 'adopt', 'skip', 'abort', 'ask'. Default: 'ask' (interactive).",
           "enum": [
             "overwrite",
             "adopt",
@@ -27,7 +27,7 @@
                 "Adopt the existing file into your dotfiles (moves it to the source path)",
                 "Skip symlinking this file",
                 "Abort the operation",
-                "Ask the user what to do"
+                "Ask the user what to do (default)"
               ]
             }
           }

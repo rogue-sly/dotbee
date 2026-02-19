@@ -1,4 +1,7 @@
-use crate::context::{Context, manager::{SymlinkManager, SymlinkStatus, config::ConflictAction}};
+use crate::context::{
+    Context,
+    manager::{SymlinkManager, SymlinkStatus, config::ConflictAction},
+};
 use colored::Colorize;
 use std::{
     error::Error,
@@ -260,7 +263,7 @@ fn execute(plan: Vec<Action>, target_profile: &str, context: &mut Context) -> Re
                 kind,
             } => {
                 let action = match &strategy {
-                    Some(ConflictAction::Ask) | None => {
+                    None => {
                         msg.error(&format!("Conflict: {} -> {} ({})", source_display, target_display, kind));
                         ConflictAction::prompt(&kind).unwrap()
                     }
@@ -335,9 +338,6 @@ fn handle_conflict(
             fs::rename(destination, &adopt_target).unwrap();
             context.manager.symlink.create(source, destination)?;
             println!("  Adopted: {} → {}", source.display(), destination.display());
-        }
-        ConflictAction::Ask => {
-            panic!("'Ask' action should have been resolved before handling conflict")
         }
     }
 

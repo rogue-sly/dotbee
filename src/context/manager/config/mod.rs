@@ -25,6 +25,7 @@ pub struct Config {
 #[derive(Debug, Deserialize, Default, Clone)]
 #[serde(default)]
 pub struct Settings {
+    #[serde(default, deserialize_with = "conflict::deserialize_conflict_action")]
     pub on_conflict: Option<ConflictAction>,
     pub icon_style: Option<IconStyle>,
     pub auto_detect_profile: Option<bool>,

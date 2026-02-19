@@ -1,18 +1,34 @@
 use demand::{DemandOption, Select, Theme};
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
-#[derive(Default)]
 pub enum ConflictAction {
     Abort,
     Adopt,
     Overwrite,
     Skip,
-    #[default]
-    Ask,
+}
+
+pub fn deserialize_conflict_action<'de, D>(deserializer: D) -> Result<Option<ConflictAction>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: Option<String> = Option::deserialize(deserializer)?;
+
+    match s.as_deref() {
+        Some("abort") => Ok(Some(ConflictAction::Abort)),
+        Some("adopt") => Ok(Some(ConflictAction::Adopt)),
+        Some("overwrite") => Ok(Some(ConflictAction::Overwrite)),
+        Some("skip") => Ok(Some(ConflictAction::Skip)),
+        Some("ask") | None => Ok(None),
+        Some(other) => Err(serde::de::Error::custom(format!(
+            "unknown variant `{}`, expected one of `abort`, `adopt`, `overwrite`, `skip`, `ask`",
+            other
+        ))),
+    }
 }
 
 impl Display for ConflictAction {
@@ -25,7 +41,6 @@ impl Display for ConflictAction {
                 ConflictAction::Adopt => "adopt",
                 ConflictAction::Overwrite => "overwrite",
                 ConflictAction::Skip => "skip",
-                ConflictAction::Ask => "ask",
             }
         )
     }
