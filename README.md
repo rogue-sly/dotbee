@@ -16,6 +16,10 @@
 - **LSP Support:** Full JSON schema provided for autocompletion in `dotsy.toml`.
 - **Dry Run:** Preview changes with `--dry-run` before applying them.
 
+## Documentation
+
+For more details, see the [GitLab Wiki](https://gitlab.com/rogue87/dotsy/-/wikis).
+
 ## Installation
 
 ### Using [Mise](https://mise.jdx.dev/)
