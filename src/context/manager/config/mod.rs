@@ -12,8 +12,6 @@ use std::path::{Path, PathBuf};
 #[derive(Debug, Deserialize, Default, Clone)]
 #[serde(default)]
 struct Config {
-    #[serde(skip)]
-    path: Option<PathBuf>,
     settings: Settings,
     global: Option<Global>,
     profiles: Option<IndexMap<String, Profile>>,
@@ -40,6 +38,7 @@ pub struct Profile {
 
 pub struct ConfigManager {
     config: Config,
+    config_path: Option<PathBuf>,
 }
 
 impl ConfigManager {
@@ -48,14 +47,17 @@ impl ConfigManager {
         let config_path = Path::new(&path_str);
 
         if !config_path.exists() {
-            return Ok(Self { config: Config::default() });
+            return Ok(Self {
+                config: Config::default(),
+                config_path: None,
+            });
         }
 
         let content = fs::read_to_string(config_path)?;
-        let mut config: Config = toml::from_str(&content)?;
-        config.path = Some(fs::canonicalize(config_path)?);
+        let config: Config = toml::from_str(&content)?;
+        let config_path = Some(fs::canonicalize(config_path)?);
 
-        Ok(Self { config })
+        Ok(Self { config, config_path })
     }
 
     pub fn get_profile(&self, name: &str) -> Result<&Profile, Box<dyn Error>> {
@@ -86,7 +88,7 @@ impl ConfigManager {
     }
 
     pub fn get_config_path(&self) -> Option<&Path> {
-        self.config.path.as_deref()
+        self.config_path.as_deref()
     }
 }
 
