@@ -12,7 +12,7 @@ _Goal: Solidify the core specification and ensure reliability._
 - [x] **Documentation:** Finalize the `README.md` and establish a `CHANGELOG.md`.
 - [ ] **Wiki:** Write a wiki that explains everything about dotsy.
 - [ ] **Usage Examples:** Write usage examples and troubleshooting tips.
-- [ ] **Base Directory Resolution:** Fix CWD-dependency by resolving relative paths from the config file's location.
+- [x] **Base Directory Resolution:** Fix CWD-dependency by resolving relative paths from the config file's location.
 - [ ] **Code Documentation:** Add inline comments and docstrings to the codebase.
 - [ ] **Core Testing:** Implement a comprehensive test suite for symlink management (creation, purging, repair) and edge cases.
 - [ ] **Cross-Platform Support:** Verify and polish experience on macOS and Termux.
@@ -27,7 +27,7 @@ _Goal: Ensure users can trust Dotsy with their configuration files._
 - [ ] **Auto-Backup System:** Automatically back up existing files before they are replaced or modified by a `switch`.
 - [ ] **Android/Termux Safety:** Implement a custom Trash implementation (Freedesktop.org spec) for Android/Termux to avoid permanent deletion.
 - [ ] **Atomic Switching:** Optimize `switch` to only update changed links and avoid unnecessary deletions.
-- [ ] **Transaction-Based Execution:** Separate planning from execution to enable reliable dry-runs and potential undo functionality.
+- [x] **Transaction-Based Execution:** Separate planning from execution to enable reliable dry-runs and potential undo functionality.
 - [ ] **Unified Error Recovery:** Implement standard strategy for partial failures during multi-file operations.
 - [ ] **Centralized Conflict Resolution:** Unify conflict handling logic across all commands.
 - [ ] **State Atomicity:** Ensure state updates are atomic and verifiable; implement granular updates or journaling.
