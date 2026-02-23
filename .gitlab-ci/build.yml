@@ -6,6 +6,9 @@ build:
   services:
     - docker:20.10.12-dind
   extends: .cargo_cache
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends docker.io
+    - cargo install cross
   rules:
     - if: $CI_COMMIT_TAG
   parallel:
