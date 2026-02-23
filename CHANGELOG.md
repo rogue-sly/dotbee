@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-02-23
+
+### Changed
+- **BREAKING CHANGE:** Renamed project from **Dotsy** to **Dotbee**.
+    - Command: `dotsy` -> `dotbee`
+    - Config file: `dotsy.toml` -> `dotbee.toml`
+    - Schema: `dotsy.json` -> `dotbee.json`
+    - State directory: `~/.local/state/dotsy` -> `~/.local/state/dotbee`
+    - Completions: Shell completion scripts must be regenerated using `dotbee completion <SHELL>`.
+
+### Migration
+If you are upgrading from `v0.3.0`, perform the following manual steps:
+
+1.  **Rename Config:** `mv dotsy.toml dotbee.toml`
+2.  **Move State (Optional):** `mv ~/.local/state/dotsy ~/.local/state/dotbee`
+3.  **Update Aliases:** Update your shell configuration to use `dotbee` instead of `dotsy`.
+
 ## [0.3.0] - 2026-02-22
 
 ### Added
