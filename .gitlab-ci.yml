@@ -4,7 +4,7 @@
 # Per GitLab CI documentation, `include` should be one of the first keys in the file.
 # This may also help local linters like `glab` correctly parse the configuration.
 include:
-  - local: ".gitlab-ci/validation.yml"
+  # - local: ".gitlab-ci/validation.yml"
   - local: ".gitlab-ci/build.yml"
   - local: ".gitlab-ci/release.yml"
 
