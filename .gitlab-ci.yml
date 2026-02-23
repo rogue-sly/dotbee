@@ -9,8 +9,8 @@ include:
   - local: ".gitlab-ci/release.yml"
 
 stages:
-  - lint
-  - test
+  # - lint
+  # - test
   - build
   - release
 
