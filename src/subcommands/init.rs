@@ -4,7 +4,7 @@ use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const DEFAULT_CONFIG: &str = include_str!("../context/manager/config/dotsy.toml");
+const DEFAULT_CONFIG: &str = include_str!("../context/manager/config/dotbee.toml");
 
 pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     let path_string = context
@@ -12,7 +12,7 @@ pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
         .config
         .get_config_path()
         .map(|p| p.to_path_buf())
-        .unwrap_or(PathBuf::from("dotsy.toml"));
+        .unwrap_or(PathBuf::from("dotbee.toml"));
     let config_path = Path::new(&path_string);
     let message = &context.message;
 
@@ -42,7 +42,7 @@ pub fn run(context: &mut Context) -> Result<(), Box<dyn Error>> {
     message.success(&format!("Successfully initialized {}", path_string.to_string_lossy()));
     println!(
         "Edit the file to configure your dotfiles, then run {} to apply.",
-        "dotsy switch <profile>".yellow()
+        "dotbee switch <profile>".yellow()
     );
 
     Ok(())

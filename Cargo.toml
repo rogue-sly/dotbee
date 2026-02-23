@@ -1,11 +1,11 @@
 [package]
-name = "dotsy"
+name = "dotbee"
 version = "0.3.0"
 authors = ["Rogue87 <rogue87@tuta.io>"]
 description = "Dotfiles manager designed for ease of use"
 edition = "2024"
-repository = "https://gitlab.com/rogue87/dotsy"
-keywords = ["dotsy", "dotfiles"]
+repository = "https://gitlab.com/rogue87/dotbee"
+keywords = ["dotbee", "dotfiles"]
 categories = ["command-line-utilities"]
 license = "MIT"
 rust-version = "1.92.0"

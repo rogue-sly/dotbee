@@ -1,49 +1,49 @@
-# Dotsy
+# Dotbee
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.3.0-blue)](https://gitlab.com/rogue87/dotsy)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue)](https://gitlab.com/rogue87/dotbee)
 
-**Dotsy** is a simple, symlink-based dotfiles manager written in Rust. It focuses on doing one thing well: managing your configuration files without the complexity of shell scripts or bloated feature sets.
+**Dotbee** is a simple, symlink-based dotfiles manager written in Rust. It focuses on doing one thing well: managing your configuration files without the complexity of shell scripts or bloated feature sets.
 
 > [!WARNING]
-> Dotsy is in **Alpha**. While functional, it is recommended to back up your dotfiles before use. For testing, use the provided containerized environment.
+> Dotbee is in **Alpha**. While functional, it is recommended to back up your dotfiles before use. For testing, use the provided containerized environment.
 
 ## Features
 
 - **Profile Support:** Switch between different environments (e.g., Desktop, Server, Termux).
 - **Global Configs:** Define links that apply across all profiles.
-- **Health Checks:** `dotsy doctor` and `repair` help you identify and fix broken symlinks.
-- **LSP Support:** Full JSON schema provided for autocompletion in `dotsy.toml`.
+- **Health Checks:** `dotbee doctor` and `repair` help you identify and fix broken symlinks.
+- **LSP Support:** Full JSON schema provided for autocompletion in `dotbee.toml`.
 - **Dry Run:** Preview changes with `--dry-run` before applying them.
 
 ## Documentation
 
-For more details, see the [GitLab Wiki](https://gitlab.com/rogue87/dotsy/-/wikis).
+For more details, see the [GitLab Wiki](https://gitlab.com/rogue87/dotbee/-/wikis).
 
 ## Installation
 
 ### Using [Mise](https://mise.jdx.dev/)
 
 ```bash
-mise use gitlab:rogue87/dotsy
+mise use gitlab:rogue87/dotbee
 ```
 
 ### From Source
 
 ```bash
-cargo install --git https://gitlab.com/rogue87/dotsy
+cargo install --git https://gitlab.com/rogue87/dotbee
 ```
 
 ## Quick Start
 
 1. **Initialize:**
    ```bash
-   dotsy init
+   dotbee init
    ```
-   This creates a default `dotsy.toml` in your current directory.
+   This creates a default `dotbee.toml` in your current directory.
 
 2. **Configure:**
-   Edit `dotsy.toml` to define your links.
+   Edit `dotbee.toml` to define your links.
    ```toml
    [global.links]
    "~/.gitconfig" = "git/gitconfig"
@@ -55,33 +55,33 @@ cargo install --git https://gitlab.com/rogue87/dotsy
 3. **List Available Profiles:**
 
    ```bash
-   dotsy list
+   dotbee list
    ```
 
 4. **Switch Profile:**
 
    ```bash
-   dotsy switch desktop
+   dotbee switch desktop
    ```
 
 5. **Check Status:**
 
    ```bash
-   dotsy doctor
+   dotbee doctor
    ```
 
 6. **Remove All Symlinks:**
 
    ```bash
-   dotsy purge
+   dotbee purge
    ```
 
 ## Shell Completions
 
-Dotsy can generate completion scripts for your shell.
+Dotbee can generate completion scripts for your shell.
 
 ```bash
-dotsy completion <SHELL>
+dotbee completion <SHELL>
 ```
 
 Supported shells: `bash`, `zsh`, `fish`, `elvish`.
@@ -90,10 +90,10 @@ Supported shells: `bash`, `zsh`, `fish`, `elvish`.
 
 | Shell      | Command                                                                    |
 | :--------- | :------------------------------------------------------------------------- |
-| **Bash**   | `dotsy completion bash > ~/.local/share/bash-completion/completions/dotsy` |
-| **Zsh**    | `dotsy completion zsh > ~/.zfunc/_dotsy`                                   |
-| **Fish**   | `dotsy completion fish > ~/.config/fish/completions/dotsy.fish`            |
-| **Elvish** | `dotsy completion elvish > ~/.config/elvish/lib/dotsy.elv`                 |
+| **Bash**   | `dotbee completion bash > ~/.local/share/bash-completion/completions/dotbee` |
+| **Zsh**    | `dotbee completion zsh > ~/.zfunc/_dotbee`                                   |
+| **Fish**   | `dotbee completion fish > ~/.config/fish/completions/dotbee.fish`            |
+| **Elvish** | `dotbee completion elvish > ~/.config/elvish/lib/dotbee.elv`                 |
 
 ### On the fly
 
@@ -101,27 +101,27 @@ You can also load completions directly into your current session:
 
 > [!TIP]
 > For **Zsh**, ensure `~/.zfunc` is in your `$fpath` by adding `fpath+=~/.zfunc` to your `.zshrc` before calling `compinit`.
-> For **Elvish**, after permanent installation, add `use dotsy` to your `rc.elv`.
+> For **Elvish**, after permanent installation, add `use dotbee` to your `rc.elv`.
 
 ```bash
 # Fish
-dotsy completion fish | source
+dotbee completion fish | source
 
 # Bash
-source <(dotsy completion bash)
+source <(dotbee completion bash)
 
 # Zsh
-source <(dotsy completion zsh)
+source <(dotbee completion zsh)
 
 # Elvish
-eval (dotsy completion elvish | slurp)
+eval (dotbee completion elvish | slurp)
 ```
 
 ## Configuration
 
-Dotsy uses TOML for configuration.
+Dotbee uses TOML for configuration.
 
-### Example `dotsy.toml`
+### Example `dotbee.toml`
 
 ```toml
 [settings]
@@ -134,8 +134,8 @@ icon_style = "nerdfont"
 
 ## Development & Testing
 
-To avoid accidental data loss on your host system during development, use the provided `mise` tasks to run Dotsy in a container:
+To avoid accidental data loss on your host system during development, use the provided `mise` tasks to run Dotbee in a container:
 
 ```bash
-mise run try-dotsy --profile dev
+mise run try-dotbee --profile dev
 ```

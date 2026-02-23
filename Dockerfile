@@ -11,7 +11,7 @@ RUN useradd -m -u $USER_ID -g $GROUP_ID -s /bin/bash testuser 2>/dev/null || use
 # Copy example dotfiles
 COPY --chown=testuser:testuser example /home/testuser/dotfiles
 
-# initialize dotsy in the dotfiles directory
+# initialize dotbee in the dotfiles directory
 USER testuser
 WORKDIR /home/testuser/dotfiles
 

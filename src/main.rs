@@ -11,10 +11,10 @@ use context::Context;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let dotsy = Cli::parse();
-    let mut context = Context::new(dotsy.config, dotsy.dry_run)?;
+    let dotbee = Cli::parse();
+    let mut context = Context::new(dotbee.config, dotbee.dry_run)?;
 
-    match dotsy.subcommand {
+    match dotbee.subcommand {
         SubCommand::Completion { shell } => subcommands::completion::run(shell)?,
         SubCommand::Doctor => subcommands::doctor::run(&context)?,
         SubCommand::Init => subcommands::init::run(&mut context)?,

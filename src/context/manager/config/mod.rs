@@ -43,7 +43,7 @@ pub struct ConfigManager {
 
 impl ConfigManager {
     pub fn load(path: Option<String>) -> Result<Self, Box<dyn Error>> {
-        let path_str = path.unwrap_or_else(|| "dotsy.toml".to_string());
+        let path_str = path.unwrap_or_else(|| "dotbee.toml".to_string());
         let config_path = Path::new(&path_str);
 
         if !config_path.exists() {
@@ -99,14 +99,14 @@ mod tests {
     use tempfile::tempdir;
 
     fn write_config(dir: &std::path::Path, content: &str) -> PathBuf {
-        let path = dir.join("dotsy.toml");
+        let path = dir.join("dotbee.toml");
         fs::write(&path, content).unwrap();
         path
     }
 
     #[test]
     fn test_load_missing_file_returns_default() {
-        let result = ConfigManager::load(Some("/nonexistent/dotsy.toml".to_string()));
+        let result = ConfigManager::load(Some("/nonexistent/dotbee.toml".to_string()));
         assert!(result.is_ok());
         let cm = result.unwrap();
         assert!(!cm.has_profiles());

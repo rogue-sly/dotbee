@@ -7,6 +7,6 @@ use crate::cli::{Cli, Shell};
 
 pub fn run(shell: Shell) -> Result<(), Box<dyn Error>> {
     let mut cmd = Cli::command();
-    generate(ClapShell::from(shell), &mut cmd, "dotsy", &mut io::stdout());
+    generate(ClapShell::from(shell), &mut cmd, "dotbee", &mut io::stdout());
     Ok(())
 }

@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.1] - 2026-02-07
 
 ### Changed
-- `dotsy list` now displays the global profile configuration if one is defined.
+- `dotbee list` now displays the global profile configuration if one is defined.
 - Internal refactoring of `list` command to better handle global links.
 
 ## [0.2.0] - 2026-02-06
@@ -53,20 +53,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **CLI Commands:**
-    - `init`: Initialize Dotsy configuration.
+    - `init`: Initialize Dotbee configuration.
     - `list`: List available configuration profiles.
     - `switch <config>`: Apply a specific configuration profile.
     - `doctor`: Validate symlink status and configuration health.
-    - `purge`: Remove all active symlinks managed by Dotsy.
+    - `purge`: Remove all active symlinks managed by Dotbee.
     - `repair`: Detect and fix broken or missing symlinks.
 - **Features:**
-    - `auto_detect_profile` setting: Automatically select a profile based on the system's hostname when no profile is specified in `dotsy switch`.
+    - `auto_detect_profile` setting: Automatically select a profile based on the system's hostname when no profile is specified in `dotbee switch`.
     - Dry-run mode (`--dry-run`) to preview filesystem changes.
     - Custom config path support (`--config`).
     - Configurable icon styles (Text, Emoji, NerdFont).
     - Global and profile-specific symlink management.
 - **Infrastructure:**
-    - JSON Schema for `dotsy.toml` to provide LSP completions via Taplo.
+    - JSON Schema for `dotbee.toml` to provide LSP completions via Taplo.
     - Project Roadmap (`ROADMAP.md`).
     - GitLab CI configuration for automated multi-platform builds (x86_64, aarch64, musl) and releases.
     - `mise` tasks for containerized development and CI testing.

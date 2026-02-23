@@ -1,4 +1,4 @@
-#:schema https://gitlab.com/rogue87/dotsy/-/raw/main/schema/dotsy.json
+#:schema https://gitlab.com/rogue87/dotbee/-/raw/main/schema/dotbee.json
 
 [settings]
 auto_detect_profile = true # try to match hostname to a profile

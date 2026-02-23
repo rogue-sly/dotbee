@@ -1,23 +1,23 @@
-# Contributing to Dotsy
+# Contributing to Dotbee
 
-First off, thank you for considering contributing to Dotsy! It's people like you that make the open-source community such an amazing place to learn, inspire, and create.
+First off, thank you for considering contributing to Dotbee! It's people like you that make the open-source community such an amazing place to learn, inspire, and create.
 
 ## Getting Started
 
 ### Prerequisites
 
-To work on Dotsy, you will need the following tools installed on your system:
+To work on Dotbee, you will need the following tools installed on your system:
 
 - **Rust**: Version 1.92.0 or later.
 - **Mise**: Use [mise](https://mise.jdx.dev/) for managing development tasks and tools.
-- **Docker or Podman**: Highly recommended for running and testing Dotsy safely without affecting your host system's dotfiles.
+- **Docker or Podman**: Highly recommended for running and testing Dotbee safely without affecting your host system's dotfiles.
 
 ### Setting up the Environment
 
 1. **Clone the repository:**
    ```bash
-   git clone https://gitlab.com/rogue87/dotsy.git
-   cd dotsy
+   git clone https://gitlab.com/rogue87/dotbee.git
+   cd dotbee
    ```
 
 2. **Install dependencies:**
@@ -43,7 +43,7 @@ cargo run -- <command>
 ### Safe Development (Recommended)
 
 > [!WARNING]
-> Since Dotsy creates and removes symlinks, **I strongly recommend running it inside a container** during development to avoid accidentally modifying your personal dotfiles.
+> Since Dotbee creates and removes symlinks, **I strongly recommend running it inside a container** during development to avoid accidentally modifying your personal dotfiles.
 
 I've provided `mise` tasks to simplify this process:
 
@@ -52,8 +52,8 @@ I've provided `mise` tasks to simplify this process:
    mise run build-container
    ```
 
-2. **Run Dotsy inside the container:**
-   This command compiles your current code, mounts the binary into the container, and drops you into a shell where you can safely run `dotsy`.
+2. **Run Dotbee inside the container:**
+   This command compiles your current code, mounts the binary into the container, and drops you into a shell where you can safely run `dotbee`.
 
    ```bash
    mise run run-container
@@ -124,7 +124,7 @@ git commit -m "feat: add support for custom icon sets"
    ```bash
    git push origin feature/amazing-feature
    ```
-5. **Open a Merge Request** (MR) against the `main` branch of the `dotsy` repository.
+5. **Open a Merge Request** (MR) against the `main` branch of the `dotbee` repository.
 
 ## Note on Using LLM/AI Assistants
 

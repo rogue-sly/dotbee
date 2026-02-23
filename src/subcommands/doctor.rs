@@ -8,7 +8,7 @@ use std::error::Error;
 pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     let message = &context.message;
 
-    println!("{}", "Dotsy Doctor Report\n".bold().underline());
+    println!("{}", "Dotbee Doctor Report\n".bold().underline());
 
     let mut config_links: IndexMap<String, String> = indexmap::IndexMap::new();
 
@@ -32,7 +32,7 @@ pub fn run(context: &Context) -> Result<(), Box<dyn Error>> {
     };
 
     if !context.manager.config.has_profiles() {
-        message.info("No profiles defined in dotsy.toml.");
+        message.info("No profiles defined in dotbee.toml.");
         check_ghost_links(&config_links, context)?;
         return Ok(());
     }
@@ -72,7 +72,7 @@ fn check_ghost_links(config_links: &IndexMap<String, String>, context: &Context)
                 .message
                 .warning(&format!("{} (formerly linked to {})", ghost.target, ghost.source));
         }
-        println!("{}", "\nRun 'dotsy switch' to clean up ghost links.".italic().dimmed());
+        println!("{}", "\nRun 'dotbee switch' to clean up ghost links.".italic().dimmed());
     }
 
     Ok(())

@@ -1,28 +1,28 @@
-# Dotsy Roadmap
+# Dotbee Roadmap
 
-This document outlines the planned development path for **Dotsy**. As an alpha project, our primary focus is moving toward a stable, reliable `v1.0.0` release.
+This document outlines the planned development path for **Dotbee**. As an alpha project, our primary focus is moving toward a stable, reliable `v1.0.0` release.
 
 ## Phase 1: Foundation & Validation (Current)
 
 _Goal: Solidify the core specification and ensure reliability._
 
-- [x] **Formalize Specification:** Finalize the `dotsy.toml` format (JSON Schema provided).
-- [x] **LSP Support:** Complete the `schema/dotsy.json` JSON schema to provide completions and validation via Taplo.
+- [x] **Formalize Specification:** Finalize the `dotbee.toml` format (JSON Schema provided).
+- [x] **LSP Support:** Complete the `schema/dotbee.json` JSON schema to provide completions and validation via Taplo.
 - [x] **Shell Completions:** Provide completions for `bash`, `zsh` and `fish`.
 - [x] **Documentation:** Finalize the `README.md` and establish a `CHANGELOG.md`.
-- [x] **Wiki:** Write a wiki that explains everything about dotsy.
+- [x] **Wiki:** Write a wiki that explains everything about dotbee.
 - [x] **Usage Examples:** Write usage examples and troubleshooting tips.
 - [x] **Base Directory Resolution:** Fix CWD-dependency by resolving relative paths from the config file's location.
 - [ ] **Code Documentation:** Add inline comments and docstrings to the codebase.
 - [ ] **Core Testing:** Implement a comprehensive test suite for symlink management (creation, purging, repair) and edge cases.
 - [ ] **Cross-Platform Support:** Verify and polish experience on macOS and Termux.
-- [ ] **Recursive Config Lookup:** Implement recursive upward search for `dotsy.toml`.
+- [ ] **Recursive Config Lookup:** Implement recursive upward search for `dotbee.toml`.
 - [ ] **Explicit Defaults:** Warn user when running without a configuration file.
 - [ ] **Structured Logging:** Decouple output from logic to support structured logging and verbosity levels.
 
 ## Phase 2: Safety & Reliability (Beta)
 
-_Goal: Ensure users can trust Dotsy with their configuration files._
+_Goal: Ensure users can trust Dotbee with their configuration files._
 
 - [ ] **Auto-Backup System:** Automatically back up existing files before they are replaced or modified by a `switch`.
 - [ ] **Android/Termux Safety:** Implement a custom Trash implementation (Freedesktop.org spec) for Android/Termux to avoid permanent deletion.
@@ -47,7 +47,7 @@ _Goal: Ensure users can trust Dotsy with their configuration files._
 
 _Goal: Broaden support and optimize the user experience._
 
-- [ ] **Runtime Schema Validation:** Enforce `dotsy.toml` schema validation at runtime during config load.
+- [ ] **Runtime Schema Validation:** Enforce `dotbee.toml` schema validation at runtime during config load.
 - [ ] **CI Pipeline Modernization:** Add dedicated test stages and better artifact management.
 - [ ] **Centralized CI Dependencies:** Synchronize CI toolchain versions with project config.
 - [ ] **Broader Platform Support:** Support even more platforms and provide packages for popular Linux distros (Debian, Fedora, ArchLinux, Nix/OS).
@@ -57,26 +57,26 @@ _Goal: Broaden support and optimize the user experience._
 
 ## Completed (`v0.1.0`)
 
-- [x] Implement `dotsy init`
-- [x] Implement `dotsy list`
-- [x] Implement `dotsy switch <config>`
-- [x] Implement `dotsy doctor`
-- [x] Implement `dotsy purge`
-- [x] Implement `dotsy repair`
+- [x] Implement `dotbee init`
+- [x] Implement `dotbee list`
+- [x] Implement `dotbee switch <config>`
+- [x] Implement `dotbee doctor`
+- [x] Implement `dotbee purge`
+- [x] Implement `dotbee repair`
 - [x] Dry-run mode (`--dry-run`)
 - [x] Custom config path (`--config`)
 - [x] `auto_detect_profile` setting implementation
-- [x] JSON Schema for LSP support (`dotsy.json`)
+- [x] JSON Schema for LSP support (`dotbee.json`)
 - [x] Initialize `CHANGELOG.md` and merge `TODO.md` into `ROADMAP.md`
 
 ## Future Explorations
 
 - **System Profile:** A way to setup symlinks for system configuration files (/etc)
   - Should invoke sudo
-  - To activate it, use --system with `dotsy switch`
+  - To activate it, use --system with `dotbee switch`
   Possible commands to use this flag: [switch, purge, repair]
 
-- **Dotfiles Fetching:** Dotsy should be able to fetch a remote dotfiles repository
+- **Dotfiles Fetching:** Dotbee should be able to fetch a remote dotfiles repository
   - Using git
   - Using http (simply download it)
   - perhaps some other methods

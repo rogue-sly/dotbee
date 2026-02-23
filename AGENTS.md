@@ -1,14 +1,14 @@
-# Dotsy Agent Guide
+# Dotbee Agent Guide
 
 ## Project Overview
 
-**Dotsy** is a CLI dotfiles manager written in Rust. It manages dotfiles via symlinks and is
+**Dotbee** is a CLI dotfiles manager written in Rust. It manages dotfiles via symlinks and is
 intentionally minimal — no encryption, no templating, no package management. Just symlinks.
 
 - **Language:** Rust (Edition 2024, `rust-version = "1.92.0"`)
 - **CLI Framework:** `clap` (derive API)
-- **Config format:** TOML (`dotsy.toml`)
-- **State format:** JSON (`~/.local/state/dotsy/state.json`)
+- **Config format:** TOML (`dotbee.toml`)
+- **State format:** JSON (`~/.local/state/dotbee/state.json`)
 - **Status:** Alpha
 
 ---
@@ -46,7 +46,7 @@ mise run format:toml               # runs: taplo format --check --diff
 mise run bump-version <increment>
 
 # Test in a container (safe — avoids mutating host dotfiles)
-mise run try-dotsy                 # builds binary, spins up Docker container with example dotfiles
+mise run try-dotbee                 # builds binary, spins up Docker container with example dotfiles
 ```
 
 **Always run `cargo fmt` before committing.** The project enforces `max_width = 140` and
@@ -79,14 +79,14 @@ src/
         │   ├── mod.rs              # ConfigManager (pure TOML data + config_path metadata)
         │   ├── conflict.rs         # ConflictAction enum + interactive prompt
         │   ├── icons.rs            # IconStyle enum + Icons struct
-        │   └── dotsy.toml          # Default config template (embedded via include_str!)
+        │   └── dotbee.toml          # Default config template (embedded via include_str!)
         └── state/
             └── mod.rs              # StateManager + ManagedLink (auto-saves on every mutation)
 ```
 
 Key supporting files:
 - `Cargo.toml` — dependencies and package metadata
-- `schema/dotsy.json` — JSON schema for `dotsy.toml` (enables Taplo LSP completions)
+- `schema/dotbee.json` — JSON schema for `dotbee.toml` (enables Taplo LSP completions)
 - `mise.toml` / `.mise-tasks/` — dev task runner
 - `example/` — sample dotfiles directory used by the containerised test environment
 
@@ -115,7 +115,7 @@ New subcommands that mutate the filesystem should follow this pattern.
 
 ### State persistence
 
-`StateManager` persists to `~/.local/state/dotsy/state.json`. Every setter calls `save()`
+`StateManager` persists to `~/.local/state/dotbee/state.json`. Every setter calls `save()`
 internally — callers do not manage persistence manually.
 
 ---
@@ -189,7 +189,7 @@ internally — callers do not manage persistence manually.
 ### Tests
 - Tests live in `#[cfg(test)] mod tests` at the bottom of the file they test.
 - Use `tempfile::tempdir()` for any test that touches the filesystem.
-- For `StateManager` tests, construct `StateManager { state }` directly (same module) to avoid writing to `~/.local/state/dotsy/` during test runs.
+- For `StateManager` tests, construct `StateManager { state }` directly (same module) to avoid writing to `~/.local/state/dotbee/` during test runs.
 - Test names follow `test_<what>_<condition>` (e.g. `test_get_profile_not_found`).
 - Prefer `assert!(result.is_ok())` / `assert!(result.is_err())` before unwrapping to get clearer failure messages.
 
@@ -207,8 +207,8 @@ internally — callers do not manage persistence manually.
 
 ## Safety Notes
 
-- **Always test filesystem-mutating changes in the container** (`mise run try-dotsy`) to avoid
+- **Always test filesystem-mutating changes in the container** (`mise run try-dotbee`) to avoid
   accidentally symlinking or deleting files on the host.
 - The container mounts `example/` as the dotfiles directory and uses `hostname=laptop`.
-- `StateManager` will overwrite `~/.local/state/dotsy/state.json` on the host whenever any
+- `StateManager` will overwrite `~/.local/state/dotbee/state.json` on the host whenever any
   setter is called during a non-containerised run.

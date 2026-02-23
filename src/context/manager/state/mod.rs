@@ -22,7 +22,7 @@ impl State {
     fn get_path() -> PathBuf {
         let mut path =
             dirs::state_dir().unwrap_or_else(|| dirs::home_dir().expect("Could not determine home directory").join(".local/state"));
-        path.push("dotsy");
+        path.push("dotbee");
         path.push("state.json");
         path
     }

@@ -17,7 +17,7 @@ stages:
 # Global variables are available to all jobs.
 variables:
   CARGO_HOME: $CI_PROJECT_DIR/.cargo
-  BINARY_NAME: dotsy
+  BINARY_NAME: dotbee
   # Tell cross to use the docker daemon from the dind service.
   DOCKER_HOST: tcp://docker:2375
 

@@ -1,13 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://gitlab.com/rogue87/dotsy/-/raw/main/schema/dotsy.json",
-  "title": "Dotsy Configuration Schema",
-  "description": "Configuration schema for Dotsy dotfiles manager",
+  "$id": "https://gitlab.com/rogue87/dotbee/-/raw/main/schema/dotbee.json",
+  "title": "Dotbee Configuration Schema",
+  "description": "Configuration schema for Dotbee dotfiles manager",
   "type": "object",
   "properties": {
     "settings": {
       "type": "object",
-      "description": "General settings for Dotsy",
+      "description": "General settings for Dotbee",
       "properties": {
         "on_conflict": {
           "type": "string",

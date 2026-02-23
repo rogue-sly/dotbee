@@ -26,7 +26,7 @@ impl Manager {
             Some(p) => Some(p.clone()),
             None => state
                 .get_dotfiles_path()
-                .map(|p| p.join("dotsy.toml").to_string_lossy().to_string()),
+                .map(|p| p.join("dotbee.toml").to_string_lossy().to_string()),
         };
 
         let config = ConfigManager::load(effective_config_path)?;

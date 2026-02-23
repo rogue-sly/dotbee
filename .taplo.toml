@@ -1,4 +1,4 @@
 [[rule]]
-include = ["**/dotsy.toml"]
+include = ["**/dotbee.toml"]
 [rule.schema]
-path = "https://gitlab.com/rogue87/dotsy/-/raw/main/schema/dotsy.json"
+path = "https://gitlab.com/rogue87/dotbee/-/raw/main/schema/dotbee.json"
