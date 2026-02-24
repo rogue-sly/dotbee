@@ -19,6 +19,7 @@
 ## Documentation
 
 For more details, see the [GitLab Wiki](https://gitlab.com/rogue87/dotbee/-/wikis).
+Check the [roadmap](https://gitlab.com/rogue87/dotbee/-/milestones) to see current progress of dotbee's development.
 
 ## Installation
 
