@@ -1,4 +1,0 @@
-[tools]
-
-[settings]
-disable_tools = ["rust"]

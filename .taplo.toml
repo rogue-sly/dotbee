@@ -1,4 +1,0 @@
-[[rule]]
-include = ["**/dotbee.toml"]
-[rule.schema]
-path = "https://gitlab.com/rogue87/dotbee/-/raw/main/schema/dotbee.json"
