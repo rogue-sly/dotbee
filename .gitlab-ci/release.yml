@@ -10,6 +10,10 @@ upload:
   script:
     - |
         for FILE in ${BINARY_NAME}-*.tar.gz; do
+          if [ ! -f "$FILE" ]; then
+            echo "No artifacts found matching ${BINARY_NAME}-*.tar.gz"
+            continue
+          fi
           echo "Uploading $FILE to Generic Package Registry..."
           curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
                --upload-file "$FILE" \
@@ -18,16 +22,16 @@ upload:
 
 release:
   stage: release
-  image: alpine:latest
+  image:
+    name: registry.gitlab.com/gitlab-org/release-cli:latest
+    entrypoint: [""]
   rules:
     - if: $CI_COMMIT_TAG
   needs:
     - job: build
     - job: upload
   before_script:
-    - apk add --no-cache curl jq
-    - curl -sL "https://release-cli-downloads.s3.amazonaws.com/latest/release-cli-linux-amd64" -o /usr/local/bin/release-cli
-    - chmod +x /usr/local/bin/release-cli
+    - apk add --no-cache jq
   script:
     - |
         echo "Generating asset links from local artifacts..."
