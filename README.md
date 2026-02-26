@@ -1,7 +1,8 @@
 # Dotbee
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.4.0-blue)](https://gitlab.com/rogue87/dotbee)
+![Gitlab License](https://img.shields.io/gitlab/license/rogue87%2Fdotbee?color=blue)
+![Gitlab Version](https://img.shields.io/gitlab/v/release/rogue87%2Fdotbee)
+![Crates.io Downloads (recent)](https://img.shields.io/crates/dr/dotbee)
 
 **Dotbee** is a simple, symlink-based dotfiles manager written in Rust. It focuses on doing one thing well: managing your configuration files without the complexity of shell scripts or bloated feature sets.
 
@@ -20,7 +21,7 @@
 
 For more details, see the [GitLab Wiki](https://gitlab.com/rogue87/dotbee/-/wikis).
 
-Check the [roadmap](https://gitlab.com/rogue87/dotbee/-/milestones) to see current progress of dotbee's development.
+Check the [Roadmap](https://gitlab.com/rogue87/dotbee/-/milestones) to see current progress of dotbee's development.
 
 ## Installation
 
