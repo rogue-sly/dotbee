@@ -10,7 +10,6 @@ categories = ["command-line-utilities"]
 license = "MIT"
 rust-version = "1.92.0"
 exclude = [
-  "example/*",
   ".gitlab-ci.yml",
   ".gitlab-ci/*",
   "mise.toml",

@@ -88,7 +88,6 @@ Key supporting files:
 - `Cargo.toml` — dependencies and package metadata
 - `schema/dotbee.json` — JSON schema for `dotbee.toml` (enables Taplo LSP completions)
 - `mise.toml` / `.mise-tasks/` — dev task runner
-- `example/` — sample dotfiles directory used by the containerised test environment
 
 ---
 
@@ -209,6 +208,6 @@ internally — callers do not manage persistence manually.
 
 - **Always test filesystem-mutating changes in the container** (`mise run try-dotbee`) to avoid
   accidentally symlinking or deleting files on the host.
-- The container mounts `example/` as the dotfiles directory and uses `hostname=laptop`.
+- The container uses `hostname=laptop`.
 - `StateManager` will overwrite `~/.local/state/dotbee/state.json` on the host whenever any
   setter is called during a non-containerised run.

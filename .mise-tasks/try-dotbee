@@ -22,17 +22,7 @@ echo
 cargo build --profile "${usage_profile?}" --target "${usage_target?}"
 
 echo "Building testing container image..."
-docker build \
-    --build-arg USER_ID="$(id -u)" \
-    --build-arg GROUP_ID="$(id -g)" \
-    -t dotbee-dev .
-
-TEMP_DOTFILES=$(mktemp -d)
-cp -r example/. "$TEMP_DOTFILES"
-chmod -R u+w "$TEMP_DOTFILES"
-
-# Ensure cleanup on exit
-trap 'rm -rf "$TEMP_DOTFILES"' EXIT
+docker build -t dotbee-dev .
 
 # Detect if we are using podman
 PODMAN_FLAGS=""
@@ -44,5 +34,4 @@ echo "Running testing container..."
 docker run --hostname="laptop" -it --rm \
     $PODMAN_FLAGS \
     -v "$(pwd)/target/${usage_target}/${BUILD_MODE}/dotbee:/usr/local/bin/dotbee:Z" \
-    -v "$TEMP_DOTFILES:/home/testuser/dotfiles:Z" \
     dotbee-dev
