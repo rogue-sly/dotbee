@@ -19,7 +19,7 @@ echo "TARGET : ${usage_target?}"
 echo "PROFILE: ${usage_profile?}"
 echo
 
-cargo build --profile "${usage_profile?}" --target "${usage_target?}"
+cross build --profile "${usage_profile?}" --target "${usage_target?}"
 
 echo "Building testing container image..."
 docker build -t dotbee-dev .

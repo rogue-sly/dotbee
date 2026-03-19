@@ -1,0 +1,39 @@
+# mise.toml for Dotbee
+[tools]
+rust = "1.92.0"
+
+[tasks."lint"]
+description = "Lint with clippy using cross"
+run = "cross clippy --target x86_64-unknown-linux-musl -- -D warnings"
+
+[tasks."check"]
+description = "Check with cross"
+run = "cross check --target x86_64-unknown-linux-musl --all"
+
+[tasks."test"]
+description = "Run tests with cross"
+run = "cross test --target x86_64-unknown-linux-musl --all"
+
+[tasks."build"]
+description = "Build release binary with cross"
+run = "cross build --release --target x86_64-unknown-linux-musl"
+
+[tasks."format:rust"]
+description = "Format Rust code (local)"
+run = "cargo fmt --all"
+
+[tasks."format:toml"]
+description = "Format TOML files (local)"
+run = "taplo format"
+
+[tasks."format"]
+description = "Format everything (local)"
+depends = ["format:rust", "format:toml"]
+
+[tasks."bump-version"]
+description = "Bump version"
+run = "./.mise-tasks/bump-version"
+
+[tasks."try-dotbee"]
+description = "Test in container"
+run = "./.mise-tasks/try-dotbee"
