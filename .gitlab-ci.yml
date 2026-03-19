@@ -1,13 +1,3 @@
-# This is the main entry point for the GitLab CI/CD pipeline.
-# It defines global configuration and includes modularized pipeline components.
-
-# Per GitLab CI documentation, `include` should be one of the first keys in the file.
-# This may also help local linters like `glab` correctly parse the configuration.
-include:
-  - local: ".gitlab-ci/validation.yml"
-  - local: ".gitlab-ci/build.yml"
-  - local: ".gitlab-ci/release.yml"
-
 stages:
   - lint
   - test
@@ -32,11 +22,9 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-# Templates defined here are available to all included files.
+# Templates
 .cargo_cache:
   cache:
-    # Each job gets its own cache. For the matrix job, the key will be like
-    # `build:x86_64-unknown-linux-musl`, which is correct as each target needs a separate cache.
     key: "${CI_JOB_NAME}"
     paths:
       - .cargo/bin/
@@ -44,3 +32,121 @@ workflow:
       - .cargo/registry/cache/
       - .cargo/git/db/
       - target/
+
+.cross_setup:
+  before_script:
+    - export PATH="$CARGO_HOME/bin:$PATH"
+    - apt-get update && apt-get install -y --no-install-recommends docker.io
+    - hash cross 2>/dev/null || cargo install cross
+
+lint:
+  stage: lint
+  image: rust:1.92.0
+  services:
+    - docker:20.10.12-dind
+  extends:
+    - .cargo_cache
+    - .cross_setup
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - rustup component add rustfmt
+    - cargo fmt --all -- --check
+    - cross clippy --target x86_64-unknown-linux-musl -- -D warnings
+
+test:
+  stage: test
+  image: rust:1.92.0
+  services:
+    - docker:20.10.12-dind
+  extends:
+    - .cargo_cache
+    - .cross_setup
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - cross test --target x86_64-unknown-linux-musl --all
+
+build:
+  stage: build
+  image: rust:1.92.0-bullseye
+  services:
+    - docker:20.10.12-dind
+  extends:
+    - .cargo_cache
+    - .cross_setup
+  needs:
+    - job: lint
+    - job: test
+  rules:
+    - if: $CI_COMMIT_TAG
+  parallel:
+    matrix:
+      - TARGET: x86_64-unknown-linux-musl
+        PLATFORM: linux-x64-musl
+      - TARGET: aarch64-unknown-linux-musl
+        PLATFORM: linux-arm64-musl
+      - TARGET: aarch64-linux-android
+        PLATFORM: android-arm64
+  script:
+    - cross build --release --target $TARGET
+    - PKG_NAME="${BINARY_NAME}-${CI_COMMIT_TAG}-${PLATFORM}"
+    - BIN_FILE="target/$TARGET/release/${BINARY_NAME}"
+    - tar -czf ${PKG_NAME}.tar.gz -C "$(dirname "${BIN_FILE}")" "${BINARY_NAME}"
+  artifacts:
+    paths:
+      - ${BINARY_NAME}-*.tar.gz
+
+upload:
+  stage: release
+  image: curlimages/curl:latest
+  rules:
+    - if: $CI_COMMIT_TAG
+  needs:
+    - job: build
+  script:
+    - |
+      for FILE in ${BINARY_NAME}-*.tar.gz; do
+        if [ ! -f "$FILE" ]; then
+          echo "No artifacts found matching ${BINARY_NAME}-*.tar.gz"
+          continue
+        fi
+        echo "Uploading $FILE to Generic Package Registry..."
+        curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+             --upload-file "$FILE" \
+             "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${BINARY_NAME}/${CI_COMMIT_TAG}/${FILE}"
+      done
+
+release:
+  stage: release
+  image:
+    name: registry.gitlab.com/gitlab-org/release-cli:latest
+    entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_TAG
+  needs:
+    - job: build
+    - job: upload
+  before_script:
+    - apk add --no-cache jq
+  script:
+    - |
+      echo "Generating asset links from local artifacts..."
+      ASSETS_FLAGS=""
+      for FILE in ${BINARY_NAME}-*.tar.gz; do
+          if [ -f "$FILE" ]; then
+              URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${BINARY_NAME}/${CI_COMMIT_TAG}/${FILE}"
+              LINK_JSON=$(jq -cn --arg name "$FILE" --arg url "$URL" '{name: $name, url: $url}')
+              ASSETS_FLAGS="${ASSETS_FLAGS} --assets-link ${LINK_JSON}"
+          fi
+      done
+
+      if [ -z "$ASSETS_FLAGS" ]; then
+        echo "No local artifacts found. Skipping release creation."
+        exit 0
+      fi
+
+      echo "Creating GitLab Release..."
+      release-cli create --name "Release $CI_COMMIT_TAG" --tag-name $CI_COMMIT_TAG \
+        --description "Release of version $CI_COMMIT_TAG." \
+        ${ASSETS_FLAGS}
