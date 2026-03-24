@@ -15,7 +15,7 @@ pub struct ManagedLink {
 struct State {
     active_profile: Option<String>,
     dotfiles_path: Option<PathBuf>,
-    managed_links: Vec<ManagedLink>,
+    links: Vec<ManagedLink>,
 }
 
 impl State {
@@ -78,13 +78,13 @@ impl StateManager {
     }
 
     pub fn get_managed_links(&self) -> &[ManagedLink] {
-        &self.state.managed_links
+        &self.state.links
     }
 
     pub fn add_managed_link(&mut self, source: String, target: String, is_dir: bool) -> Result<(), Box<dyn Error>> {
         let link = ManagedLink { source, target, is_dir };
-        if !self.state.managed_links.contains(&link) {
-            self.state.managed_links.push(link);
+        if !self.state.links.contains(&link) {
+            self.state.links.push(link);
         }
         self.state.save()?;
         Ok(())
@@ -94,9 +94,9 @@ impl StateManager {
     where
         F: Fn(&ManagedLink) -> bool,
     {
-        let before = self.state.managed_links.len();
-        self.state.managed_links.retain(|l| !predicate(l));
-        let removed = before - self.state.managed_links.len();
+        let before = self.state.links.len();
+        self.state.links.retain(|l| !predicate(l));
+        let removed = before - self.state.links.len();
         if removed > 0 {
             self.state.save()?;
         }
