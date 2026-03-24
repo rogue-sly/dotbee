@@ -15,13 +15,13 @@ pre-commit:
 
     # Linting/Code Checks
     clippy:
-      run: cross clippy --target x86_64-unknown-linux-musl -- -D warnings
+      run: cargo clippy --all -- -D warnings
 
     check:
-      run: cross check --target x86_64-unknown-linux-musl --all
+      run: cargo check --all
 
 pre-push:
   commands:
     # Ensure to pass all unit tests before making a push
     test:
-      run: cross test --target x86_64-unknown-linux-musl --all
+      run: cargo test --all
