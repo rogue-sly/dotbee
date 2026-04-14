@@ -4,17 +4,12 @@ version = "0.4.0"
 authors = ["Rogue87 <rogue87@tuta.io>"]
 description = "Dotfiles manager designed for ease of use"
 edition = "2024"
-repository = "https://gitlab.com/rogue87/dotbee"
+repository = "https://gitlab.com/rogue-sly/dotbee"
 keywords = ["dotbee", "dotfiles"]
 categories = ["command-line-utilities"]
 license = "MIT"
 rust-version = "1.92.0"
-exclude = [
-  ".gitlab-ci.yml",
-  ".gitlab-ci/*",
-  "mise.toml",
-  ".mise-tasks/*",
-]
+exclude = [".gitlab-ci.yml", ".gitlab-ci/*", "mise.toml", ".mise-tasks/*"]
 
 [dependencies]
 clap = { version = "4.5.41", features = ["derive"] }

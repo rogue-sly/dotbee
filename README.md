@@ -1,7 +1,7 @@
 # Dotbee
 
-![Gitlab License](https://img.shields.io/gitlab/license/rogue87%2Fdotbee?color=blue)
-![Gitlab Version](https://img.shields.io/gitlab/v/release/rogue87%2Fdotbee)
+![Gitlab License](https://img.shields.io/gitlab/license/rogue-sly%2Fdotbee?color=blue)
+![Gitlab Version](https://img.shields.io/gitlab/v/release/rogue-sly%2Fdotbee)
 ![Crates.io Downloads (recent)](https://img.shields.io/crates/dr/dotbee)
 
 **Dotbee** is a simple, symlink-based dotfiles manager written in Rust. It focuses on doing one thing well: managing your configuration files without the complexity of shell scripts or bloated feature sets.
@@ -19,7 +19,7 @@
 
 ## Documentation
 
-For more details, see the [GitLab Wiki](https://gitlab.com/rogue87/dotbee/-/wikis).
+For more details, see the [GitLab Wiki](https://gitlab.com/rogue-sly/dotbee/-/wikis).
 
 Check the [Roadmap](ROADMAP.md) to see current progress of dotbee's development.
 
@@ -28,7 +28,7 @@ Check the [Roadmap](ROADMAP.md) to see current progress of dotbee's development.
 ### Using [Mise](https://mise.jdx.dev/)
 
 ```bash
-mise use gitlab:rogue87/dotbee
+mise use gitlab:rogue-sly/dotbee
 ```
 
 ### From Source
@@ -42,7 +42,7 @@ mise use gitlab:rogue87/dotbee
 2. Directly From Repository:
 
    ```bash
-   cargo install --git https://gitlab.com/rogue87/dotbee
+   cargo install --git https://gitlab.com/rogue-sly/dotbee
    ```
 
 ## Quick Start

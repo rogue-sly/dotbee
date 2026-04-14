@@ -15,8 +15,9 @@ To work on Dotbee, you will need the following tools installed on your system:
 ### Setting up the Environment
 
 1. **Clone the repository:**
+
    ```bash
-   git clone https://gitlab.com/rogue87/dotbee.git
+   git clone https://gitlab.com/rogue-sly/dotbee.git
    cd dotbee
    ```
 
@@ -48,6 +49,7 @@ cargo run -- <command>
 I've provided `mise` tasks to simplify this process:
 
 1. **Build the development container:**
+
    ```bash
    mise run build-container
    ```
@@ -60,6 +62,7 @@ I've provided `mise` tasks to simplify this process:
    ```
 
    To test with a release build:
+
    ```bash
    mise run run-container --release
    ```
@@ -71,10 +74,13 @@ I've provided `mise` tasks to simplify this process:
 We adhere to standard Rust coding conventions.
 
 - **Formatting:** Ensure your code is formatted using `rustfmt`.
+
   ```bash
   cargo fmt
   ```
+
 - **Linting:** We use `clippy` to catch common mistakes.
+
   ```bash
   cargo clippy
   ```
@@ -116,14 +122,18 @@ git commit -m "feat: add support for custom icon sets"
 
 1. **Fork the repository** on GitLab.
 2. **Create a new branch** for your feature or bug fix.
+
    ```bash
    git checkout -b feature/amazing-feature
    ```
+
 3. **Commit your changes** following the guidelines above.
 4. **Push to your fork**:
+
    ```bash
    git push origin feature/amazing-feature
    ```
+
 5. **Open a Merge Request** (MR) against the `main` branch of the `dotbee` repository.
 
 ## Note on Using LLM/AI Assistants
