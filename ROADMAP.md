@@ -15,9 +15,7 @@ _Goal: Solidify the core specification and ensure reliability._
 - [x] **Base Directory Resolution:** Fix CWD-dependency by resolving relative paths from the config file's location.
 - [x] **Core Testing:** Implement a comprehensive test suite for symlink management (creation, purging, repair) and edge cases.
 - [ ] **Cross-Platform Support:** Verify and polish experience on macOS and Termux.
-- [ ] **Recursive Config Lookup:** Implement recursive upward search for `dotbee.toml`.
 - [ ] **Explicit Defaults:** Warn user when running without a configuration file.
-- [ ] **Structured Logging:** Decouple output from logic to support structured logging and verbosity levels.
 
 ## Phase 2: Safety & Reliability (Beta)
 
@@ -69,6 +67,7 @@ _Goal: Broaden support and optimize the user experience._
 - **System Profile:** A way to setup symlinks for system configuration files (/etc)
   - Should invoke sudo
   - To activate it, use --system with `dotbee switch` Possible commands to use this flag: \[switch, purge, repair\]
+
 - **Dotfiles Fetching:** Dotbee should be able to fetch a remote dotfiles repository
   - Using git
   - Using http (simply download it)
