@@ -8,7 +8,7 @@ First off, thank you for considering contributing to Dotbee! It's people like yo
 
 To work on Dotbee, you will need the following tools installed on your system:
 
-- **Rust**: Version 1.92.0 or later.
+- **Rust**: Version 1.95.0 or later.
 - **Mise**: Use [mise](https://mise.jdx.dev/) for managing development tasks and tools.
 - **Docker or Podman**: Highly recommended for running and testing Dotbee safely without affecting your host system's files.
 - **Cross**: [cross](https://github.com/cross-rs/cross) is needed in order to test dotbee in a container.

@@ -41,7 +41,7 @@ workflow:
 
 lint:
   stage: lint
-  image: rust:1.92.0
+  image: rust:1.95.0
   services:
     - docker:20.10.12-dind
   extends:
@@ -56,7 +56,7 @@ lint:
 
 test:
   stage: test
-  image: rust:1.92.0
+  image: rust:1.95.0
   services:
     - docker:20.10.12-dind
   extends:
@@ -69,7 +69,7 @@ test:
 
 build:
   stage: build
-  image: rust:1.92.0-bullseye
+  image: rust:1.95.0-bullseye
   services:
     - docker:20.10.12-dind
   extends:
