@@ -301,15 +301,10 @@ fn handle_conflict(
         ConflictAction::Skip => println!("  Skipped {}", destination.display()),
         ConflictAction::Abort => return Err("Operation aborted by user.".into()),
         ConflictAction::Overwrite => {
-            if destination.is_symlink() || destination.is_file() || destination.is_dir() {
-                #[cfg(not(target_os = "android"))]
-                trash::delete(destination)?;
-                #[cfg(target_os = "android")]
-                if destination.is_dir() {
-                    fs::remove_dir_all(destination).unwrap();
-                } else {
-                    fs::remove_file(destination).unwrap();
-                }
+            if destination.is_dir() {
+                fs::remove_dir_all(destination).unwrap();
+            } else {
+                fs::remove_file(destination).unwrap();
             }
             context.manager.symlink.create(source, destination)?;
             println!("  Overwrite: {} → {}", source.display(), destination.display());
@@ -319,16 +314,15 @@ fn handle_conflict(
             if let Some(parent) = adopt_target.parent() {
                 fs::create_dir_all(parent).unwrap();
             }
+
             if adopt_target.exists() {
-                #[cfg(not(target_os = "android"))]
-                trash::delete(&adopt_target).unwrap();
-                #[cfg(target_os = "android")]
                 if adopt_target.is_dir() {
                     fs::remove_dir_all(&adopt_target).unwrap();
                 } else {
                     fs::remove_file(&adopt_target).unwrap();
                 }
             }
+
             fs::rename(destination, &adopt_target).unwrap();
             context.manager.symlink.create(source, destination)?;
             println!("  Adopted: {} → {}", source.display(), destination.display());

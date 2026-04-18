@@ -22,7 +22,6 @@ _Goal: Solidify the core specification and ensure reliability._
 _Goal: Ensure users can trust Dotbee with their configuration files._
 
 - [ ] **Auto-Backup System:** Automatically back up existing files before they are replaced or modified by a `switch`.
-- [ ] **Android/Termux Safety:** Implement a custom Trash implementation (Freedesktop.org spec) for Android/Termux to avoid permanent deletion.
 - [x] **Transaction-Based Execution:** Separate planning from execution to enable reliable dry-runs and potential undo functionality.
 - [ ] **Unified Error Recovery:** Implement standard strategy for partial failures during multi-file operations.
 - [ ] **State Resilience:** Improve error reporting for corrupted state files instead of silent failure.
