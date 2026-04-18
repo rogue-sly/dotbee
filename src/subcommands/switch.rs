@@ -3,6 +3,7 @@ use crate::context::{
     manager::{config::ConflictAction, symlink::SymlinkStatus},
 };
 use colored::Colorize;
+use indexmap::IndexMap;
 use std::{
     error::Error,
     fs,
@@ -85,7 +86,7 @@ fn generate_plan(target_profile: &str, context: &Context) -> Result<Vec<Action>,
         .unwrap_or_else(|| std::env::current_dir().expect("Failed to get current directory"));
 
     // 1. Resolve all links that SHOULD exist in the target configuration
-    let mut desired_links: indexmap::IndexMap<String, String> = indexmap::IndexMap::new();
+    let mut desired_links: IndexMap<String, String> = indexmap::IndexMap::new();
 
     if let Some(global_links) = context.manager.config.get_global_links() {
         for (k, v) in global_links {
@@ -217,7 +218,7 @@ fn execute_dry(plan: &[Action], target_profile: &str, context: &Context) {
 
 fn execute(plan: Vec<Action>, target_profile: &str, context: &mut Context) -> Result<(), Box<dyn Error>> {
     let msg = &context.message;
-    let strategy = context.manager.config.get_settings().on_conflict.clone();
+    let strategy = &context.manager.config.get_settings().on_conflict;
 
     for action in plan {
         match action {
@@ -255,7 +256,7 @@ fn execute(plan: Vec<Action>, target_profile: &str, context: &mut Context) -> Re
                 target_path,
                 kind,
             } => {
-                let action = match &strategy {
+                let action = match strategy {
                     None => {
                         msg.error(&format!("Conflict: {} -> {} ({})", source_display, target_display, kind));
                         ConflictAction::prompt(&kind).unwrap()
@@ -263,7 +264,7 @@ fn execute(plan: Vec<Action>, target_profile: &str, context: &mut Context) -> Re
                     Some(a) => a.clone(),
                 };
 
-                handle_conflict(action.clone(), &source_path, &target_path, &source_display, context)?;
+                handle_conflict(&action, &source_path, &target_path, &source_display, context)?;
 
                 if action == ConflictAction::Overwrite || action == ConflictAction::Adopt {
                     let is_dir = source_path.is_dir();
@@ -283,7 +284,7 @@ fn execute(plan: Vec<Action>, target_profile: &str, context: &mut Context) -> Re
 }
 
 fn handle_conflict(
-    action: ConflictAction,
+    action: &ConflictAction,
     source: &Path,
     destination: &PathBuf,
     rel_source: &str,
