@@ -4,7 +4,7 @@
 ![Gitlab Version](https://img.shields.io/gitlab/v/release/rogue-sly%2Fdotbee)
 ![Crates.io Downloads (recent)](https://img.shields.io/crates/dr/dotbee)
 
-**Dotbee** is a simple, symlink-based dotfiles manager written in Rust. It focuses on doing one thing well: managing your configuration files without the complexity of shell scripts or bloated feature sets.
+**Dotbee** is a simple, symlink-based dotfiles manager. It focuses on doing one thing well: managing your configuration files without the complexity of shell scripts or bloated feature sets.
 
 > [!WARNING]
 > Dotbee is in **Alpha**. While functional, it is recommended to back up your dotfiles before use. For testing, use the provided containerized environment.
