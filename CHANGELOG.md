@@ -3,6 +3,7 @@
 ### 🐛 Bug Fixes
 
 - Use inline tables instead of multiline ones
+- Strip ensure to strip ./ prefix for all sources
 
 ### 📚 Documentation
 
