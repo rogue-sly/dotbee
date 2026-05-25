@@ -3,6 +3,8 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Update roadmap
+- Add metadata for cargo-binstall
+- Remove deprecated authors field
 ## [0.6.1] - 2026-05-15
 
 ### 🐛 Bug Fixes

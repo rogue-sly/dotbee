@@ -1,14 +1,13 @@
 [package]
 name = "dotbee"
 version = "0.6.1"
-authors = ["Rogue.Sly <rogue87@tuta.io>"]
-description = "Dotfiles manager designed for ease of use"
 edition = "2024"
+rust-version = "1.95.0"
+description = "Dotfiles manager designed for ease of use"
 repository = "https://gitlab.com/rogue-sly/dotbee"
+license = "MIT"
 keywords = ["dotbee", "dotfiles"]
 categories = ["command-line-utilities"]
-license = "MIT"
-rust-version = "1.95.0"
 exclude = [".gitlab-ci.yml", ".gitlab-ci/*", ".mise-tasks/*", "mise.toml"]
 
 [package.metadata]
