@@ -1,3 +1,12 @@
+## [unreleased]
+
+### 🐛 Bug Fixes
+
+- Set bin-dir properly
+
+### 🚜 Refactor
+
+- Why do I always forget to remove this shit
 ## [0.6.2] - 2026-05-25
 
 ### 🐛 Bug Fixes
