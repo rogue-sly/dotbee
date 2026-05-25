@@ -1,8 +1,12 @@
-## [unreleased]
+## [0.6.1] - 2026-05-15
 
 ### 🐛 Bug Fixes
 
 - Ensure duplicate check only occurs between the global profile and any other profile
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version
 ## [0.6.0] - 2026-05-15
 
 ### 🚀 Features

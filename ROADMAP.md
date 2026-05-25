@@ -21,22 +21,18 @@ _Goal: Ensure users can trust Dotbee with their configuration files._
 
 - [x] `Transaction-Based Execution:` Separate planning from execution to enable reliable dry-runs and potential undo functionality.
 - [x] `State Consistency:` Ensure `repair` synchronizes `state.json` with the current configuration.
-- [ ] `Robust File Operations:` Handle cross-filesystem moves in `Adopt` strategy and remove unsafe `.unwrap()` calls.
 - [ ] `Cross-Platform Support:` Verify and polish experience on macOS and Termux.
-- [ ] `Runtime Schema Validation:` Enforce `dotbee.toml` schema validation at runtime during config load.
+- [x] `Runtime Schema Validation:` Enforce `dotbee.toml` schema validation at runtime during config load.
 
 ## Phase 3: Portability & Polish (`v1.0`)
 
 _Goal: Broaden support and optimize the user experience._
 
-- [ ] `CI Integration:` Fully utilize GitLab CI for automated linting, testing, and multi-platform builds.
-- [ ] `CI Pipeline Modernization:` Add dedicated test stages and better artifact management.
 - [ ] `Broader Platform Support:` Support even more platforms and provide packages for popular Linux distros (Debian, Fedora, ArchLinux, Nix/OS).
 - [ ] `Stable Release:` Tag and release `v1.0.0`.
 
 ## Optional
 
-- [ ] `Graceful Signal Handling:` Handle SIGINT (Ctrl+C) to safely finish or rollback operations.
 - [ ] `Performance Optimization:` Implement bulk state updates to improve efficiency for large configurations.
 - [ ] `Refinement:` Polish CLI output (icons, colors, and progress indicators).
 - [ ] `State Resilience:` Improve error reporting for corrupted state files instead of silent failure.
