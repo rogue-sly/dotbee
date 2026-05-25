@@ -229,31 +229,22 @@ impl ConfigManager {
 
     fn normalize(&mut self) {
         if let Some(global) = &mut self.config.global {
-            dbg!("before global");
-            dbg!("{}", &global);
             for source in global.links.values_mut() {
                 let trimmed = source.trim_start_matches("./");
                 if trimmed.len() < source.len() {
                     *source = trimmed.to_string();
                 }
             }
-            dbg!();
-            dbg!("after global");
-            dbg!("{}", &global);
         }
 
         if let Some(profiles) = &mut self.config.profiles {
             for profile in profiles.values_mut() {
-                dbg!("before profile: {}", &profile);
-
                 for source in profile.links.values_mut() {
                     let trimmed = source.trim_start_matches("./");
                     if trimmed.len() < source.len() {
                         *source = trimmed.to_string();
                     }
                 }
-                dbg!();
-                dbg!("after profile: {}", &profile);
             }
         }
     }
