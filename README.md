@@ -44,18 +44,18 @@ cargo binstall dotbee
 
    ```sh
    # fetch the package first
-   wget https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.1/downloads/dotbee-v0.6.1-amd64.deb
+   wget https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.2/downloads/dotbee-v0.6.2-amd64.deb
    # then install it
-   sudo apt install ./dotbee-v0.6.1-amd64.deb
+   sudo apt install ./dotbee-v0.6.2-amd64.deb
    ```
 
    - aarch64/arm64
 
    ```sh
    # fetch the package first
-   wget https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.1/downloads/dotbee-v0.6.1-arm64.deb
+   wget https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.2/downloads/dotbee-v0.6.2-arm64.deb
    # then install it
-   sudo apt install ./dotbee-v0.6.1-arm64.deb
+   sudo apt install ./dotbee-v0.6.2-arm64.deb
    ```
 
 2. dnf/yum
@@ -63,13 +63,13 @@ cargo binstall dotbee
    - x86_64/amd64
    
    ```sh
-   sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.1/downloads/dotbee-v0.6.1-x86_64.rpm
+   sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.2/downloads/dotbee-v0.6.2-x86_64.rpm
    ```
    
    - aarch64/arm64
    
    ```sh
-   sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.1/downloads/dotbee-v0.6.1-aarch64.rpm
+   sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.2/downloads/dotbee-v0.6.2-aarch64.rpm
    ```
 
 ### From Source

@@ -1,4 +1,4 @@
-## [unreleased]
+## [0.6.2] - 2026-05-25
 
 ### 🐛 Bug Fixes
 
@@ -15,6 +15,8 @@
 - Add metadata for cargo-binstall
 - Remove deprecated authors field
 - Add overrides to binstall
+- Update bump-version script
+- Bump dotbee version
 ## [0.6.1] - 2026-05-15
 
 ### 🐛 Bug Fixes
