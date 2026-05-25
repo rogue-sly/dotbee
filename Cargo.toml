@@ -10,34 +10,33 @@ keywords = ["dotbee", "dotfiles"]
 categories = ["command-line-utilities"]
 exclude = [".gitlab-ci.yml", ".gitlab-ci/*", ".mise-tasks/*", "mise.toml"]
 
-[package.metadata]
-binstall = {
-  pkg-url = "{ repo }/-/releases/v{ version }/downloads/{ name }-v{ version }-{ target }-musl.tar.gz",
-  bin-dir = ".",
-  pkg-fmt = "tgz",
+[package.metadata.binstall]
+pkg-url = "{ repo }/-/releases/v{ version }/downloads/{ name }-v{ version }-{ target }-musl.tar.gz"
+bin-dir = "."
+pkg-fmt = "tgz"
 
-  overrides = {
-    x86_64-unknown-linux-musl.pkg-url = "{ repo }/-/releases/v{ version }/downloads/{ name }-v{ version }-linux-x64-musl.tar.gz",
-    aarch64-unknown-linux-musl.pkg-url = "{ repo }/-/releases/v{ version }/downloads/{ name }-v{ version }-linux-arm64-musl.tar.gz",
-  }
+[package.metadata.binstall.overrides]
+x86_64-unknown-linux-musl = {
+  pkg-url = "{ repo }/-/releases/v{ version }/downloads/{ name }-v{ version }-linux-x64-musl.tar.gz"
+}
+aarch64-unknown-linux-musl = {
+  pkg-url = "{ repo }/-/releases/v{ version }/downloads/{ name }-v{ version }-linux-arm64-musl.tar.gz"
 }
 
-deb = {
-  maintainer = "Rogue.Sly <rogue87@tuta.io>",
-  copyright = "2026, Rogue.Sly <rogue87@tuta.io>",
-  license-file = ["LICENSE", "4"],
-  assets = [["target/release/dotbee", "usr/bin/", "755"]]
-}
+[package.metadata.deb]
+maintainer = "Rogue.Sly <rogue87@tuta.io>"
+copyright = "2026, Rogue.Sly <rogue87@tuta.io>"
+license-file = ["LICENSE", "4"]
+assets = [["target/release/dotbee", "usr/bin/", "755"]]
 
-generate-rpm = {
-  assets = [
-    {
-      source = "target/release/dotbee",
-      dest = "/usr/bin/dotbee",
-      mode = "755"
-    }
-  ]
-}
+[package.metadata.generate-rpm]
+assets = [
+  {
+    source = "target/release/dotbee",
+    dest = "/usr/bin/dotbee",
+    mode = "755"
+  },
+]
 
 [dependencies]
 anyhow = "1.0"

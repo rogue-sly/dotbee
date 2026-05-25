@@ -1,5 +1,13 @@
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- Use inline tables instead of multiline ones
+
+### 📚 Documentation
+
+- Update install instructions
+
 ### ⚙️ Miscellaneous Tasks
 
 - Update roadmap
