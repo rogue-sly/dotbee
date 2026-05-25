@@ -40,37 +40,38 @@ cargo binstall dotbee
 ### Using your package manager
 
 1. apt
-   - x86_64/amd64
 
-   ```sh
-   # fetch the package first
-   wget https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.2/downloads/dotbee-v0.6.2-amd64.deb
-   # then install it
-   sudo apt install ./dotbee-v0.6.2-amd64.deb
-   ```
+- x86_64/amd64
 
-   - aarch64/arm64
+```sh
+# fetch the package first
+wget https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.2/downloads/dotbee-v0.6.2-amd64.deb
+# then install it
+sudo apt install ./dotbee-v0.6.2-amd64.deb
+```
 
-   ```sh
-   # fetch the package first
-   wget https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.2/downloads/dotbee-v0.6.2-arm64.deb
-   # then install it
-   sudo apt install ./dotbee-v0.6.2-arm64.deb
-   ```
+- aarch64/arm64
+
+```sh
+# fetch the package first
+wget https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.2/downloads/dotbee-v0.6.2-arm64.deb
+# then install it
+sudo apt install ./dotbee-v0.6.2-arm64.deb
+```
 
 2. dnf/yum
 
-   - x86_64/amd64
-   
-   ```sh
-   sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.2/downloads/dotbee-v0.6.2-x86_64.rpm
-   ```
-   
-   - aarch64/arm64
-   
-   ```sh
-   sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.2/downloads/dotbee-v0.6.2-aarch64.rpm
-   ```
+- x86_64/amd64
+
+```sh
+sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.2/downloads/dotbee-v0.6.2-x86_64.rpm
+```
+
+- aarch64/arm64
+
+```sh
+sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.2/downloads/dotbee-v0.6.2-aarch64.rpm
+```
 
 ### From Source
 
@@ -90,46 +91,47 @@ cargo install --git https://gitlab.com/rogue-sly/dotbee
 
 1. **Initialize:**
 
-   ```sh
-   dotbee init
-   ```
+```sh
+dotbee init
+```
 
-   This creates a default `dotbee.toml` in your current directory.
+This creates a default `dotbee.toml` in your current directory.
 
 2. **Configure:**
-   Edit `dotbee.toml` to define your links.
 
-   ```toml
-   [global.links]
-   "~/.gitconfig" = "git/gitconfig"
+Edit `dotbee.toml` to define your links.
 
-   [profiles.desktop.links]
-   "~/.config/i3/config" = "i3/config"
-   ```
+```toml
+[global.links]
+"~/.gitconfig" = "git/gitconfig"
+
+[profiles.desktop.links]
+"~/.config/i3/config" = "i3/config"
+```
 
 3. **List Available Profiles:**
 
-   ```sh
-   dotbee list
-   ```
+```sh
+dotbee list
+```
 
 4. **Switch Profile:**
 
-   ```sh
-   dotbee switch desktop
-   ```
+```sh
+dotbee switch desktop
+```
 
 5. **Check Status:**
 
-   ```sh
-   dotbee doctor
-   ```
+```sh
+dotbee doctor
+```
 
 6. **Remove All Symlinks:**
 
-   ```sh
-   dotbee purge
-   ```
+```sh
+dotbee purge
+```
 
 ## Shell Completions
 
