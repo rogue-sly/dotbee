@@ -27,29 +27,70 @@ Check the [Roadmap](ROADMAP.md) to see current progress of dotbee's development.
 
 ### Using [Mise](https://mise.jdx.dev/)
 
-```bash
+```sh
 mise use gitlab:rogue-sly/dotbee
 ```
+
+### Using [cargo-binstall](https://github.com/cargo-bins/cargo-binstall)
+
+```sh
+cargo binstall dotbee
+```
+
+### Using your package manager
+
+1. apt
+   - x86_64/amd64
+
+   ```sh
+   # fetch the package first
+   wget https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.1/downloads/dotbee-v0.6.1-amd64.deb
+   # then install it
+   sudo apt install ./dotbee-v0.6.1-amd64.deb
+   ```
+
+   - aarch64/arm64
+
+   ```sh
+   # fetch the package first
+   wget https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.1/downloads/dotbee-v0.6.1-arm64.deb
+   # then install it
+   sudo apt install ./dotbee-v0.6.1-arm64.deb
+   ```
+
+2. dnf/yum
+
+   - x86_64/amd64
+   
+   ```sh
+   sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.1/downloads/dotbee-v0.6.1-x86_64.rpm
+   ```
+   
+   - aarch64/arm64
+   
+   ```sh
+   sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.1/downloads/dotbee-v0.6.1-aarch64.rpm
+   ```
 
 ### From Source
 
 1. From [crates.io](https://crates.io/crates/dotbee):
 
-   ```bash
-   cargo install dotbee
-   ```
+```sh
+cargo install dotbee
+```
 
 2. Directly From Repository:
 
-   ```bash
-   cargo install --git https://gitlab.com/rogue-sly/dotbee
-   ```
+```sh
+cargo install --git https://gitlab.com/rogue-sly/dotbee
+```
 
 ## Quick Start
 
 1. **Initialize:**
 
-   ```bash
+   ```sh
    dotbee init
    ```
 
@@ -68,25 +109,25 @@ mise use gitlab:rogue-sly/dotbee
 
 3. **List Available Profiles:**
 
-   ```bash
+   ```sh
    dotbee list
    ```
 
 4. **Switch Profile:**
 
-   ```bash
+   ```sh
    dotbee switch desktop
    ```
 
 5. **Check Status:**
 
-   ```bash
+   ```sh
    dotbee doctor
    ```
 
 6. **Remove All Symlinks:**
 
-   ```bash
+   ```sh
    dotbee purge
    ```
 
@@ -94,7 +135,7 @@ mise use gitlab:rogue-sly/dotbee
 
 Dotbee can generate completion scripts for your shell.
 
-```bash
+```sh
 dotbee completion <SHELL>
 ```
 
@@ -125,10 +166,10 @@ dotbee completion fish | source
 source <(dotbee completion bash)
 
 # Zsh
-source <(dotbee completion zsh)
+source <(dotbee completion zsh) # make sure to have `autoload -Uz compinit && compinit` in your .zshrc!
 
 # Elvish
-eval (dotbee completion elvish | slurp)
+eval (dotbee completion elvish | slurp) # slurp lol
 ```
 
 ## Configuration
@@ -149,7 +190,7 @@ on_conflict = "ask"
 
 To avoid accidental data loss on your host system during development, use the provided `mise` tasks to run Dotbee in a container:
 
-```bash
+```sh
 mise run try-dotbee --profile dev
 ```
 

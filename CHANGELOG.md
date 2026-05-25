@@ -5,6 +5,7 @@
 - Update roadmap
 - Add metadata for cargo-binstall
 - Remove deprecated authors field
+- Add overrides to binstall
 ## [0.6.1] - 2026-05-15
 
 ### 🐛 Bug Fixes
