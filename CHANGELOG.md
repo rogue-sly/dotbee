@@ -1,3 +1,8 @@
+## [unreleased]
+
+### ⚙️ Miscellaneous Tasks
+
+- Update roadmap
 ## [0.6.1] - 2026-05-15
 
 ### 🐛 Bug Fixes
