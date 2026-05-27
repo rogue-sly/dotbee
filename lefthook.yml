@@ -2,9 +2,11 @@
 # Reference: https://lefthook.dev/configuration/
 
 pre-commit:
-  parallel: true
+  parallel: false
   commands:
-    # Formatting
+    changelog:
+      run: "git-cliff -o CHANGELOG.md && git add CHANGELOG.md"
+
     rustfmt:
       glob: "*.rs"
       run: cargo fmt --all
@@ -13,11 +15,6 @@ pre-commit:
       glob: "*.toml"
       run: tombi format {staged_files}
 
-    # Changelogs
-    changelog:
-      run: "git-cliff -o CHANGELOG.md && git add CHANGELOG.md"
-
-    # Linting/Code Checks
     clippy:
       run: cargo clippy --all -- -D warnings
 
