@@ -13,7 +13,6 @@ _Goal: Solidify the core specification and ensure reliability._
 - [x] `Wiki:` Write a wiki that explains everything about dotbee.
 - [x] `Usage Examples:` Write usage examples and troubleshooting tips.
 - [x] `Base Directory Resolution:` Fix CWD-dependency by resolving relative paths from the config file's location.
-- [ ] `Core Testing:` Implement a comprehensive test suite for symlink management (creation, purging, repair) and edge cases.
 
 ## Phase 2: Safety & Reliability (Beta)
 

@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### 📚 Documentation
+
+- Update roadmap
+
 ### 🧪 Testing
 
 - Write some basic unit tests for config loading
