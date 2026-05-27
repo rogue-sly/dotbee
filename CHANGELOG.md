@@ -1,5 +1,10 @@
 ## [unreleased]
 
+### 🧪 Testing
+
+- Write some basic unit tests for config loading
+## [0.6.3] - 2026-05-25
+
 ### 🐛 Bug Fixes
 
 - Set bin-dir properly
@@ -7,6 +12,10 @@
 ### 🚜 Refactor
 
 - Why do I always forget to remove this shit
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version
 ## [0.6.2] - 2026-05-25
 
 ### 🐛 Bug Fixes
