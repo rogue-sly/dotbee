@@ -1,6 +1,10 @@
 # Changelog
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- Use data directory on other platforms for state file
+
 ### 📚 Documentation
 
 - Update roadmap

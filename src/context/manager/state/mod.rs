@@ -19,8 +19,15 @@ struct State {
 
 impl State {
     fn get_path() -> PathBuf {
-        let mut path =
-            dirs::state_dir().unwrap_or_else(|| dirs::home_dir().expect("Could not determine home directory").join(".local/state"));
+        let mut path = cfg_select! {
+            any(target_os = "linux") => {
+                dirs::state_dir().expect("Couldn't determine state directory")
+            }
+            _ => {
+                dirs::data_dir().expect("Couldn't determine data directory")
+            }
+        };
+
         path.push("dotbee");
         path.push("state.json");
         path
