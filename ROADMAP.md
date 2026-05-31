@@ -20,7 +20,7 @@ _Goal: Ensure users can trust Dotbee with their configuration files._
 
 - [x] `Transaction-Based Execution:` Separate planning from execution to enable reliable dry-runs and potential undo functionality.
 - [x] `State Consistency:` Ensure `repair` synchronizes `state.json` with the current configuration.
-- [ ] `Cross-Platform Support:` Verify and polish experience on macOS and Termux.
+- [ ] `Cross-Platform Support:` Verify and polish experience on ~~macOS~~ and Termux.
 - [x] `Runtime Schema Validation:` Enforce `dotbee.toml` schema validation at runtime during config load.
 
 ## Phase 3: Portability & Polish (`v1.0`)
@@ -53,10 +53,12 @@ _Goal: Broaden support and optimize the user experience._
 ## Future Explorations
 
 - `System Profile:` A way to setup symlinks for system configuration files (/etc)
+
   - Should invoke sudo
-  - To activate it, use --system with `dotbee switch` Possible commands to use this flag: \[switch, purge, repair\]
+  - To activate it, use --system with `dotbee switch` Possible commands to use this flag: [switch, purge, repair]
 
 - `Dotfiles Fetching:` Dotbee should be able to fetch a remote dotfiles repository
+
   - Using git
   - Using http (simply download it)
   - perhaps some other methods
