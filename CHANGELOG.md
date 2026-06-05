@@ -25,6 +25,7 @@
 - Scratch macOS
 - Git rid of cross
 - Add .nvim.lua script
+- Remove the damn clippy checks for rust-analyzer and githook
 ## [0.6.3] - 2026-05-25
 
 ### 🐛 Bug Fixes
