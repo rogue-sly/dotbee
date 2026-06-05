@@ -8,9 +8,10 @@ pub enum SymlinkStatus {
     NonExistent,
 }
 
-pub struct SymlinkManager;
+#[derive(Default)]
+pub struct Symlink;
 
-impl SymlinkManager {
+impl Symlink {
     pub fn new() -> Self {
         Self
     }
@@ -61,11 +62,5 @@ impl SymlinkManager {
 
         std::os::unix::fs::symlink(source, destination)?;
         Ok(())
-    }
-}
-
-impl Default for SymlinkManager {
-    fn default() -> Self {
-        Self::new()
     }
 }

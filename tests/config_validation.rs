@@ -2,7 +2,7 @@ use std::fs;
 
 use tempfile::TempDir;
 
-use dotbee::context::config::ConfigManager;
+use dotbee::context::config::Config;
 
 /// create a fake dir
 fn setup(toml: &str, sources: &[&str]) -> (TempDir, String) {
@@ -22,7 +22,7 @@ fn setup(toml: &str, sources: &[&str]) -> (TempDir, String) {
 /// expecting an error to occur, if not then return error string :p
 fn error_msg(toml: &str, sources: &[&str]) -> String {
     let (_dir, path) = setup(toml, sources);
-    match ConfigManager::load(Some(path)) {
+    match Config::load(Some(path)) {
         Ok(_) => panic!("expected error, got Ok"),
         Err(e) => e.to_string(),
     }
@@ -120,12 +120,12 @@ fn valid_global_links() {
         "#,
         &["a"],
     );
-    let manager = ConfigManager::load(Some(path)).unwrap();
-    let links = manager.get_global_links().unwrap();
+    let config = Config::load(Some(path)).unwrap();
+    let links = config.get_global_links().unwrap();
     assert_eq!(links.get("~/.config/a"), Some(&"a".to_string()));
     assert_eq!(links.len(), 1);
-    assert!(!manager.has_profiles());
-    assert!(manager.get_config_path().is_some());
+    assert!(!config.has_profiles());
+    assert!(config.get_config_path().is_some());
 }
 
 #[test]
@@ -136,11 +136,11 @@ fn valid_profile_links() {
         "#,
         &["b"],
     );
-    let manager = ConfigManager::load(Some(path)).unwrap();
-    let profile = manager.get_profile("p").unwrap();
+    let config = Config::load(Some(path)).unwrap();
+    let profile = config.get_profile("p").unwrap();
     assert_eq!(profile.links.get("~/.config/b"), Some(&"b".to_string()));
-    assert_eq!(manager.list_profiles(), vec!["p"]);
-    assert!(manager.has_profiles());
+    assert_eq!(config.list_profiles(), vec!["p"]);
+    assert!(config.has_profiles());
 }
 
 #[test]
@@ -154,30 +154,30 @@ fn global_and_profile() {
         "#,
         &["a", "b"],
     );
-    let manager = ConfigManager::load(Some(path)).unwrap();
-    let global = manager.get_global_links().unwrap();
+    let config = Config::load(Some(path)).unwrap();
+    let global = config.get_global_links().unwrap();
     assert_eq!(global.get("~/.config/a"), Some(&"a".to_string()));
-    let profile = manager.get_profile("p").unwrap();
+    let profile = config.get_profile("p").unwrap();
     assert_eq!(profile.links.get("~/.config/b"), Some(&"b".to_string()));
-    assert_eq!(manager.list_profiles(), vec!["p"]);
+    assert_eq!(config.list_profiles(), vec!["p"]);
 }
 
 #[test]
 fn no_config_file() {
     let dir = TempDir::new().unwrap();
     let path = dir.path().join("nonexistent.toml");
-    let manager = ConfigManager::load(Some(path.to_string_lossy().to_string())).unwrap();
-    assert!(manager.get_config_path().is_none());
-    assert!(!manager.has_profiles());
+    let config = Config::load(Some(path.to_string_lossy().to_string())).unwrap();
+    assert!(config.get_config_path().is_none());
+    assert!(!config.has_profiles());
 }
 
 #[test]
 fn empty_config() {
     let (_dir, path) = setup("[settings]", &[]);
-    let manager = ConfigManager::load(Some(path)).unwrap();
-    assert!(!manager.has_profiles());
-    assert!(manager.get_global_links().is_none());
-    let settings = manager.get_settings();
+    let config = Config::load(Some(path)).unwrap();
+    assert!(!config.has_profiles());
+    assert!(config.get_global_links().is_none());
+    let settings = config.get_settings();
     assert_eq!(settings.auto_detect_profile, Some(false));
     assert!(settings.on_conflict.is_none());
 }
@@ -193,9 +193,9 @@ fn normalization() {
         "#,
         &["./a", "./b"],
     );
-    let manager = ConfigManager::load(Some(path)).unwrap();
-    let global = manager.get_global_links().unwrap();
-    let profile = manager.get_profile("p").unwrap();
+    let config = Config::load(Some(path)).unwrap();
+    let global = config.get_global_links().unwrap();
+    let profile = config.get_profile("p").unwrap();
     assert_eq!(
         global.get("~/.config/a"),
         Some(&"a".to_string()),

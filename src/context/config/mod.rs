@@ -9,14 +9,6 @@ use std::path::{Path, PathBuf};
 
 use crate::utils::message;
 
-#[derive(Debug, Deserialize, Default, Clone)]
-#[serde(default, deny_unknown_fields)]
-struct Config {
-    settings: Settings,
-    global: Option<Global>,
-    profiles: Option<IndexMap<String, Profile>>,
-}
-
 #[derive(Debug, Deserialize, Clone)]
 #[serde(default, deny_unknown_fields)]
 pub struct Settings {
@@ -46,12 +38,18 @@ pub struct Profile {
     pub links: IndexMap<String, String>,
 }
 
-pub struct ConfigManager {
-    config: Config,
+#[derive(Debug, Deserialize, Default, Clone)]
+#[serde(default, deny_unknown_fields)]
+pub struct Config {
+    settings: Settings,
+    global: Option<Global>,
+    profiles: Option<IndexMap<String, Profile>>,
+
+    #[serde(skip)]
     config_path: Option<PathBuf>,
 }
 
-impl ConfigManager {
+impl Config {
     pub fn load(path: Option<String>) -> anyhow::Result<Self, anyhow::Error> {
         let path_str = path.unwrap_or_else(|| "dotbee.toml".to_string());
         let config_path = Path::new(&path_str);
@@ -60,18 +58,25 @@ impl ConfigManager {
             Ok(c) => c,
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
                 return Ok(Self {
-                    config: Config::default(),
+                    settings: Settings::default(),
+                    global: None,
+                    profiles: None,
                     config_path: None,
                 });
             }
             Err(e) => return Err(e.into()),
         };
-        let config: Config = toml::from_str(&content)?;
+        let parsed: Config = toml::from_str(&content)?;
         let config_path = Some(fs::canonicalize(config_path)?);
 
-        let mut manager = Self { config, config_path };
-        manager.normalize();
-        manager.validate().map_err(|errors| {
+        let mut config = Self {
+            settings: parsed.settings,
+            global: parsed.global,
+            profiles: parsed.profiles,
+            config_path,
+        };
+        config.normalize();
+        config.validate().map_err(|errors| {
             anyhow!(
                 "dotbee.toml configuration error: {} error(s) found\n{}",
                 errors.len(),
@@ -84,36 +89,31 @@ impl ConfigManager {
             )
         })?;
 
-        Ok(manager)
+        Ok(config)
     }
 
     pub fn get_profile(&self, name: &str) -> anyhow::Result<&Profile, anyhow::Error> {
-        let profiles = self
-            .config
-            .profiles
-            .as_ref()
-            .ok_or(anyhow!("No profiles defined in configuration."))?;
+        let profiles = self.profiles.as_ref().ok_or(anyhow!("No profiles defined in configuration."))?;
         profiles.get(name).ok_or(anyhow!("Profile '{}' not found in configuration.", name))
     }
 
     pub fn list_profiles(&self) -> Vec<&str> {
-        self.config
-            .profiles
+        self.profiles
             .as_ref()
             .map(|p| p.keys().map(|k| k.as_str()).collect())
             .unwrap_or_default()
     }
 
     pub fn has_profiles(&self) -> bool {
-        self.config.profiles.as_ref().map(|p| !p.is_empty()).unwrap_or(false)
+        self.profiles.as_ref().map(|p| !p.is_empty()).unwrap_or(false)
     }
 
     pub fn get_global_links(&self) -> Option<&IndexMap<String, String>> {
-        self.config.global.as_ref().map(|g| &g.links)
+        self.global.as_ref().map(|g| &g.links)
     }
 
     pub fn get_settings(&self) -> &Settings {
-        &self.config.settings
+        &self.settings
     }
 
     pub fn get_config_path(&self) -> Option<&Path> {
@@ -135,19 +135,19 @@ impl ConfigManager {
         let mut errors: Vec<String> = vec![];
 
         {
-            let has_profiles = self.config.profiles.as_ref().is_some_and(|p| !p.is_empty());
+            let has_profiles = self.profiles.as_ref().is_some_and(|p| !p.is_empty());
             // check if profiles are empty
             if !has_profiles {
                 message::warning("No profiles defined in configuration.");
             }
             // check for auto_detect_profile with no profiles
-            if self.config.settings.auto_detect_profile == Some(true) && !has_profiles {
+            if self.settings.auto_detect_profile == Some(true) && !has_profiles {
                 message::warning("auto_detect_profile is enabled but no profiles are defined.");
             }
         }
 
         // check for empty global links
-        if self.config.global.as_ref().is_some_and(|g| g.links.is_empty()) {
+        if self.global.as_ref().is_some_and(|g| g.links.is_empty()) {
             message::info("Global links section is empty. Consider adding shared links here.");
         }
 
@@ -155,11 +155,11 @@ impl ConfigManager {
         let link_sources: Vec<(&str, &IndexMap<String, String>)> = {
             let mut sources: Vec<(&str, &IndexMap<String, String>)> = Vec::new();
 
-            if let Some(g) = &self.config.global {
+            if let Some(g) = &self.global {
                 sources.push(("global", &g.links));
             }
 
-            if let Some(profiles) = &self.config.profiles {
+            if let Some(profiles) = &self.profiles {
                 for (name, profile) in profiles {
                     // check for empty profile names
                     if name.is_empty() {
@@ -230,7 +230,7 @@ impl ConfigManager {
     }
 
     fn normalize(&mut self) {
-        if let Some(global) = &mut self.config.global {
+        if let Some(global) = &mut self.global {
             for source in global.links.values_mut() {
                 let trimmed = source.trim_start_matches("./");
                 if trimmed.len() < source.len() {
@@ -239,7 +239,7 @@ impl ConfigManager {
             }
         }
 
-        if let Some(profiles) = &mut self.config.profiles {
+        if let Some(profiles) = &mut self.profiles {
             for profile in profiles.values_mut() {
                 for source in profile.links.values_mut() {
                     let trimmed = source.trim_start_matches("./");

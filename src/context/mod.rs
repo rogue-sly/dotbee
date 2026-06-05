@@ -2,17 +2,17 @@ pub mod config;
 pub mod state;
 pub mod symlink;
 
-use crate::context::{config::ConfigManager, state::StateManager, symlink::SymlinkManager};
+use crate::context::{config::Config, state::State, symlink::Symlink};
 pub struct Context {
-    pub symlink: SymlinkManager,
-    pub state: StateManager,
-    pub config: ConfigManager,
+    pub symlink: Symlink,
+    pub state: State,
+    pub config: Config,
     pub dry_run: bool,
 }
 
 impl Context {
     pub fn new(path_to_config: Option<String>, dry_run: bool) -> anyhow::Result<Self, anyhow::Error> {
-        let mut state = StateManager::load()?;
+        let mut state = State::load()?;
 
         // determine effective config path from explicit arg or stored dotfiles path
         let effective_config_path = match path_to_config.as_ref() {
@@ -22,7 +22,7 @@ impl Context {
                 .map(|p| p.join("dotbee.toml").to_string_lossy().to_string()),
         };
 
-        let config = ConfigManager::load(effective_config_path)?;
+        let config = Config::load(effective_config_path)?;
 
         // sync dotfiles path between config and state
         if let Some(new_dotfiles_path) = config
@@ -37,7 +37,7 @@ impl Context {
         }
 
         Ok(Self {
-            symlink: SymlinkManager,
+            symlink: Symlink,
             state,
             config,
             dry_run,
