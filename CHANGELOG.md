@@ -17,6 +17,7 @@
 
 - Update cliff and lefthook config
 - Delete gen-changelog task
+- Scratch macOS
 ## [0.6.3] - 2026-05-25
 
 ### 🐛 Bug Fixes

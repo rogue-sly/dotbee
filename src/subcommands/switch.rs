@@ -34,39 +34,6 @@ impl Display for ConflictKind {
     }
 }
 
-/// Actions for the switch command.
-/// These are possible list of actions that
-/// the switch command might do.
-pub enum Action {
-    RemoveGhostLink {
-        target_display: String,
-        target_path: PathBuf,
-    },
-    CreateNewLink {
-        source_display: String,
-        target_display: String,
-        source_path: PathBuf,
-        target_path: PathBuf,
-        is_dir: bool,
-    },
-    UpdateState {
-        source_display: String,
-        target_display: String,
-        is_dir: bool,
-    },
-    Conflict {
-        source_display: String,
-        target_display: String,
-        source_path: PathBuf,
-        target_path: PathBuf,
-        kind: ConflictKind,
-    },
-    SourceMissing {
-        source_display: String,
-        _source_path: PathBuf,
-    },
-}
-
 pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
     let target_profile = match profile_name {
         Some(name) => name,
@@ -85,20 +52,6 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
         }
     };
 
-    // 1. GENERATE THE PLAN
-    let plan = generate_plan(&target_profile, context)?;
-
-    // 2. DISPATCH
-    match context.dry_run {
-        true => execute_dry(&plan, &target_profile),
-        false => execute(plan, &target_profile, context)?,
-    }
-
-    Ok(())
-}
-
-fn generate_plan(target_profile: &str, context: &Context) -> anyhow::Result<Vec<Action>, anyhow::Error> {
-    let mut plan = Vec::new();
     let dotfiles_root = context
         .manager
         .state
@@ -106,8 +59,10 @@ fn generate_plan(target_profile: &str, context: &Context) -> anyhow::Result<Vec<
         .map(|p| p.to_path_buf())
         .unwrap_or_else(|| std::env::current_dir().expect("Failed to get current directory"));
 
-    // 1. Resolve all links that SHOULD exist in the target configuration
-    let mut desired_links: IndexMap<String, String> = indexmap::IndexMap::new();
+    let dry_run = context.dry_run;
+
+    // build desired links map from config
+    let mut desired_links: IndexMap<String, String> = IndexMap::new();
 
     if let Some(global_links) = context.manager.config.get_global_links() {
         for (k, v) in global_links {
@@ -115,37 +70,55 @@ fn generate_plan(target_profile: &str, context: &Context) -> anyhow::Result<Vec<
         }
     }
 
-    let profile = context.manager.config.get_profile(target_profile)?;
+    let profile = context.manager.config.get_profile(&target_profile)?;
     for (k, v) in &profile.links {
         desired_links.insert(k.clone(), v.clone());
     }
 
-    // 2. Phase A: Identify Ghost Links (links in state but not in desired config)
-    for link in context.manager.state.get_links() {
-        if !desired_links.contains_key(&link.target) {
-            let target_path = expand_tilde(&link.target);
-            let source_path = dotfiles_root.join(&link.source);
+    // step 1: remove ghost links (links in state but not in desired config)
+    // collect state links upfront to avoid borrow conflicts with remove_links
+    let state_links: Vec<(String, String, bool)> = context
+        .manager
+        .state
+        .get_links()
+        .iter()
+        .map(|l| (l.target.clone(), l.source.clone(), l.is_dir))
+        .collect();
 
-            // Safety check: Only remove if it actually points to our source
+    for (target, source, _is_dir) in &state_links {
+        if !desired_links.contains_key(target) {
+            let target_path = expand_tilde(target);
+            let source_path = dotfiles_root.join(source);
+
             if target_path.is_symlink() && fs::read_link(&target_path)? == source_path {
-                plan.push(Action::RemoveGhostLink {
-                    target_display: link.target.clone(),
-                    target_path,
-                });
+                if dry_run {
+                    message::delete(&format!("Would remove ghost link (missing from config): {}", target));
+                } else {
+                    fs::remove_file(&target_path)?;
+                    message::delete(&format!("Removed ghost link: {}", target));
+                    context.manager.state.remove_links(|l| l.target == *target)?;
+                }
             }
         }
     }
 
-    // 3. Phase B: Process desired links
-    for (target_str, source_str) in desired_links {
-        let source_path = dotfiles_root.join(&source_str);
-        let target_path = expand_tilde(&target_str);
+    // print header for dry run
+    if dry_run {
+        println!(
+            "{} {} {}",
+            "Switching to profile".yellow(),
+            target_profile.bold().cyan(),
+            "(dry run)".yellow()
+        );
+    }
+
+    // step 2: process desired links
+    for (target_str, source_str) in &desired_links {
+        let source_path = dotfiles_root.join(source_str);
+        let target_path = expand_tilde(target_str);
 
         if !source_path.exists() {
-            plan.push(Action::SourceMissing {
-                source_display: source_str.clone(),
-                _source_path: source_path,
-            });
+            message::error(&format!("Source missing: {}", source_str));
             continue;
         }
 
@@ -154,153 +127,54 @@ fn generate_plan(target_profile: &str, context: &Context) -> anyhow::Result<Vec<
 
         match status {
             SymlinkStatus::AlreadyLinked => {
-                plan.push(Action::UpdateState {
-                    source_display: source_str.clone(),
-                    target_display: target_str.clone(),
-                    is_dir,
-                });
-            }
-            SymlinkStatus::NonExistent => {
-                plan.push(Action::CreateNewLink {
-                    source_display: source_str.clone(),
-                    target_display: target_str.clone(),
-                    source_path,
-                    target_path,
-                    is_dir,
-                });
-            }
-            SymlinkStatus::ConflictingSymlink => {
-                plan.push(Action::Conflict {
-                    source_display: source_str.clone(),
-                    target_display: target_str.clone(),
-                    source_path,
-                    target_path,
-                    kind: ConflictKind::Symlink,
-                });
-            }
-            SymlinkStatus::ConflictingFileOrDir => {
-                plan.push(Action::Conflict {
-                    source_display: source_str.clone(),
-                    target_display: target_str.clone(),
-                    source_path,
-                    target_path,
-                    kind: ConflictKind::FileOrDir,
-                });
-            }
-        }
-    }
-
-    Ok(plan)
-}
-
-fn execute_dry(plan: &[Action], target_profile: &str) {
-    println!(
-        "{} {} {}",
-        "Switching to profile".yellow(),
-        target_profile.bold().cyan(),
-        "(dry run)".yellow()
-    );
-
-    for action in plan {
-        match action {
-            Action::RemoveGhostLink { target_display, .. } => {
-                message::delete(&format!("Would remove ghost link (missing from config): {}", target_display));
-            }
-            Action::CreateNewLink {
-                source_display,
-                target_display,
-                ..
-            } => {
-                message::link(&format!("Would link {} -> {}", source_display, target_display));
-            }
-            Action::UpdateState {
-                source_display,
-                target_display,
-                ..
-            } => {
-                message::success(&format!("{} -> {} (already linked)", source_display, target_display));
-            }
-            Action::Conflict {
-                source_display,
-                target_display,
-                kind,
-                ..
-            } => {
-                message::warning(&format!(
-                    "Conflict at {}: {} exists. Strategy will be applied.",
-                    target_display, kind
-                ));
-                message::info(&format!("  Source: {}", source_display));
-            }
-            Action::SourceMissing { source_display, .. } => {
-                message::error(&format!("Source missing: {}", source_display));
-            }
-        }
-    }
-}
-
-fn execute(plan: Vec<Action>, target_profile: &str, context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
-    let strategy = &context.manager.config.get_settings().on_conflict;
-
-    for action in plan {
-        match action {
-            Action::RemoveGhostLink {
-                target_display,
-                target_path,
-            } => {
-                fs::remove_file(&target_path)?;
-                message::delete(&format!("Removed ghost link: {}", target_display));
-                context.manager.state.remove_links(|l| l.target == target_display)?;
-            }
-            Action::CreateNewLink {
-                source_display,
-                target_display,
-                source_path,
-                target_path,
-                is_dir,
-            } => {
-                context.manager.symlink.create(&source_path, &target_path)?;
-                message::link(&format!("{} -> {}", source_display, target_display));
-                context.manager.state.add_link(source_display, target_display, is_dir)?;
-            }
-            Action::UpdateState {
-                source_display,
-                target_display,
-                is_dir,
-            } => {
-                message::success(&format!("{} -> {} (already linked)", source_display, target_display));
-                context.manager.state.add_link(source_display, target_display, is_dir)?;
-            }
-            Action::Conflict {
-                source_display,
-                target_display,
-                source_path,
-                target_path,
-                kind,
-            } => {
-                let action = match strategy {
-                    None => {
-                        message::error(&format!("Conflict: {} -> {} ({})", source_display, target_display, kind));
-                        ConflictAction::prompt(&kind).unwrap()
-                    }
-                    Some(a) => a.clone(),
-                };
-
-                handle_conflict(&action, &source_path, &target_path, &source_display, context)?;
-
-                if action == ConflictAction::Overwrite || action == ConflictAction::Adopt {
-                    let is_dir = source_path.is_dir();
-                    context.manager.state.add_link(source_display, target_display, is_dir)?;
+                message::success(&format!("{} -> {} (already linked)", source_str, target_str));
+                if !dry_run {
+                    context.manager.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
                 }
             }
-            Action::SourceMissing { source_display, .. } => {
-                message::error(&format!("Source missing: {}", source_display));
+            SymlinkStatus::NonExistent => {
+                if dry_run {
+                    message::link(&format!("Would link {} -> {}", source_str, target_str));
+                } else {
+                    context.manager.symlink.create(&source_path, &target_path)?;
+                    message::link(&format!("{} -> {}", source_str, target_str));
+                    context.manager.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
+                }
+            }
+            SymlinkStatus::ConflictingSymlink | SymlinkStatus::ConflictingFileOrDir => {
+                let kind = match status {
+                    SymlinkStatus::ConflictingSymlink => ConflictKind::Symlink,
+                    _ => ConflictKind::FileOrDir,
+                };
+
+                if dry_run {
+                    message::warning(&format!("Conflict at {}: {} exists. Strategy will be applied.", target_str, kind));
+                    message::info(&format!("  Source: {}", source_str));
+                } else {
+                    let strategy = &context.manager.config.get_settings().on_conflict;
+                    let action = match strategy {
+                        None => {
+                            message::error(&format!("Conflict: {} -> {} ({})", source_str, target_str, kind));
+                            ConflictAction::prompt(&kind)?
+                        }
+                        Some(a) => a.clone(),
+                    };
+
+                    handle_conflict(&action, &source_path, &target_path, source_str, context)?;
+
+                    if action == ConflictAction::Overwrite || action == ConflictAction::Adopt {
+                        let is_dir = source_path.is_dir();
+                        context.manager.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
+                    }
+                }
             }
         }
     }
 
-    context.manager.state.set_active_profile(target_profile.to_string())?;
-    message::success(&format!("Switched to profile '{}'", target_profile));
+    if !dry_run {
+        context.manager.state.set_active_profile(target_profile.clone())?;
+        message::success(&format!("Switched to profile '{}'", target_profile));
+    }
 
     Ok(())
 }
