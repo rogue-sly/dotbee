@@ -5,11 +5,10 @@ use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
-const DEFAULT_CONFIG: &str = include_str!("../context/manager/config/dotbee.toml");
+const DEFAULT_CONFIG: &str = include_str!("../context/config/dotbee.toml");
 
 pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
     let path_string = context
-        .manager
         .config
         .get_config_path()
         .map(|p| p.to_path_buf())
@@ -48,7 +47,7 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
         .ok()
         .and_then(|abs_config_path| abs_config_path.parent().map(|dotfiles_path| dotfiles_path.to_path_buf()))
     {
-        context.manager.state.set_dotfiles_path(Some(parent))?;
+        context.state.set_dotfiles_path(Some(parent))?;
     }
 
     message::success(&format!("Successfully initialized {}", path_string.to_string_lossy()));

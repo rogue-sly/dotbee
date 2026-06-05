@@ -4,12 +4,12 @@ use colored::Colorize;
 use std::fs;
 
 pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
-    let links = context.manager.state.get_links();
+    let links = context.state.get_links();
 
     if links.is_empty() {
         message::info("No managed links found to purge.");
         if !context.dry_run {
-            context.manager.state.clear()?;
+            context.state.clear()?;
             message::success("State cleared.");
         }
         return Ok(());
@@ -56,7 +56,7 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
     }
 
     if !context.dry_run {
-        context.manager.state.clear()?;
+        context.state.clear()?;
         message::success("Purge complete.");
     }
 

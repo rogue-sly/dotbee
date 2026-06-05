@@ -2,7 +2,7 @@ use std::fs;
 
 use tempfile::TempDir;
 
-use dotbee::context::manager::config::ConfigManager;
+use dotbee::context::config::ConfigManager;
 
 /// create a fake dir
 fn setup(toml: &str, sources: &[&str]) -> (TempDir, String) {

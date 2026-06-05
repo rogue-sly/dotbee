@@ -4,14 +4,14 @@ use indexmap::IndexMap;
 
 pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
     // List global symlinks
-    if let Some(global_links) = context.manager.config.get_global_links() {
+    if let Some(global_links) = context.config.get_global_links() {
         println!("{}", "global".yellow().bold());
         show_links(global_links);
     }
 
     // List profiles and highlight the active one
-    let active_profile = context.manager.state.get_active_profile();
-    for name in context.manager.config.list_profiles() {
+    let active_profile = context.state.get_active_profile();
+    for name in context.config.list_profiles() {
         let is_active = active_profile == Some(name);
 
         let title = if is_active {
@@ -21,7 +21,7 @@ pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
         };
 
         println!("{}", title);
-        if let Ok(profile) = context.manager.config.get_profile(name) {
+        if let Ok(profile) = context.config.get_profile(name) {
             show_links(&profile.links);
         }
     }

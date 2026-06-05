@@ -1,11 +1,10 @@
 use crate::context::Context;
-use crate::context::manager::symlink::SymlinkStatus;
+use crate::context::symlink::SymlinkStatus;
 use crate::utils::common::expand_tilde;
 use crate::utils::message;
 
 pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
     let dotfiles_root = context
-        .manager
         .state
         .get_dotfiles_path()
         .map(|p| p.to_path_buf())
@@ -17,12 +16,12 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
     // collect links upfront to avoid borrow conflicts when mutating state
     let mut links: Vec<(String, String)> = Vec::new();
 
-    if let Some(global_links) = context.manager.config.get_global_links() {
+    if let Some(global_links) = context.config.get_global_links() {
         links.extend(global_links.iter().map(|(k, v)| (k.clone(), v.clone())));
     }
 
-    if let Some(active_profile) = context.manager.state.get_active_profile()
-        && let Ok(profile) = context.manager.config.get_profile(active_profile)
+    if let Some(active_profile) = context.state.get_active_profile()
+        && let Ok(profile) = context.config.get_profile(active_profile)
     {
         links.extend(profile.links.iter().map(|(k, v)| (k.clone(), v.clone())));
     }
@@ -37,18 +36,18 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
             continue;
         }
 
-        let status = context.manager.symlink.check(&source_path, &target_path);
+        let status = context.symlink.check(&source_path, &target_path);
         let is_dir = source_path.is_dir();
 
         match status {
             SymlinkStatus::AlreadyLinked => {
-                let in_state = context.manager.state.get_links().iter().any(|l| l.target == *target_str);
+                let in_state = context.state.get_links().iter().any(|l| l.target == *target_str);
                 if !in_state {
                     if dry_run {
                         message::info(&format!("Would add to state: {} -> {} (dry run)", source_str, target_str));
                     } else {
                         message::info(&format!("Updating state for: {} -> {}", source_str, target_str));
-                        context.manager.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
+                        context.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
                     }
                     has_actions = true;
                 }
@@ -58,8 +57,8 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
                     message::success(&format!("Would link {} -> {} (dry run)", source_str, target_str));
                 } else {
                     message::success(&format!("Linking {} -> {}", source_str, target_str));
-                    context.manager.symlink.create(&source_path, &target_path)?;
-                    context.manager.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
+                    context.symlink.create(&source_path, &target_path)?;
+                    context.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
                 }
                 has_actions = true;
             }
@@ -71,8 +70,8 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
                     if target_path.exists() || target_path.is_symlink() {
                         std::fs::remove_file(&target_path)?;
                     }
-                    context.manager.symlink.create(&source_path, &target_path)?;
-                    context.manager.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
+                    context.symlink.create(&source_path, &target_path)?;
+                    context.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
                 }
                 has_actions = true;
             }

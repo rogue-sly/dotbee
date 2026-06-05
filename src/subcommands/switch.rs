@@ -1,7 +1,7 @@
 use crate::{
     context::{
         Context,
-        manager::{config::ConflictAction, symlink::SymlinkStatus},
+        {config::ConflictAction, symlink::SymlinkStatus},
     },
     utils::message,
 };
@@ -38,7 +38,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
     let target_profile = match profile_name {
         Some(name) => name,
         None => {
-            if !context.manager.config.get_settings().auto_detect_profile.unwrap_or_default() {
+            if !context.config.get_settings().auto_detect_profile.unwrap_or_default() {
                 return Err(anyhow!("No profile specified and auto_detect_profile is disabled."));
             }
 
@@ -53,7 +53,6 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
     };
 
     let dotfiles_root = context
-        .manager
         .state
         .get_dotfiles_path()
         .map(|p| p.to_path_buf())
@@ -64,13 +63,13 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
     // build desired links map from config
     let mut desired_links: IndexMap<String, String> = IndexMap::new();
 
-    if let Some(global_links) = context.manager.config.get_global_links() {
+    if let Some(global_links) = context.config.get_global_links() {
         for (k, v) in global_links {
             desired_links.insert(k.clone(), v.clone());
         }
     }
 
-    let profile = context.manager.config.get_profile(&target_profile)?;
+    let profile = context.config.get_profile(&target_profile)?;
     for (k, v) in &profile.links {
         desired_links.insert(k.clone(), v.clone());
     }
@@ -78,7 +77,6 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
     // step 1: remove ghost links (links in state but not in desired config)
     // collect state links upfront to avoid borrow conflicts with remove_links
     let state_links: Vec<(String, String, bool)> = context
-        .manager
         .state
         .get_links()
         .iter()
@@ -96,7 +94,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
                 } else {
                     fs::remove_file(&target_path)?;
                     message::delete(&format!("Removed ghost link: {}", target));
-                    context.manager.state.remove_links(|l| l.target == *target)?;
+                    context.state.remove_links(|l| l.target == *target)?;
                 }
             }
         }
@@ -122,23 +120,23 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
             continue;
         }
 
-        let status = context.manager.symlink.check(&source_path, &target_path);
+        let status = context.symlink.check(&source_path, &target_path);
         let is_dir = source_path.is_dir();
 
         match status {
             SymlinkStatus::AlreadyLinked => {
                 message::success(&format!("{} -> {} (already linked)", source_str, target_str));
                 if !dry_run {
-                    context.manager.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
+                    context.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
                 }
             }
             SymlinkStatus::NonExistent => {
                 if dry_run {
                     message::link(&format!("Would link {} -> {}", source_str, target_str));
                 } else {
-                    context.manager.symlink.create(&source_path, &target_path)?;
+                    context.symlink.create(&source_path, &target_path)?;
                     message::link(&format!("{} -> {}", source_str, target_str));
-                    context.manager.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
+                    context.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
                 }
             }
             SymlinkStatus::ConflictingSymlink | SymlinkStatus::ConflictingFileOrDir => {
@@ -151,7 +149,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
                     message::warning(&format!("Conflict at {}: {} exists. Strategy will be applied.", target_str, kind));
                     message::info(&format!("  Source: {}", source_str));
                 } else {
-                    let strategy = &context.manager.config.get_settings().on_conflict;
+                    let strategy = &context.config.get_settings().on_conflict;
                     let action = match strategy {
                         None => {
                             message::error(&format!("Conflict: {} -> {} ({})", source_str, target_str, kind));
@@ -164,7 +162,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
 
                     if action == ConflictAction::Overwrite || action == ConflictAction::Adopt {
                         let is_dir = source_path.is_dir();
-                        context.manager.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
+                        context.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
                     }
                 }
             }
@@ -172,7 +170,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
     }
 
     if !dry_run {
-        context.manager.state.set_active_profile(target_profile.clone())?;
+        context.state.set_active_profile(target_profile.clone())?;
         message::success(&format!("Switched to profile '{}'", target_profile));
     }
 
@@ -187,7 +185,6 @@ fn handle_conflict(
     context: &Context,
 ) -> anyhow::Result<(), anyhow::Error> {
     let dotfiles_root = context
-        .manager
         .state
         .get_dotfiles_path()
         .map(|p| p.to_path_buf())
@@ -202,7 +199,7 @@ fn handle_conflict(
             {
                 fs::remove_dir_all(destination).unwrap();
             }
-            context.manager.symlink.create(source, destination)?;
+            context.symlink.create(source, destination)?;
             println!("  Overwrite: {} → {}", source.display(), destination.display());
         }
         ConflictAction::Adopt => {
@@ -218,7 +215,7 @@ fn handle_conflict(
             }
 
             fs::rename(destination, &adopt_target).unwrap();
-            context.manager.symlink.create(source, destination)?;
+            context.symlink.create(source, destination)?;
             println!("  Adopted: {} → {}", source.display(), destination.display());
         }
     }

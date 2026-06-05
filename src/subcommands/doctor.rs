@@ -1,5 +1,5 @@
 use crate::context::Context;
-use crate::context::manager::symlink::SymlinkStatus;
+use crate::context::symlink::SymlinkStatus;
 use crate::utils::common::expand_tilde;
 use crate::utils::message;
 use colored::Colorize;
@@ -11,7 +11,7 @@ pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
     let mut config_links: IndexMap<String, String> = indexmap::IndexMap::new();
 
     // Check global symlinks
-    if let Some(global_links) = context.manager.config.get_global_links() {
+    if let Some(global_links) = context.config.get_global_links() {
         println!("{}", "Global Links:".bold());
         for (k, v) in global_links {
             config_links.insert(k.clone(), v.clone());
@@ -20,7 +20,7 @@ pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
     }
 
     // Check current profile symlinks
-    let active_profile = match context.manager.state.get_active_profile() {
+    let active_profile = match context.state.get_active_profile() {
         Some(p) => p.to_string(),
         None => {
             message::info("No active profile detected.");
@@ -29,13 +29,13 @@ pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
         }
     };
 
-    if !context.manager.config.has_profiles() {
+    if !context.config.has_profiles() {
         message::info("No profiles defined in dotbee.toml.");
         check_ghost_links(&config_links, context)?;
         return Ok(());
     }
 
-    match context.manager.config.get_profile(&active_profile) {
+    match context.config.get_profile(&active_profile) {
         Ok(profile) => {
             println!("{} ({}){}", "Active Profile".bold(), active_profile.cyan().bold(), ":".bold());
             for (k, v) in &profile.links {
@@ -57,7 +57,7 @@ pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
 
 fn check_ghost_links(config_links: &IndexMap<String, String>, context: &Context) -> anyhow::Result<(), anyhow::Error> {
     let mut ghosts = Vec::new();
-    for link in context.manager.state.get_links() {
+    for link in context.state.get_links() {
         if !config_links.contains_key(&link.target) {
             ghosts.push(link);
         }
@@ -76,7 +76,6 @@ fn check_ghost_links(config_links: &IndexMap<String, String>, context: &Context)
 
 fn check_links(links: &IndexMap<String, String>, context: &Context) -> anyhow::Result<(), anyhow::Error> {
     let dotfiles_root = context
-        .manager
         .state
         .get_dotfiles_path()
         .map(|p| p.to_path_buf())
@@ -94,7 +93,7 @@ fn check_links(links: &IndexMap<String, String>, context: &Context) -> anyhow::R
             continue;
         }
 
-        let status = context.manager.symlink.check(&source_path, &target_path);
+        let status = context.symlink.check(&source_path, &target_path);
 
         match status {
             SymlinkStatus::AlreadyLinked => {

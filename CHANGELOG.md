@@ -17,6 +17,7 @@
 - Shorten macro
 - Simplify check function
 - Propagate more errors during config and state load
+- Flatten manager struct
 
 ### 📚 Documentation
 
@@ -36,6 +37,7 @@
 - Remove the damn clippy checks for rust-analyzer and githook
 - Add fs nix create feature
 - Add tmux package to Dockerfile
+- Format main.rs
 ## [0.6.3] - 2026-05-25
 
 ### 🐛 Bug Fixes
