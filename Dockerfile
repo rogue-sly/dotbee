@@ -1,7 +1,7 @@
 FROM fedora:latest
 
 # Install some packages
-RUN dnf install -y neovim git tree bat fish
+RUN dnf install -y neovim git tree bat fish tmux
 
 # Create a mock host and add a test user and
 RUN groupadd laptop
