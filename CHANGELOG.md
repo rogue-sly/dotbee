@@ -5,6 +5,10 @@
 
 - Use data directory on other platforms for state file
 
+### 🚜 Refactor
+
+- Remove bad plan-execute patterns in favor of something simpler
+
 ### 📚 Documentation
 
 - Update roadmap
