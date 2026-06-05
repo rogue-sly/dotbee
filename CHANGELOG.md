@@ -8,6 +8,7 @@
 ### 🐛 Bug Fixes
 
 - Use data directory on other platforms for state file
+- Eliminate possible symlink-following TOCTOU during conflict overwrite
 
 ### 🚜 Refactor
 

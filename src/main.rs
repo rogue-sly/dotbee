@@ -1,10 +1,9 @@
-use std::fs::File;
-
 use clap::Parser;
 use dotbee::cli::{Cli, SubCommand};
 use dotbee::context::Context;
 use dotbee::subcommands;
 use nix::fcntl::{Flock, FlockArg};
+use std::fs::File;
 
 fn main() -> anyhow::Result<()> {
     let dotbee = Cli::parse();
