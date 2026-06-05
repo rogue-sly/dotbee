@@ -33,18 +33,11 @@ impl SymlinkManager {
     ///   to a different path than `source` or is broken.
     /// * `NonExistent`: The `destination` path does not exist.
     pub fn check(&self, source: &Path, destination: &Path) -> SymlinkStatus {
-        let metadata = match fs::symlink_metadata(destination) {
-            Ok(meta) => meta,
-            Err(_) => return SymlinkStatus::NonExistent,
-        };
-
-        if !metadata.is_symlink() {
-            return SymlinkStatus::ConflictingFileOrDir;
-        }
-
         match fs::read_link(destination) {
             Ok(target) if target == source => SymlinkStatus::AlreadyLinked,
-            _ => SymlinkStatus::ConflictingSymlink,
+            Ok(_) => SymlinkStatus::ConflictingSymlink,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => SymlinkStatus::NonExistent,
+            Err(_) => SymlinkStatus::ConflictingFileOrDir,
         }
     }
 
