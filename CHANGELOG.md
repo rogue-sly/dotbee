@@ -14,6 +14,7 @@
 - Remove bad plan-execute patterns in favor of something simpler
 - Add extra checks for init subcommand
 - Shorten macro
+- Simplify check function
 
 ### 📚 Documentation
 

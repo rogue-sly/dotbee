@@ -56,14 +56,16 @@ impl ConfigManager {
         let path_str = path.unwrap_or_else(|| "dotbee.toml".to_string());
         let config_path = Path::new(&path_str);
 
-        if !config_path.exists() {
-            return Ok(Self {
-                config: Config::default(),
-                config_path: None,
-            });
-        }
-
-        let content = fs::read_to_string(config_path)?;
+        let content = match fs::read_to_string(config_path) {
+            Ok(c) => c,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                return Ok(Self {
+                    config: Config::default(),
+                    config_path: None,
+                });
+            }
+            Err(e) => return Err(e.into()),
+        };
         let config: Config = toml::from_str(&content)?;
         let config_path = Some(fs::canonicalize(config_path)?);
 

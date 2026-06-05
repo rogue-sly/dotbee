@@ -31,10 +31,11 @@ impl State {
 
     fn load() -> io::Result<Self> {
         let path = Self::get_path();
-        if !path.exists() {
-            return Ok(Self::default());
-        }
-        let content = fs::read_to_string(path)?;
+        let content = match fs::read_to_string(&path) {
+            Ok(c) => c,
+            Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(Self::default()),
+            Err(e) => return Err(e),
+        };
         let state: State = serde_json::from_str(&content).unwrap_or_default();
         Ok(state)
     }
