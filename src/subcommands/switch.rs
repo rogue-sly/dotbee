@@ -197,10 +197,10 @@ fn handle_conflict(
         ConflictAction::Skip => println!("  Skipped {}", destination.display()),
         ConflictAction::Abort => return Err(anyhow!("Operation aborted by user.")),
         ConflictAction::Overwrite => {
-            if destination.is_dir() {
+            if let Err(e) = fs::remove_file(destination)
+                && e.kind() == std::io::ErrorKind::IsADirectory
+            {
                 fs::remove_dir_all(destination).unwrap();
-            } else {
-                fs::remove_file(destination).unwrap();
             }
             context.manager.symlink.create(source, destination)?;
             println!("  Overwrite: {} → {}", source.display(), destination.display());
@@ -211,12 +211,10 @@ fn handle_conflict(
                 fs::create_dir_all(parent).unwrap();
             }
 
-            if adopt_target.exists() {
-                if adopt_target.is_dir() {
-                    fs::remove_dir_all(&adopt_target).unwrap();
-                } else {
-                    fs::remove_file(&adopt_target).unwrap();
-                }
+            if let Err(e) = fs::remove_file(&adopt_target)
+                && e.kind() == std::io::ErrorKind::IsADirectory
+            {
+                fs::remove_dir_all(&adopt_target).unwrap();
             }
 
             fs::rename(destination, &adopt_target).unwrap();
