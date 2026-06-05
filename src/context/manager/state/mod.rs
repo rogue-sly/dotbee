@@ -20,12 +20,8 @@ struct State {
 impl State {
     fn get_path() -> PathBuf {
         let mut path = cfg_select! {
-            any(target_os = "linux") => {
-                dirs::state_dir().expect("Couldn't determine state directory")
-            }
-            _ => {
-                dirs::data_dir().expect("Couldn't determine data directory")
-            }
+            any(target_os = "linux") => dirs::state_dir().expect("Couldn't determine state directory"),
+            _ => dirs::data_dir().expect("Couldn't determine data directory"),
         };
 
         path.push("dotbee");

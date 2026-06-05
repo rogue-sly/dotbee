@@ -1,6 +1,10 @@
 # Changelog
 ## [unreleased]
 
+### 🚀 Features
+
+- Prevent multiple instances of dotbee from running
+
 ### 🐛 Bug Fixes
 
 - Use data directory on other platforms for state file
