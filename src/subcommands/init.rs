@@ -2,6 +2,7 @@ use crate::context::Context;
 use crate::utils::message;
 use colored::Colorize;
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 const DEFAULT_CONFIG: &str = include_str!("../context/manager/config/dotbee.toml");
@@ -15,22 +16,34 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
         .unwrap_or(PathBuf::from("dotbee.toml"));
     let config_path = Path::new(&path_string);
 
-    if config_path.exists() {
-        message::error(&format!(
-            "{} already exists in the current directory.",
-            path_string.to_string_lossy()
-        ));
-        return Ok(());
-    }
-
     if context.dry_run {
-        message::success(&format!("Would initialize {} (dry run)", path_string.to_string_lossy()));
+        if config_path.exists() {
+            message::error(&format!(
+                "{} already exists in the current directory.",
+                path_string.to_string_lossy()
+            ));
+        } else {
+            message::success(&format!("Would initialize {} (dry run)", path_string.to_string_lossy()));
+        }
         return Ok(());
     }
 
-    fs::write(config_path, DEFAULT_CONFIG)?;
+    // check then create
+    match fs::File::create_new(config_path) {
+        Ok(mut file) => {
+            file.write_all(DEFAULT_CONFIG.as_bytes())?;
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
+            message::error(&format!(
+                "{} already exists in the current directory.",
+                path_string.to_string_lossy()
+            ));
+            return Ok(());
+        }
+        Err(e) => return Err(e.into()),
+    }
 
-    // Update state to remember this dotfiles directory
+    // update state to remember this dotfiles directory
     if let Some(parent) = fs::canonicalize(config_path)
         .ok()
         .and_then(|abs_config_path| abs_config_path.parent().map(|dotfiles_path| dotfiles_path.to_path_buf()))
