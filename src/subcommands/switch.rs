@@ -1,11 +1,12 @@
 use crate::{
-    context::{
-        Context,
-        {config::ConflictAction, symlink::SymlinkStatus},
+    context::{Context, config::ConflictAction, symlink::SymlinkStatus},
+    utils::{
+        common::{expand_tilde, get_hostname},
+        message,
     },
-    utils::message,
 };
-use anyhow::anyhow;
+
+use anyhow::bail;
 use colored::Colorize;
 use indexmap::IndexMap;
 use std::{
@@ -13,8 +14,6 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-
-use crate::utils::common::{expand_tilde, get_hostname};
 
 pub enum ConflictKind {
     Symlink,
@@ -39,7 +38,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
         Some(name) => name,
         None => {
             if !context.config.get_settings().auto_detect_profile.unwrap_or_default() {
-                return Err(anyhow!("No profile specified and auto_detect_profile is disabled."));
+                bail!("No profile specified and auto_detect_profile is disabled.");
             }
 
             let hostname = get_hostname();
@@ -192,7 +191,7 @@ fn handle_conflict(
 
     match action {
         ConflictAction::Skip => println!("  Skipped {}", destination.display()),
-        ConflictAction::Abort => return Err(anyhow!("Operation aborted by user.")),
+        ConflictAction::Abort => bail!("Operation aborted by user."),
         ConflictAction::Overwrite => {
             if let Err(e) = fs::remove_file(destination)
                 && e.kind() == std::io::ErrorKind::IsADirectory
