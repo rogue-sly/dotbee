@@ -18,6 +18,7 @@
 - Simplify check function
 - Propagate more errors during config and state load
 - Flatten manager struct
+- Inline manager structs
 
 ### 📚 Documentation
 
