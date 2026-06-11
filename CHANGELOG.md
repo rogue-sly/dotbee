@@ -39,6 +39,7 @@
 - Add fs nix create feature
 - Add tmux package to Dockerfile
 - Format main.rs
+- Update plan
 ## [0.6.3] - 2026-05-25
 
 ### 🐛 Bug Fixes
