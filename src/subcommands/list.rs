@@ -30,9 +30,9 @@ pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
 }
 
 fn show_links(links: &IndexMap<String, String>) {
-    for (i, (target, source)) in links.iter().enumerate() {
-        let is_last = i == links.len() - 1;
-        let branch = if is_last { "└──" } else { "├──" };
+    let mut iter = links.iter().peekable();
+    while let Some((target, source)) = iter.next() {
+        let branch = if iter.peek().is_none() { "└──" } else { "├──" };
         println!("{} {} -> {}", branch, target, source);
     }
 }

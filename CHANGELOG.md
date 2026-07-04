@@ -19,6 +19,7 @@
 - Propagate more errors during config and state load
 - Flatten manager struct
 - Inline manager structs
+- Use bail! macro
 
 ### 📚 Documentation
 
