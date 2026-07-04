@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 use nix::unistd::gethostname;
 use std::path::PathBuf;
 
@@ -20,7 +21,8 @@ pub fn expand_tilde(path_str: &str) -> PathBuf {
 }
 
 /// Retrieves the system's hostname.
-pub fn get_hostname() -> String {
-    let hostname = gethostname().expect("Couldn't get hostname");
-    hostname.into_string().expect("Failed to parse hostname")
+pub fn get_hostname() -> Result<String> {
+    let hostname = gethostname().context("Couldn't get hostname")?;
+    let hostname = hostname.to_str().context("Failed to parse hostname")?.to_string();
+    return Ok(hostname);
 }

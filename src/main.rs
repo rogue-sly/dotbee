@@ -1,6 +1,6 @@
+use anyhow::Context;
 use clap::Parser;
 use dotbee::cli::{Cli, SubCommand};
-use dotbee::context::Context;
 use dotbee::subcommands;
 use nix::fcntl::{Flock, FlockArg};
 use std::fs::File;
@@ -8,7 +8,7 @@ use std::fs::File;
 fn main() -> anyhow::Result<()> {
     let dotbee = Cli::parse();
     let _lock = lock_process()?;
-    let mut context = Context::new(dotbee.config, dotbee.dry_run)?;
+    let mut context = dotbee::context::Context::new(dotbee.config, dotbee.dry_run)?;
     match dotbee.subcommand {
         SubCommand::Completion { shell } => subcommands::completion::run(shell)?,
         SubCommand::Doctor => subcommands::doctor::run(&context)?,
@@ -30,10 +30,12 @@ fn main() -> anyhow::Result<()> {
 /// enough. -w-
 fn lock_process() -> anyhow::Result<Flock<File>> {
     let dotbee_state_dir = {
-        let mut path = cfg_select! {
-            any(target_os = "linux") => dirs::state_dir().expect("Couldn't determine state directory"),
-            _ => dirs::data_dir().expect("Couldn't determine data directory"),
+        let base = cfg_select! {
+            any(target_os = "linux") => dirs::state_dir(),
+            _ => dirs::data_dir(),
         };
+
+        let mut path = base.context("Couldn't determine state directory")?;
         path.push("dotbee");
         path
     };

@@ -1,14 +1,9 @@
-use crate::context::Context;
 use crate::context::symlink::SymlinkStatus;
 use crate::utils::common::expand_tilde;
 use crate::utils::message;
 
-pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
-    let dotfiles_root = context
-        .state
-        .get_dotfiles_path()
-        .map(|p| p.to_path_buf())
-        .unwrap_or_else(|| std::env::current_dir().expect("Failed to get current directory"));
+pub fn run(context: &mut crate::context::Context) -> anyhow::Result<(), anyhow::Error> {
+    let dotfiles_root = context.state.get_dotfiles_root()?;
 
     let dry_run = context.dry_run;
     let mut has_actions = false;

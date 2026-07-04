@@ -1,11 +1,11 @@
-use crate::context::Context;
 use crate::context::symlink::SymlinkStatus;
 use crate::utils::common::expand_tilde;
 use crate::utils::message;
+use anyhow::bail;
 use colored::Colorize;
 use indexmap::IndexMap;
 
-pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
+pub fn run(context: &crate::context::Context) -> anyhow::Result<(), anyhow::Error> {
     println!("{}", "Dotbee Doctor Report\n".bold().underline());
 
     let mut config_links: IndexMap<String, String> = indexmap::IndexMap::new();
@@ -46,7 +46,10 @@ pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
         Err(_) => {
             message::error(&format!("Status: Profile '{}' not found in config!", active_profile.red()));
             check_ghost_links(&config_links, context)?;
-            std::process::exit(1)
+            bail!(
+                "Profile '{}' not found. Update your config or run 'dotbee switch' to select a different profile.",
+                active_profile
+            )
         }
     }
 
@@ -55,7 +58,7 @@ pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
     Ok(())
 }
 
-fn check_ghost_links(config_links: &IndexMap<String, String>, context: &Context) -> anyhow::Result<(), anyhow::Error> {
+fn check_ghost_links(config_links: &IndexMap<String, String>, context: &crate::context::Context) -> anyhow::Result<(), anyhow::Error> {
     let mut ghosts = Vec::new();
     for link in context.state.get_links() {
         if !config_links.contains_key(&link.target) {
@@ -74,12 +77,8 @@ fn check_ghost_links(config_links: &IndexMap<String, String>, context: &Context)
     Ok(())
 }
 
-fn check_links(links: &IndexMap<String, String>, context: &Context) -> anyhow::Result<(), anyhow::Error> {
-    let dotfiles_root = context
-        .state
-        .get_dotfiles_path()
-        .map(|p| p.to_path_buf())
-        .unwrap_or_else(|| std::env::current_dir().expect("Failed to get current directory"));
+fn check_links(links: &IndexMap<String, String>, context: &crate::context::Context) -> anyhow::Result<(), anyhow::Error> {
+    let dotfiles_root = context.state.get_dotfiles_root()?;
 
     let mut sorted_links: Vec<_> = links.iter().collect();
     sorted_links.sort_by_key(|(k, _)| k.as_str());

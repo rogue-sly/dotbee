@@ -1,12 +1,12 @@
 use crate::{
-    context::{Context, config::ConflictAction, symlink::SymlinkStatus},
+    context::{config::ConflictAction, symlink::SymlinkStatus},
     utils::{
         common::{expand_tilde, get_hostname},
         message,
     },
 };
 
-use anyhow::bail;
+use anyhow::{Context, bail};
 use colored::Colorize;
 use indexmap::IndexMap;
 use std::{
@@ -33,7 +33,7 @@ impl Display for ConflictKind {
     }
 }
 
-pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
+pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) -> anyhow::Result<(), anyhow::Error> {
     let target_profile = match profile_name {
         Some(name) => name,
         None => {
@@ -41,7 +41,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
                 bail!("No profile specified and auto_detect_profile is disabled.");
             }
 
-            let hostname = get_hostname();
+            let hostname = get_hostname().context("Failed to auto-detect profile from hostname")?;
             message::info(&format!(
                 "No profile specified. Auto-detecting profile from hostname: '{}'",
                 hostname
@@ -51,12 +51,7 @@ pub fn run(profile_name: Option<String>, context: &mut Context) -> anyhow::Resul
         }
     };
 
-    let dotfiles_root = context
-        .state
-        .get_dotfiles_path()
-        .map(|p| p.to_path_buf())
-        .unwrap_or_else(|| std::env::current_dir().expect("Failed to get current directory"));
-
+    let dotfiles_root = context.state.get_dotfiles_root()?;
     let dry_run = context.dry_run;
 
     // build desired links map from config
@@ -181,13 +176,9 @@ fn handle_conflict(
     source: &Path,
     destination: &PathBuf,
     rel_source: &str,
-    context: &Context,
+    context: &crate::context::Context,
 ) -> anyhow::Result<(), anyhow::Error> {
-    let dotfiles_root = context
-        .state
-        .get_dotfiles_path()
-        .map(|p| p.to_path_buf())
-        .unwrap_or_else(|| std::env::current_dir().expect("Failed to get current directory"));
+    let dotfiles_root = context.state.get_dotfiles_root()?;
 
     match action {
         ConflictAction::Skip => println!("  Skipped {}", destination.display()),
@@ -196,7 +187,7 @@ fn handle_conflict(
             if let Err(e) = fs::remove_file(destination)
                 && e.kind() == std::io::ErrorKind::IsADirectory
             {
-                fs::remove_dir_all(destination).unwrap();
+                fs::remove_dir_all(destination).with_context(|| format!("Failed to remove directory at {:?}", destination))?;
             }
             context.symlink.create(source, destination)?;
             println!("  Overwrite: {} → {}", source.display(), destination.display());
@@ -204,16 +195,16 @@ fn handle_conflict(
         ConflictAction::Adopt => {
             let adopt_target = dotfiles_root.join(rel_source);
             if let Some(parent) = adopt_target.parent() {
-                fs::create_dir_all(parent).unwrap();
+                fs::create_dir_all(parent).with_context(|| format!("Failed to create directory at {:?}", parent))?;
             }
 
             if let Err(e) = fs::remove_file(&adopt_target)
                 && e.kind() == std::io::ErrorKind::IsADirectory
             {
-                fs::remove_dir_all(&adopt_target).unwrap();
+                fs::remove_dir_all(&adopt_target).with_context(|| format!("Failed to remove directory at {:?}", adopt_target))?;
             }
 
-            fs::rename(destination, &adopt_target).unwrap();
+            fs::rename(destination, &adopt_target).with_context(|| format!("Failed to move {:?} to {:?}", destination, adopt_target))?;
             context.symlink.create(source, destination)?;
             println!("  Adopted: {} → {}", source.display(), destination.display());
         }

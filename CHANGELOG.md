@@ -20,6 +20,7 @@
 - Flatten manager struct
 - Inline manager structs
 - Use bail! macro
+- Use peek instead of faulty arithmetics
 
 ### 📚 Documentation
 

@@ -1,6 +1,6 @@
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::io;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
@@ -18,34 +18,42 @@ pub struct State {
 }
 
 impl State {
-    fn get_path() -> PathBuf {
-        let mut path = cfg_select! {
-            any(target_os = "linux") => dirs::state_dir().expect("Couldn't determine state directory"),
-            _ => dirs::data_dir().expect("Couldn't determine data directory"),
+    fn get_path() -> Result<PathBuf> {
+        let base = cfg_select! {
+            any(target_os = "linux") => dirs::state_dir(),
+            _ => dirs::data_dir()
         };
 
+        let mut path = base.context("Couldn't determine state directory")?;
         path.push("dotbee");
         path.push("state.json");
-        path
+        Ok(path)
     }
 
-    fn save(&self) -> io::Result<()> {
-        let path = Self::get_path();
+    fn save(&self) -> Result<()> {
+        let path = Self::get_path()?;
         if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
+            fs::create_dir_all(parent).with_context(|| format!("Failed to create state directory {:?}", parent))?;
         }
-        let content = serde_json::to_string_pretty(self).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-        fs::write(path, content)
+
+        let content = serde_json::to_string_pretty(self).context("Failed to serialize state to json")?;
+        fs::write(&path, &content).with_context(|| format!("Failed to write state file at {:?}", path))?;
+
+        Ok(())
     }
 
-    pub fn load() -> io::Result<Self> {
-        let path = Self::get_path();
-        let content = match fs::read_to_string(&path) {
-            Ok(c) => c,
-            Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(Self::default()),
-            Err(e) => return Err(e),
-        };
-        let state: State = serde_json::from_str(&content).unwrap_or_default();
+    pub fn load() -> Result<Self> {
+        let path = Self::get_path().context("Failed to determine state file path")?;
+        if !path.exists() {
+            return Ok(Self::default());
+        }
+
+        let content = fs::read_to_string(&path).with_context(|| format!("Failed to read state file at {:?}", path))?;
+        if content.trim().is_empty() {
+            return Ok(Self::default());
+        }
+
+        let state: State = serde_json::from_str(&content).with_context(|| format!("Failed to parse state file at {:?}", path))?;
         Ok(state)
     }
 
@@ -67,6 +75,14 @@ impl State {
         self.dotfiles_path = path;
         self.save()?;
         Ok(())
+    }
+
+    pub fn get_dotfiles_root(&self) -> Result<PathBuf> {
+        match self.get_dotfiles_path() {
+            Some(p) if p.exists() => Ok(p.to_path_buf()),
+            Some(p) => bail!("Stored dotfiles path {:?} no longer exists. Run 'dotbee init' to set a new one.", p),
+            None => std::env::current_dir().context("Failed to get current directory"),
+        }
     }
 
     pub fn get_links(&self) -> &[Link] {
