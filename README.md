@@ -1,7 +1,7 @@
 # Dotbee
 
-![Github License](https://img.shields.io/github/license/rogue-sly%2Fdotbee?color=blue)
-![Github Version](https://img.shields.io/github/v/release/rogue-sly%2Fdotbee)
+![Github License](https://img.shields.io/github/license/rogue-sly/dotbee)
+![Github Version](https://img.shields.io/github/v/release/rogue-sly/dotbee)
 ![Crates.io Downloads (recent)](https://img.shields.io/crates/dr/dotbee)
 
 **Dotbee** is a simple, symlink-based dotfiles manager. It focuses on doing one thing well: managing your configuration files without the complexity of shell scripts or bloated feature sets.
