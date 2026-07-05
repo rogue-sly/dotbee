@@ -47,6 +47,7 @@
 - Update rust-analyzer nvim lsp settings
 - Bump rust version
 - Add moar tools
+- Remove warning note
 ## [0.6.3] - 2026-05-25
 
 ### 🐛 Bug Fixes

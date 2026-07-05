@@ -4,11 +4,11 @@ version = "0.6.3"
 edition = "2024"
 rust-version = "1.96.0"
 description = "Dotfiles manager designed for ease of use"
-repository = "https://gitlab.com/rogue-sly/dotbee"
+repository = "https://github.com/rogue-sly/dotbee"
 license = "MIT"
 keywords = ["dotbee", "dotfiles"]
 categories = ["command-line-utilities"]
-exclude = [".gitlab-ci.yml", ".gitlab-ci/*", ".mise-tasks/*", "mise.toml"]
+exclude = [".github/*", ".mise-tasks/*", "mise.toml"]
 
 [package.metadata.binstall]
 pkg-url = "{ repo }/-/releases/v{ version }/downloads/{ name }-v{ version }-{ target }-musl.tar.gz"

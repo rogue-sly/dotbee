@@ -1,7 +1,7 @@
 # Dotbee
 
-![Gitlab License](https://img.shields.io/github/license/rogue-sly%2Fdotbee?color=blue)
-![Gitlab Version](https://img.shields.io/github/v/release/rogue-sly%2Fdotbee)
+![Github License](https://img.shields.io/github/license/rogue-sly%2Fdotbee?color=blue)
+![Github Version](https://img.shields.io/github/v/release/rogue-sly%2Fdotbee)
 ![Crates.io Downloads (recent)](https://img.shields.io/crates/dr/dotbee)
 
 **Dotbee** is a simple, symlink-based dotfiles manager. It focuses on doing one thing well: managing your configuration files without the complexity of shell scripts or bloated feature sets.
@@ -40,7 +40,7 @@ cargo binstall dotbee
 
 ```sh
 # fetch the package first
-wget https://gitlab.com/rogue-sly/dotbee/-/releases/v.../downloads/dotbee-v...-amd64.deb
+wget https://github.com/rogue-sly/dotbee/-/releases/v.../downloads/dotbee-v...-amd64.deb
 # then install it
 sudo apt install ./dotbee-v...-amd64.deb
 ```
@@ -49,7 +49,7 @@ sudo apt install ./dotbee-v...-amd64.deb
 
 ```sh
 # fetch the package first
-wget https://gitlab.com/rogue-sly/dotbee/-/releases/v.../downloads/dotbee-v...-arm64.deb
+wget https://github.com/rogue-sly/dotbee/-/releases/v.../downloads/dotbee-v...-arm64.deb
 # then install it
 sudo apt install ./dotbee-v...-arm64.deb
 ```
@@ -59,13 +59,13 @@ sudo apt install ./dotbee-v...-arm64.deb
 - x86_64/amd64
 
 ```sh
-sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v.../downloads/dotbee-v...-x86_64.rpm
+sudo dnf install https://github.com/rogue-sly/dotbee/-/releases/v.../downloads/dotbee-v...-x86_64.rpm
 ```
 
 - aarch64/arm64
 
 ```sh
-sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v.../downloads/dotbee-...-aarch64.rpm
+sudo dnf install https://github.com/rogue-sly/dotbee/-/releases/v.../downloads/dotbee-...-aarch64.rpm
 ```
 
 ### From Source
@@ -79,7 +79,7 @@ cargo install dotbee
 2. Directly From Repository:
 
 ```sh
-cargo install --git https://gitlab.com/rogue-sly/dotbee
+cargo install --git https://github.com/rogue-sly/dotbee
 ```
 
 ## Quick Start

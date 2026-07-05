@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://gitlab.com/rogue-sly/dotbee/-/raw/main/schema/dotbee.json",
+  "$id": "https://github.com/rogue-sly/dotbee/blob/main/schema/dotbee.json",
   "title": "Dotbee Configuration Schema",
   "description": "Configuration schema for Dotbee dotfiles manager",
   "type": "object",
