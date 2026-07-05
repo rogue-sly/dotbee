@@ -6,9 +6,6 @@
 
 **Dotbee** is a simple, symlink-based dotfiles manager. It focuses on doing one thing well: managing your configuration files without the complexity of shell scripts or bloated feature sets.
 
-> [!WARNING]
-> Dotbee is in **Alpha**. While functional, it is recommended to back up your dotfiles before use. For testing, use the provided containerized environment.
-
 ## Features
 
 - **Profile Support:** Switch between different environments (e.g., Desktop, Server, Termux).

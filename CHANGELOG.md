@@ -26,6 +26,7 @@
 ### 📚 Documentation
 
 - Update roadmap
+- Update readme and contrib
 
 ### 🧪 Testing
 
