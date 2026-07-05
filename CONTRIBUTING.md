@@ -73,15 +73,11 @@ Please, adhere to standard Rust coding conventions.
   cargo fmt
   ```
 
-- **Linting:** We use `clippy` to catch common mistakes.
+- **Linting:** Use `clippy` to catch common mistakes.
 
   ```bash
   cargo clippy
   ```
-
-### Testing
-
-Please ensure that you add tests for any new features or bug fixes.
 
 ## Submitting Changes
 
