@@ -1,4 +1,4 @@
-#:schema https://github.com/rogue-sly/dotbee/blob/main/schema/dotbee.json
+#:schema https://raw.githubusercontent.com/rogue-sly/dotbee/refs/heads/main/schema/dotbee.json
 
 [settings]
 auto_detect_profile = true  # try to match hostname to a profile

@@ -48,6 +48,7 @@
 - Bump rust version
 - Add moar tools
 - Remove warning note
+- Mv gitlab github
 ## [0.6.3] - 2026-05-25
 
 ### 🐛 Bug Fixes
