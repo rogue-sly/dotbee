@@ -1,7 +1,7 @@
 # Dotbee
 
-![Gitlab License](https://img.shields.io/gitlab/license/rogue-sly%2Fdotbee?color=blue)
-![Gitlab Version](https://img.shields.io/gitlab/v/release/rogue-sly%2Fdotbee)
+![Gitlab License](https://img.shields.io/github/license/rogue-sly%2Fdotbee?color=blue)
+![Gitlab Version](https://img.shields.io/github/v/release/rogue-sly%2Fdotbee)
 ![Crates.io Downloads (recent)](https://img.shields.io/crates/dr/dotbee)
 
 **Dotbee** is a simple, symlink-based dotfiles manager. It focuses on doing one thing well: managing your configuration files without the complexity of shell scripts or bloated feature sets.
@@ -19,8 +19,6 @@
 
 ## Documentation
 
-For more details, see the [GitLab Wiki](https://gitlab.com/rogue-sly/dotbee/-/wikis).
-
 Check the [Roadmap](ROADMAP.md) to see current progress of dotbee's development.
 
 ## Installation
@@ -28,7 +26,7 @@ Check the [Roadmap](ROADMAP.md) to see current progress of dotbee's development.
 ### Using [Mise](https://mise.jdx.dev/)
 
 ```sh
-mise use gitlab:rogue-sly/dotbee
+mise use github:rogue-sly/dotbee
 ```
 
 ### Using [cargo-binstall](https://github.com/cargo-bins/cargo-binstall)
@@ -45,18 +43,18 @@ cargo binstall dotbee
 
 ```sh
 # fetch the package first
-wget https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.3/downloads/dotbee-v0.6.3-amd64.deb
+wget https://gitlab.com/rogue-sly/dotbee/-/releases/v.../downloads/dotbee-v...-amd64.deb
 # then install it
-sudo apt install ./dotbee-v0.6.3-amd64.deb
+sudo apt install ./dotbee-v...-amd64.deb
 ```
 
 - aarch64/arm64
 
 ```sh
 # fetch the package first
-wget https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.3/downloads/dotbee-v0.6.3-arm64.deb
+wget https://gitlab.com/rogue-sly/dotbee/-/releases/v.../downloads/dotbee-v...-arm64.deb
 # then install it
-sudo apt install ./dotbee-v0.6.3-arm64.deb
+sudo apt install ./dotbee-v...-arm64.deb
 ```
 
 2. dnf/yum
@@ -64,13 +62,13 @@ sudo apt install ./dotbee-v0.6.3-arm64.deb
 - x86_64/amd64
 
 ```sh
-sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.3/downloads/dotbee-v0.6.3-x86_64.rpm
+sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v.../downloads/dotbee-v...-x86_64.rpm
 ```
 
 - aarch64/arm64
 
 ```sh
-sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v0.6.3/downloads/dotbee-v0.6.3-aarch64.rpm
+sudo dnf install https://gitlab.com/rogue-sly/dotbee/-/releases/v.../downloads/dotbee-...-aarch64.rpm
 ```
 
 ### From Source

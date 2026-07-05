@@ -1,6 +1,6 @@
 # Contributing to Dotbee
 
-First off, thank you for considering contributing to Dotbee! It's people like you that make the open-source community such an amazing place to learn, inspire, and create.
+Thank you for considering spending some of your time on this project! :D
 
 ## Getting Started
 
@@ -8,21 +8,20 @@ First off, thank you for considering contributing to Dotbee! It's people like yo
 
 To work on Dotbee, you will need the following tools installed on your system:
 
-- **Rust**: Version 1.95.0 or later.
+- **Rust Toolchain**: Install using [rustup](https://rustup.rs/)
 - **Mise**: Use [mise](https://mise.jdx.dev/) for managing development tasks and tools.
 - **Docker or Podman**: Highly recommended for running and testing Dotbee safely without affecting your host system's files.
-- **Cross**: [cross](https://github.com/cross-rs/cross) is needed in order to test dotbee in a container.
 
 ### Setting up the Environment
 
 1. **Clone the repository:**
 
    ```bash
-   git clone https://gitlab.com/rogue-sly/dotbee.git
+   git clone https://github.com/rogue-sly/dotbee.git
    cd dotbee
    ```
 
-2. **Install dependencies:**
+1. **Install dependencies:**
    If you are using `mise`, it might automatically detect and suggest installing the required tools defined in `mise.toml`.
 
 ## Development Workflow
@@ -109,33 +108,27 @@ git commit -m "feat: add support for custom icon sets"
 
 ### Pull Request Process
 
-1. **Fork the repository** on GitLab.
-2. **Create a new branch** for your feature or bug fix.
+1. **Fork the repository** on Github.
+
+1. **Create a new branch** for your feature or bug fix.
 
    ```bash
    git checkout -b feature/amazing-feature
    ```
 
-3. **Commit your changes** following the guidelines above.
-4. **Push to your fork**:
+1. **Commit your changes** following the guidelines above.
+
+1. **Push to your fork**:
 
    ```bash
    git push origin feature/amazing-feature
    ```
 
-5. **Open a Merge Request** (MR) against the `main` branch of the `dotbee` repository.
+1. **Open a Merge Request** (MR) against the `main` branch of the `dotbee` repository.
 
 ## Note on Using LLM/AI Assistants
 
-After using `gemini-cli` and ending up blindly shooting myself in the foot, I decided to limit the capabilities of AI and let it only give suggestions and hints and only spit out code when I tell it to do so.
-
-While the LLM being able to quickly edit files is convenient, it's also kind of a double edged sword as it will make you lazier.
-
-I also suggest not copying and pasting but rather writing it line by line, word by word. This should help you discover errors and mistakes before they even happen.
-
-~~Personally, I find it very useful for things like writing small scripts like the ones I have inside of `.mise-tasks` and for doing annoying tasks like writing change-logs.~~
-
-Yeah... I don't use that anymore lol
+You can use LLM/AI for help, but please don't use it as a human substitute. For example, you can ask it questions about the codebase or perhaps questions about a specific library, but don't use it for generating code. [I will know if you do that.](https://tenor.com/view/tuco-salamanca-powder-gif-24543326)
 
 ## License
 
