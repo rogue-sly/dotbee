@@ -21,6 +21,7 @@
 - Inline manager structs
 - Use bail! macro
 - Use peek instead of faulty arithmetics
+- Iron out all `unwrap()`s and `expect()`s
 
 ### 📚 Documentation
 
