@@ -29,6 +29,7 @@
 
 - Update roadmap
 - Update readme and contrib
+- Remove testing bit
 
 ### 🧪 Testing
 

@@ -1,5 +1,6 @@
 [tools]
 "cargo:cargo-zigbuild" = "latest"
+act = "latest"
 git-cliff = "latest"
 lefthook = "latest"
 tombi = "latest"
