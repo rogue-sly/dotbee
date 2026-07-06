@@ -69,7 +69,7 @@ jobs:
       - name: Validate tag format
         shell: bash
         run: |
-          [[ "${GITHUB_REF_NAME}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "${GITHUB_REF_NAME}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable

@@ -1,5 +1,5 @@
 # Changelog
-## [unreleased]
+## [0.7.0] - 2026-07-06
 
 ### 🚀 Features
 
@@ -53,6 +53,7 @@
 - Remove warning note
 - Mv gitlab github
 - Add act to mise.toml
+- Fully replace gitlab-ci script with github action
 ## [0.6.3] - 2026-05-25
 
 ### 🐛 Bug Fixes
