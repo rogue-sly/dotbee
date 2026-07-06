@@ -52,6 +52,7 @@
 - Add moar tools
 - Remove warning note
 - Mv gitlab github
+- Add act to mise.toml
 ## [0.6.3] - 2026-05-25
 
 ### 🐛 Bug Fixes
