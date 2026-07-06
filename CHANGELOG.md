@@ -11,6 +11,7 @@
 - Eliminate possible symlink-following TOCTOU during conflict overwrite
 - Provide proper link for schema
 - Update incorrect links
+- Prefix 'v' in the tag validation step
 
 ### 🚜 Refactor
 

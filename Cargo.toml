@@ -1,6 +1,6 @@
 [package]
 name = "dotbee"
-version = "0.6.3"
+version = "0.7.0"
 edition = "2024"
 rust-version = "1.96.0"
 description = "Dotfiles manager designed for ease of use"
