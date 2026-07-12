@@ -55,6 +55,7 @@
 - Mv gitlab github
 - Add act to mise.toml
 - Fully replace gitlab-ci script with github action
+- Bump version
 ## [0.6.3] - 2026-05-25
 
 ### 🐛 Bug Fixes
