@@ -50,6 +50,8 @@ This document outlines the planned development path for **Dotbee**. As an alpha 
 
 - [ ] **Clearer Link Names:** instead of `"~/path/to/destination" = "path/to/source"`, now it's `my_config = {src = "path/to/source", dst = "~/path/to/destination"}`.
 
+- [ ] **Change default profile selection behavior:** Show an interactive menu instead of selecting profile based on hostname.
+
 ## Phase 2.5: Moar features.
 
 - [ ] **`dotbee add` / `dotbee remove` Commands:** Add files to your dotbee.toml easily instead of manually moving and editing config.
