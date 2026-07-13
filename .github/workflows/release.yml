@@ -1,4 +1,4 @@
-name: Release Build
+name: Release
 
 on:
   push:
@@ -8,8 +8,33 @@ on:
 permissions:
   contents: write
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
+  changelog:
+    name: Generate changelog
+    runs-on: ubuntu-latest
+    outputs:
+      release_body: ${{ steps.git-cliff.outputs.content }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: -vv --latest --strip header
+        env:
+          OUTPUT: CHANGES.md
+          GITHUB_REPO: ${{ github.repository }}
+
   build:
+    name: Build ${{ matrix.artifact_name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -31,14 +56,13 @@ jobs:
             binary_path: target/x86_64-unknown-linux-gnu/release/dotbee
             pkg_arch_deb: amd64
             pkg_arch_rpm: x86_64
-            target: "x86_64-unknown-linux-gnu"
+            target: x86_64-unknown-linux-gnu
           - os: ubuntu-22.04
             artifact_name: dotbee-linux-arm64
             binary_path: target/aarch64-unknown-linux-gnu/release/dotbee
             pkg_arch_deb: arm64
             pkg_arch_rpm: aarch64
             target: aarch64-unknown-linux-gnu
-
 
           # Linux Musl
           - os: ubuntu-22.04
@@ -64,7 +88,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Validate tag format
         shell: bash
@@ -77,6 +101,9 @@ jobs:
       - name: Setup Rust target
         if: matrix.target != ''
         run: rustup target add ${{ matrix.target }}
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
 
       - name: Setup Android NDK
         if: matrix.target == 'aarch64-linux-android'
@@ -110,15 +137,10 @@ jobs:
       - name: Set musl linker for aarch64
         if: matrix.linker != ''
         run: |
-          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=${{ matrix.linker }}" >> $GITHUB_ENV
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=${{ matrix.linker }}" >> "$GITHUB_ENV"
 
-      - name: Build targeted release
-        if: matrix.target != '' && matrix.target != 'aarch64-linux-android'
+      - name: Build release
         run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Build Android release
-        if: matrix.target == 'aarch64-linux-android'
-        run: cargo build --release --target aarch64-linux-android
 
       - name: Package .deb
         if: matrix.pkg_arch_deb != ''
@@ -126,7 +148,7 @@ jobs:
           mkdir -p dist
           cargo install cargo-deb
           cargo deb --target ${{ matrix.target }}
-          cp target/${{ matrix.target }}/debian/*.deb dist/${{ matrix.artifact_name }}-${{ matrix.pkg_arch_deb }}.deb
+          cp target/${{ matrix.target }}/debian/*.deb dist/${{ matrix.artifact_name }}.deb
 
       - name: Package .rpm
         if: matrix.pkg_arch_rpm != ''
@@ -134,7 +156,7 @@ jobs:
           mkdir -p dist
           cargo install cargo-generate-rpm
           cargo generate-rpm --target ${{ matrix.target }}
-          cp target/${{ matrix.target }}/generate-rpm/*.rpm dist/${{ matrix.artifact_name }}-${{ matrix.pkg_arch_rpm }}.rpm
+          cp target/${{ matrix.target }}/generate-rpm/*.rpm dist/${{ matrix.artifact_name }}.rpm
 
       - name: Stage artifact
         shell: bash
@@ -143,20 +165,23 @@ jobs:
           cp "${{ matrix.binary_path }}" "dist/${{ matrix.artifact_name }}"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: artifacts-${{ matrix.target }}
           path: dist/*
+
   publish:
+    name: Publish Release
     runs-on: ubuntu-latest
-    needs: build
+    needs: [changelog, build]
 
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v6
         with:
           path: dist
           merge-multiple: true
+          pattern: artifacts-*
 
       - name: Generate checksums
         shell: bash
@@ -164,16 +189,17 @@ jobs:
           cd dist
           sha256sum dotbee-* > checksums.txt
 
-      - name: Ensure GitHub release exists
-        env:
-          GH_REPO: ${{ github.repository }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1 ||
-          gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --generate-notes
+      - name: Create Release & Upload Assets
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/*
+          tag: ${{ github.ref }}
+          body: ${{ needs.changelog.outputs.release_body }}
+          overwrite: true
+          file_glob: true
 
-      - name: Publish release assets
+      - name: Publish to crates.io
         env:
-          GH_REPO: ${{ github.repository }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${GITHUB_REF_NAME}" dist/* --clobber
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish
