@@ -1,0 +1,5 @@
+[format.rules]
+indent-sub-tables = false
+indent-table-key-value-pairs = false
+indent-width = 4
+line-width = 140
