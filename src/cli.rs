@@ -79,4 +79,7 @@ pub enum SubCommand {
 
     #[command(visible_alias = "f")]
     Fetch { method: FetchMethod },
+
+    #[command(visible_alias = "e")]
+    Edit,
 }

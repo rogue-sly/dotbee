@@ -19,6 +19,7 @@ fn main() -> anyhow::Result<()> {
         SubCommand::Add { profile } => add::run(&mut context, profile)?,
         SubCommand::Remove { profile } => remove::run(&mut context, profile)?,
         SubCommand::Fetch { method } => fetch::run(&mut context, method)?,
+        SubCommand::Edit => edit::run(&context)?,
     }
 
     Ok(())

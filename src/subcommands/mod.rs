@@ -1,6 +1,7 @@
 pub mod add;
 pub mod completion;
 pub mod doctor;
+pub mod edit;
 pub mod fetch;
 pub mod init;
 pub mod list;
