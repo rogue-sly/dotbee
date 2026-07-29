@@ -178,7 +178,6 @@ fn empty_config() {
     assert!(!config.has_profiles());
     assert!(config.get_global_links().is_none());
     let settings = config.get_settings();
-    assert_eq!(settings.auto_detect_profile, Some(false));
     assert!(settings.on_conflict.is_none());
 }
 

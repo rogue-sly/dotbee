@@ -14,15 +14,11 @@ use crate::utils::message;
 pub struct Settings {
     #[serde(default, deserialize_with = "conflict::deserialize_conflict_action")]
     pub on_conflict: Option<ConflictAction>,
-    pub auto_detect_profile: Option<bool>,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self {
-            on_conflict: None,
-            auto_detect_profile: Some(false),
-        }
+        Self { on_conflict: None }
     }
 }
 
@@ -139,10 +135,6 @@ impl Config {
             // check if profiles are empty
             if !has_profiles {
                 message::warning("No profiles defined in configuration.");
-            }
-            // check for auto_detect_profile with no profiles
-            if self.settings.auto_detect_profile == Some(true) && !has_profiles {
-                message::warning("auto_detect_profile is enabled but no profiles are defined.");
             }
         }
 

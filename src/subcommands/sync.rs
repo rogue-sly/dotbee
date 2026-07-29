@@ -1,9 +1,6 @@
 use crate::{
     context::{config::ConflictAction, symlink::SymlinkStatus},
-    utils::{
-        common::{expand_tilde, get_hostname},
-        message,
-    },
+    utils::{common::expand_tilde, message},
 };
 
 use anyhow::{Context, bail};
@@ -34,21 +31,10 @@ impl Display for ConflictKind {
 }
 
 pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) -> anyhow::Result<()> {
+    let explicit_profile = profile_name.is_some();
     let target_profile = match profile_name {
-        Some(name) => name,
-        None => {
-            if !context.config.get_settings().auto_detect_profile.unwrap_or_default() {
-                bail!("No profile specified and auto_detect_profile is disabled.");
-            }
-
-            let hostname = get_hostname().context("Failed to auto-detect profile from hostname")?;
-            message::info(&format!(
-                "No profile specified. Auto-detecting profile from hostname: '{}'",
-                hostname
-            ));
-
-            hostname
-        }
+        Some(name) => Some(name),
+        None => context.state.get_active_profile().map(|s| s.to_string()),
     };
 
     let dotfiles_root = context.state.get_dotfiles_root()?;
@@ -63,9 +49,11 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
         }
     }
 
-    let profile = context.config.get_profile(&target_profile)?;
-    for (k, v) in &profile.links {
-        desired_links.insert(k.clone(), v.clone());
+    if let Some(ref profile_name) = target_profile {
+        let profile = context.config.get_profile(profile_name)?;
+        for (k, v) in &profile.links {
+            desired_links.insert(k.clone(), v.clone());
+        }
     }
 
     // step 1: remove ghost links (links in state but not in desired config)
@@ -96,12 +84,10 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
 
     // print header for dry run
     if dry_run {
-        println!(
-            "{} {} {}",
-            "Switching to profile".yellow(),
-            target_profile.bold().cyan(),
-            "(dry run)".yellow()
-        );
+        match target_profile {
+            Some(ref profile) => println!("{} {} {}", "Syncing profile".yellow(), profile.bold().cyan(), "(dry run)".yellow()),
+            None => println!("{} {}", "Syncing global links".yellow(), "(dry run)".yellow()),
+        }
     }
 
     // step 2: process desired links
@@ -164,8 +150,14 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
     }
 
     if !dry_run {
-        context.state.set_active_profile(target_profile.clone())?;
-        message::success(&format!("Switched to profile '{}'", target_profile));
+        if let Some(ref name) = target_profile {
+            if explicit_profile {
+                context.state.set_active_profile(name.clone())?;
+            }
+            message::success(&format!("Synced profile '{}'", name));
+        } else {
+            message::success("Synced global links (no active profile).");
+        }
     }
 
     Ok(())
@@ -177,7 +169,7 @@ fn handle_conflict(
     destination: &PathBuf,
     rel_source: &str,
     context: &crate::context::Context,
-) -> anyhow::Result<(), anyhow::Error> {
+) -> anyhow::Result<()> {
     let dotfiles_root = context.state.get_dotfiles_root()?;
 
     match action {

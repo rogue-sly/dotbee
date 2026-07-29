@@ -46,8 +46,6 @@ EOF
 # Create dotbee.toml
 RUN <<EOF cat > dotbee.toml
 [settings]
-auto_detect_profile = true
-
 [profiles.laptop.links]
 "~/.config/nvim" = "profiles/laptop/nvim"
 "~/.config/kitty" = "profiles/laptop/kitty"

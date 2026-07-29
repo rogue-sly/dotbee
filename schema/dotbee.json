@@ -25,11 +25,6 @@
               ]
             }
           }
-        },
-        "auto_detect_profile": {
-          "type": "boolean",
-          "description": "Automatically select a profile based on the system's hostname when no profile is specified",
-          "default": false
         }
       },
       "additionalProperties": false
