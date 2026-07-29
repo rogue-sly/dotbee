@@ -33,6 +33,26 @@ jobs:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
 
+      - name: Generate full CHANGELOG.md
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: -vv --output CHANGELOG.md
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Commit changelog
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git fetch origin main
+          git checkout main
+          git add CHANGELOG.md
+          if ! git diff --cached --exit-code; then
+            git commit -m "chore(release): update changelog"
+            git push
+          fi
+
   build:
     name: Build ${{ matrix.artifact_name }}
     runs-on: ${{ matrix.os }}
