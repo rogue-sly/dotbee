@@ -1,7 +1,7 @@
 use anyhow::Context;
 use clap::Parser;
 use dotbee::cli::{Cli, SubCommand};
-use dotbee::subcommands;
+use dotbee::subcommands::*;
 use nix::fcntl::{Flock, FlockArg};
 use std::fs::File;
 
@@ -10,13 +10,15 @@ fn main() -> anyhow::Result<()> {
     let _lock = lock_process()?;
     let mut context = dotbee::context::Context::new(dotbee.config, dotbee.dry_run)?;
     match dotbee.subcommand {
-        SubCommand::Completion { shell } => subcommands::completion::run(shell)?,
-        SubCommand::Doctor => subcommands::doctor::run(&context)?,
-        SubCommand::Init => subcommands::init::run(&mut context)?,
-        SubCommand::List => subcommands::list::run(&context)?,
-        SubCommand::Purge => subcommands::purge::run(&mut context)?,
-        SubCommand::Repair => subcommands::repair::run(&mut context)?,
-        SubCommand::Switch { profile } => subcommands::switch::run(profile, &mut context)?,
+        SubCommand::Completion { shell } => completion::run(shell)?,
+        SubCommand::Doctor => doctor::run(&context)?,
+        SubCommand::Init => init::run(&mut context)?,
+        SubCommand::List => list::run(&context)?,
+        SubCommand::Purge => purge::run(&mut context)?,
+        SubCommand::Switch { profile } => switch::run(profile, &mut context)?,
+        SubCommand::Add { profile } => add::run(&mut context, profile)?,
+        SubCommand::Remove { profile } => remove::run(&mut context, profile)?,
+        SubCommand::Fetch { method } => fetch::run(&mut context, method)?,
     }
 
     Ok(())

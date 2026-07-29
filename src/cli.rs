@@ -1,7 +1,9 @@
 use clap::{Parser, Subcommand, ValueEnum};
 
+use crate::subcommands::fetch::FetchMethod;
+
 #[derive(Parser)]
-#[command(name = "Dotbee", about = "Easy to use dotfiles manager", version, author)]
+#[command(name = "dotbee", about = "Easy to use dotfiles manager", version, author)]
 pub struct Cli {
     #[command(subcommand)]
     pub subcommand: SubCommand,
@@ -59,14 +61,21 @@ pub enum SubCommand {
     #[command(visible_alias = "p")]
     Purge,
 
-    /// attempt to fix broken symlinks
-    #[command(visible_alias = "r")]
-    Repair,
-
     /// select profile
     #[command(visible_alias = "s")]
     Switch {
         /// profile to switch to
         profile: Option<String>,
     },
+
+    /// add config file/dir to dotfiles
+    #[command(visible_alias = "a")]
+    Add { profile: Option<String> },
+
+    // remove config file/dir from dotfiles
+    #[command(visible_alias = "rm")]
+    Remove { profile: Option<String> },
+
+    #[command(visible_alias = "f")]
+    Fetch { method: FetchMethod },
 }
