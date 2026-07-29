@@ -33,7 +33,7 @@ impl Display for ConflictKind {
     }
 }
 
-pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) -> anyhow::Result<(), anyhow::Error> {
+pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) -> anyhow::Result<()> {
     let target_profile = match profile_name {
         Some(name) => name,
         None => {

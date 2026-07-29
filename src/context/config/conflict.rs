@@ -1,4 +1,4 @@
-use crate::subcommands::switch::ConflictKind;
+use crate::subcommands::sync::ConflictKind;
 use demand::{DemandOption, Select, Theme};
 use serde::{Deserialize, Deserializer};
 use std::fmt::{Display, Formatter};
@@ -61,7 +61,7 @@ impl ConflictAction {
             .description(format!("Conflict occurred of kind: {}.\nhow do you want to handle it?", kind).as_str())
             .theme(&Theme::base16())
             .options(vec![
-                DemandOption::new(ConflictAction::Abort).description("Stop switching"),
+                DemandOption::new(ConflictAction::Abort).description("Stop syncing"),
                 DemandOption::new(ConflictAction::Adopt).description("Replace the file in dotfiles with the conflicting one"),
                 DemandOption::new(ConflictAction::Overwrite).description("Overwrite conflicting file"),
                 DemandOption::new(ConflictAction::Skip).description("Don't symlink this file"),

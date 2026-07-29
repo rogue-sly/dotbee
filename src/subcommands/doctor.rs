@@ -47,7 +47,7 @@ pub fn run(context: &crate::context::Context) -> anyhow::Result<(), anyhow::Erro
             message::error(&format!("Status: Profile '{}' not found in config!", active_profile.red()));
             check_ghost_links(&config_links, context)?;
             bail!(
-                "Profile '{}' not found. Update your config or run 'dotbee switch' to select a different profile.",
+                "Profile '{}' not found. Update your config or run 'dotbee sync --profile <profile>' to select a different profile.",
                 active_profile
             )
         }
@@ -71,7 +71,7 @@ fn check_ghost_links(config_links: &IndexMap<String, String>, context: &crate::c
         for ghost in ghosts {
             message::warning(&format!("{} (formerly linked to {})", ghost.target, ghost.source));
         }
-        println!("{}", "\nRun 'dotbee switch' to clean up ghost links.".italic().dimmed());
+        println!("{}", "\nRun 'dotbee sync' to clean up ghost links.".italic().dimmed());
     }
 
     Ok(())

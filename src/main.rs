@@ -15,7 +15,7 @@ fn main() -> anyhow::Result<()> {
         SubCommand::Init => init::run(&mut context)?,
         SubCommand::List => list::run(&context)?,
         SubCommand::Purge => purge::run(&mut context)?,
-        SubCommand::Switch { profile } => switch::run(profile, &mut context)?,
+        SubCommand::Sync { profile } => sync::run(profile, &mut context)?,
         SubCommand::Add { profile } => add::run(&mut context, profile)?,
         SubCommand::Remove { profile } => remove::run(&mut context, profile)?,
         SubCommand::Fetch { method } => fetch::run(&mut context, method)?,

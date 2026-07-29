@@ -6,4 +6,4 @@ pub mod init;
 pub mod list;
 pub mod purge;
 pub mod remove;
-pub mod switch;
+pub mod sync;

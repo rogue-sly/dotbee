@@ -61,10 +61,11 @@ pub enum SubCommand {
     #[command(visible_alias = "p")]
     Purge,
 
-    /// select profile
+    /// sync config
     #[command(visible_alias = "s")]
-    Switch {
-        /// profile to switch to
+    Sync {
+        /// target profile
+        #[arg(long)]
         profile: Option<String>,
     },
 

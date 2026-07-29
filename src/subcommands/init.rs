@@ -53,7 +53,7 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
     message::success(&format!("Successfully initialized {}", path_string.to_string_lossy()));
     println!(
         "Edit the file to configure your dotfiles, then run {} to apply.",
-        "dotbee switch <profile>".yellow()
+        "dotbee sync --profile <profile>".yellow()
     );
 
     Ok(())
