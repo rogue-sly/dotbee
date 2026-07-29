@@ -1,7 +1,4 @@
 [tools]
-"cargo:cargo-zigbuild" = "latest"
-"cargo:wrkflw" = "latest"
 git-cliff = "latest"
 lefthook = "latest"
 tombi = "latest"
-zig = "latest"
