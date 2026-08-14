@@ -24,5 +24,5 @@ pub fn expand_tilde(path_str: &str) -> PathBuf {
 pub fn get_hostname() -> Result<String> {
     let hostname = gethostname().context("Couldn't get hostname")?;
     let hostname = hostname.to_str().context("Failed to parse hostname")?.to_string();
-    return Ok(hostname);
+    Ok(hostname)
 }
