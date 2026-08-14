@@ -10,7 +10,7 @@
 
 - **Profile Support:** Switch between different environments (e.g., Desktop, Server, Termux).
 - **Global Configs:** Define links that apply across all profiles.
-- **Health Checks:** `dotbee doctor` and `repair` help you identify and fix broken symlinks.
+- **Health Checks:** `dotbee doctor` and `dotbee sync` help you identify and fix broken symlinks.
 - **LSP Support:** Full JSON schema provided for autocompletion in `dotbee.toml`.
 - **Dry Run:** Preview changes with `--dry-run` before applying them.
 
@@ -110,10 +110,10 @@ Edit `dotbee.toml` to define your links.
 dotbee list
 ```
 
-4. **Switch Profile:**
+4. **Sync Profile:**
 
 ```sh
-dotbee switch desktop
+dotbee sync --profile desktop
 ```
 
 5. **Check Status:**
