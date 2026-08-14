@@ -73,13 +73,15 @@ pub enum SubCommand {
     #[command(visible_alias = "a")]
     Add { profile: Option<String> },
 
-    // remove config file/dir from dotfiles
+    /// remove config file/dir from dotfiles
     #[command(visible_alias = "rm")]
     Remove { profile: Option<String> },
 
+    /// download dotfiles repository
     #[command(visible_alias = "f")]
     Fetch { method: FetchMethod },
 
+    /// edit dotbee.toml config
     #[command(visible_alias = "e")]
     Edit,
 }
