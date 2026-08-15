@@ -8,6 +8,6 @@ pub enum FetchMethod {
     Git,
 }
 
-pub fn run(context: &mut Context, method: FetchMethod) -> Result<()> {
+pub fn run(_context: &mut Context, _method: FetchMethod) -> Result<()> {
     todo!();
 }
