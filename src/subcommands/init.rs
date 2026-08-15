@@ -10,7 +10,7 @@ const DEFAULT_CONFIG: &str = include_str!("../context/config/dotbee.toml");
 pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
     let path_string = context
         .config
-        .get_config_path()
+        .get_path()
         .map(|p| p.to_path_buf())
         .unwrap_or(PathBuf::from("dotbee.toml"));
     let config_path = Path::new(&path_string);

@@ -116,7 +116,7 @@ impl Config {
         &self.settings
     }
 
-    pub fn get_config_path(&self) -> Option<&Path> {
+    pub fn get_path(&self) -> Option<&Path> {
         self.config_path.as_deref()
     }
 
@@ -397,7 +397,7 @@ mod tests {
         assert_eq!(links.get("my_link").map(|l| l.dst.as_str()), Some("~/.config/a"));
         assert_eq!(links.len(), 1);
         assert!(!config.has_profiles());
-        assert!(config.get_config_path().is_some());
+        assert!(config.get_path().is_some());
     }
 
     #[test]
@@ -462,7 +462,7 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let path = dir.path().join("nonexistent.toml");
         let config = Config::load(Some(path.to_string_lossy().to_string())).unwrap();
-        assert!(config.get_config_path().is_none());
+        assert!(config.get_path().is_none());
         assert!(!config.has_profiles());
     }
 
