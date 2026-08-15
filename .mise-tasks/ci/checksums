@@ -2,11 +2,11 @@
 #MISE depends=["ci:build"]
 set -euo pipefail
 
-source "$(dirname "$0")/_lib.sh"
+source "$(dirname "$0")/../_lib.sh"
 init
 validate_version
 
 step "Generating checksums"
 
-(cd dist && sha256sum dotbee-* > checksums.txt)
+(cd dist && sha256sum dotbee-* >checksums.txt)
 ok "checksums.txt generated"

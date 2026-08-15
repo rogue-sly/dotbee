@@ -2,64 +2,64 @@
 #MISE depends=["ci:prereq"]
 set -euo pipefail
 
-source "$(dirname "$0")/_lib.sh"
+source "$(dirname "$0")/../_lib.sh"
 init
 validate_version
 
 step "Building all targets"
 
 TARGETS=(
-  x86_64-apple-darwin
-  aarch64-apple-darwin
-  x86_64-unknown-linux-gnu
-  aarch64-unknown-linux-gnu
-  x86_64-unknown-linux-musl
-  aarch64-unknown-linux-musl
-  aarch64-linux-android
+    x86_64-apple-darwin
+    aarch64-apple-darwin
+    x86_64-unknown-linux-gnu
+    aarch64-unknown-linux-gnu
+    x86_64-unknown-linux-musl
+    aarch64-unknown-linux-musl
+    aarch64-linux-android
 )
 
 ARTIFACT_NAMES=(
-  dotbee-macos-x86_64
-  dotbee-macos-arm64
-  dotbee-linux-x86_64
-  dotbee-linux-arm64
-  dotbee-linux-x86_64-musl
-  dotbee-linux-arm64-musl
-  dotbee-android-arm64
+    dotbee-macos-x86_64
+    dotbee-macos-arm64
+    dotbee-linux-x86_64
+    dotbee-linux-arm64
+    dotbee-linux-x86_64-musl
+    dotbee-linux-arm64-musl
+    dotbee-android-arm64
 )
 
-DEB_ARCHS=( "" "" amd64 arm64 amd64 arm64 "" )
-RPM_ARCHS=( "" "" x86_64 aarch64 x86_64 aarch64 "" )
+DEB_ARCHS=("" "" amd64 arm64 amd64 arm64 "")
+RPM_ARCHS=("" "" x86_64 aarch64 x86_64 aarch64 "")
 
 setup_ndk_env
 
 mkdir -p dist
 
 for i in "${!TARGETS[@]}"; do
-  target="${TARGETS[$i]}"
-  artifact="${ARTIFACT_NAMES[$i]}"
-  deb_arch="${DEB_ARCHS[$i]}"
-  rpm_arch="${RPM_ARCHS[$i]}"
+    target="${TARGETS[$i]}"
+    artifact="${ARTIFACT_NAMES[$i]}"
+    deb_arch="${DEB_ARCHS[$i]}"
+    rpm_arch="${RPM_ARCHS[$i]}"
 
-  echo ""
-  info "[$((i+1))/${#TARGETS[@]}] Building $artifact ($target)"
+    echo ""
+    info "[$((i + 1))/${#TARGETS[@]}] Building $artifact ($target)"
 
-  cargo zigbuild --release --target "$target"
+    cargo zigbuild --release --target "$target"
 
-  info "Staging binary..."
-  cp "target/$target/release/dotbee" "dist/$artifact"
+    info "Staging binary..."
+    cp "target/$target/release/dotbee" "dist/$artifact"
 
-  if [ -n "$deb_arch" ]; then
-    info "Packaging .deb..."
-    cargo deb --target "$target"
-    cp "target/$target/debian/"*.deb "dist/$artifact.deb"
-  fi
+    if [ -n "$deb_arch" ]; then
+        info "Packaging .deb..."
+        cargo deb --target "$target"
+        cp "target/$target/debian/"*.deb "dist/$artifact.deb"
+    fi
 
-  if [ -n "$rpm_arch" ]; then
-    info "Packaging .rpm..."
-    cargo generate-rpm --target "$target"
-    cp "target/$target/generate-rpm/"*.rpm "dist/$artifact.rpm"
-  fi
+    if [ -n "$rpm_arch" ]; then
+        info "Packaging .rpm..."
+        cargo generate-rpm --target "$target"
+        cp "target/$target/generate-rpm/"*.rpm "dist/$artifact.rpm"
+    fi
 
-  ok "$artifact done"
+    ok "$artifact done"
 done

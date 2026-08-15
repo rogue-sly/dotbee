@@ -4,16 +4,15 @@
 #USAGE }
 #MISE depends=[
 #MISE   "ci:bump {{usage.increment}}",
-#MISE   "ci:changelog {{usage.increment}}",
+#MISE   "ci:tag {{usage.increment}}",
 #MISE   "ci:prereq",
 #MISE   "ci:build",
 #MISE   "ci:checksums",
-#MISE   "ci:gh-release",
 #MISE   "ci:publish",
 #MISE ]
 set -euo pipefail
 
-source "$(dirname "$0")/_lib.sh"
+source "$(dirname "$0")/../_lib.sh"
 init
 validate_version
 

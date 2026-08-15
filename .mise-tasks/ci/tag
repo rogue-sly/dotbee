@@ -5,40 +5,34 @@
 #MISE depends=["ci:bump {{usage.increment}}"]
 set -euo pipefail
 
-source "$(dirname "$0")/_lib.sh"
+source "$(dirname "$0")/../_lib.sh"
 init
 validate_version
 
-IN_CI="${CI:-false}"
-
-if [ "$IN_CI" = "true" ]; then
-  step "Running in CI skipping git operations"
-  exit 0
-fi
-
-step "Preparing git"
+step "Generating changelog"
 
 if [ -n "$(git status --porcelain)" ]; then
-  err "Working tree is not clean. Commit or stash changes first."
-  exit 1
+    err "Working tree is not clean. Commit or stash changes first."
+    exit 1
 fi
 
 if git rev-parse "$TAG" >/dev/null 2>&1; then
-  err "Tag $TAG already exists locally."
-  exit 1
+    err "Tag $TAG already exists locally."
+    exit 1
 fi
 
-info "Generating changelog..."
-git-cliff --config cliff.toml -vv --output CHANGELOG.md
+git-cliff --config cliff.toml -vv --output CHANGELOG.md --tag "$TAG"
 ok "Changelog generated"
 
 git add CHANGELOG.md
 if ! git diff --cached --exit-code >/dev/null 2>&1; then
-  git commit -m "chore(release): update changelog"
-  ok "Changelog committed"
+    git commit -m "chore(release): update changelog"
+    ok "Changelog committed"
 else
-  ok "No changelog changes"
+    ok "No changelog changes"
 fi
+
+step "Pushing main and creating tag"
 
 git push origin main
 ok "Changes pushed to main"

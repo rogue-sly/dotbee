@@ -8,7 +8,10 @@ err()   { echo -e "  \e[31m\xe2\x9c\x97\e[0m $*"; }
 init() {
   VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)
   TAG="v$VERSION"
-  ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+  ROOT="$(cd "$(dirname "$0")" && pwd)"
+  while [ ! -f "$ROOT/Cargo.toml" ] && [ "$ROOT" != "/" ]; do
+    ROOT="$(dirname "$ROOT")"
+  done
   cd "$ROOT"
 }
 
