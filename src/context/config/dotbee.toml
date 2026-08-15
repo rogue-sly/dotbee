@@ -5,20 +5,20 @@ on_conflict = "ask"  # overwrite, adopt, skip, abort or ask (default: ask)
 
 # global configs that gets applied regardless of profile
 [global.links]
-"~/.bashrc" = "bash/bashrc"
-"~/.gitconfig" = "git/gitconfig"
+bashrc = { src = "bash/bashrc", dst = "~/.bashrc" }
+gitconfig = { src = "git/gitconfig", dst = "~/.gitconfig" }
 
 # each profile below is a collection of configs
 
 # desktop profile
 [profiles.desktop.links]
-"~/.config/i3/config" = "linux/i3_config"
-"~/.config/polybar/config" = "linux/polybar_config"
+i3_config = { src = "linux/i3_config", dst = "~/.config/i3/config" }
+polybar_config = { src = "linux/polybar_config", dst = "~/.config/polybar/config" }
 
 # server profile
 [profiles.server.links]
-"~/.tmux.conf" = "server/tmux.conf"
+tmux_conf = { src = "server/tmux.conf", dst = "~/.tmux.conf" }
 
 # termux profile
 [profiles.termux.links]
-"~/.termux" = "termux/.termux"
+termux = { src = "termux/.termux", dst = "~/.termux" }

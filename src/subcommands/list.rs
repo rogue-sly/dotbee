@@ -1,15 +1,16 @@
 use crate::context::Context;
+use crate::context::config::Link;
 use colored::Colorize;
 use indexmap::IndexMap;
 
 pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
-    // List global symlinks
+    // list global symlinks
     if let Some(global_links) = context.config.get_global_links() {
         println!("{}", "global".yellow().bold());
         show_links(global_links);
     }
 
-    // List profiles and highlight the active one
+    // list profiles and highlight the active one
     let active_profile = context.state.get_active_profile();
     for name in context.config.list_profiles() {
         let is_active = active_profile == Some(name);
@@ -29,10 +30,10 @@ pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
     Ok(())
 }
 
-fn show_links(links: &IndexMap<String, String>) {
+fn show_links(links: &IndexMap<String, Link>) {
     let mut iter = links.iter().peekable();
-    while let Some((target, source)) = iter.next() {
+    while let Some((name, link)) = iter.next() {
         let branch = if iter.peek().is_none() { "└──" } else { "├──" };
-        println!("{} {} -> {}", branch, target, source);
+        println!("{} {}: {} -> {}", branch, name, link.src, link.dst);
     }
 }

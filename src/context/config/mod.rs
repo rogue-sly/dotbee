@@ -24,14 +24,21 @@ impl Default for Settings {
 
 #[derive(Debug, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
+pub struct Link {
+    pub src: String,
+    pub dst: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct Global {
-    pub links: IndexMap<String, String>,
+    pub links: IndexMap<String, Link>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Profile {
-    pub links: IndexMap<String, String>,
+    pub links: IndexMap<String, Link>,
 }
 
 #[derive(Debug, Deserialize, Default, Clone)]
@@ -104,7 +111,7 @@ impl Config {
         self.profiles.as_ref().map(|p| !p.is_empty()).unwrap_or(false)
     }
 
-    pub fn get_global_links(&self) -> Option<&IndexMap<String, String>> {
+    pub fn get_global_links(&self) -> Option<&IndexMap<String, Link>> {
         self.global.as_ref().map(|g| &g.links)
     }
 
@@ -144,8 +151,8 @@ impl Config {
         }
 
         // build flat list of all sources for checks
-        let link_sources: Vec<(&str, &IndexMap<String, String>)> = {
-            let mut sources: Vec<(&str, &IndexMap<String, String>)> = Vec::new();
+        let link_sources: Vec<(&str, &IndexMap<String, Link>)> = {
+            let mut sources: Vec<(&str, &IndexMap<String, Link>)> = Vec::new();
 
             if let Some(g) = &self.global {
                 sources.push(("global", &g.links));
@@ -170,41 +177,51 @@ impl Config {
             .map(|(_, links)| *links);
 
         for (section, links) in link_sources {
-            for (destination, source) in links {
-                // check for empty strings
-                if destination.is_empty() {
-                    errors.push(format!("[{}]: link destination is empty.", section));
+            for (name, link) in links {
+                if name.is_empty() {
+                    errors.push(format!("[{}]: link name is empty.", section));
                 }
-                if source.is_empty() {
-                    errors.push(format!("[{}]: link source is empty for destination '{}'.", section, destination));
+                if link.src.is_empty() {
+                    errors.push(format!("[{}]: link '{}' has an empty src.", section, name));
+                }
+                if link.dst.is_empty() {
+                    errors.push(format!("[{}]: link '{}' has an empty dst.", section, name));
                 }
 
-                // check for absolute or tilde paths (likely dest/source swapped)
-                if source.starts_with('/') || source.starts_with('~') {
+                // src lives inside the dotfiles repo, so it must be relative
+                if link.src.starts_with('/') || link.src.starts_with('~') {
                     errors.push(format!(
-                        "[{}]: source path '{}' looks like a destination path (starts with / or ~). Swap your destination and source.",
-                        section, source
+                "[{}]: link '{}' has src '{}' which looks like a destination path (starts with / or ~). src should be relative to the dotfiles root.",
+                section, name, link.src
+            ));
+                }
+
+                // dst is where the symlink lands, so it must be absolute (or ~)
+                if !link.dst.is_empty() && !link.dst.starts_with('/') && !link.dst.starts_with('~') {
+                    errors.push(format!(
+                        "[{}]: link '{}' has dst '{}' which is not absolute. dst should start with / or ~.",
+                        section, name, link.dst
                     ));
                 }
 
-                // check if a profile overrides a global link
+                // profile overrides global now compares by dst value, not map key
                 if section != "global"
                     && let Some(global) = global_links
-                    && global.contains_key(destination)
+                    && global.values().any(|g| g.dst == link.dst)
                 {
                     errors.push(format!(
-                        "'{}' in section '{}' overrides an existing global link.",
-                        destination, section
+                        "'{}' in section '{}' overrides an existing global link (dst '{}').",
+                        name, section, link.dst
                     ));
                 }
 
-                // check source path existance
-                if !source.is_empty() && !source.starts_with('/') && !source.starts_with('~') {
-                    let source_path = dotfiles_root.join(source);
+                // source path existence
+                if !link.src.is_empty() && !link.src.starts_with('/') && !link.src.starts_with('~') {
+                    let source_path = dotfiles_root.join(&link.src);
                     if !source_path.exists() {
                         errors.push(format!(
                             "Source path '{}' not found (expected at {}).",
-                            source,
+                            link.src,
                             source_path.display()
                         ));
                     }
@@ -223,21 +240,15 @@ impl Config {
 
     fn normalize(&mut self) {
         if let Some(global) = &mut self.global {
-            for source in global.links.values_mut() {
-                let trimmed = source.trim_start_matches("./");
-                if trimmed.len() < source.len() {
-                    *source = trimmed.to_string();
-                }
+            for link in global.links.values_mut() {
+                link.src = link.src.trim_start_matches("./").to_string();
             }
         }
 
         if let Some(profiles) = &mut self.profiles {
             for profile in profiles.values_mut() {
-                for source in profile.links.values_mut() {
-                    let trimmed = source.trim_start_matches("./");
-                    if trimmed.len() < source.len() {
-                        *source = trimmed.to_string();
-                    }
+                for link in profile.links.values_mut() {
+                    link.src = link.src.trim_start_matches("./").to_string();
                 }
             }
         }
@@ -278,7 +289,7 @@ mod tests {
     fn empty_profile_name() {
         let err = error_msg(
             r#"[profiles.""]
-            links = { "~/.config/test" = "test" }
+            links = { my_link = { src = "test", dst = "~/.config/test" } }
             "#,
             &[],
         );
@@ -286,32 +297,43 @@ mod tests {
     }
 
     #[test]
-    fn empty_destination() {
+    fn empty_link_name() {
         let err = error_msg(
             r#"[global.links]
-            "" = "foo"
+            "" = { src = "foo", dst = "~/.config/test" }
             "#,
-            &[],
+            &["foo"],
         );
-        assert!(err.contains("link destination is empty"), "got: {err}");
+        assert!(err.contains("link name is empty"), "got: {err}");
     }
 
     #[test]
-    fn empty_source() {
+    fn empty_src() {
         let err = error_msg(
             r#"[global.links]
-            "~/.config/test" = ""
+            my_link = { src = "", dst = "~/.config/test" }
             "#,
             &[],
         );
-        assert!(err.contains("link source is empty for destination '~/.config/test'"), "got: {err}");
+        assert!(err.contains("empty src"), "got: {err}");
+    }
+
+    #[test]
+    fn empty_dst() {
+        let err = error_msg(
+            r#"[global.links]
+            my_link = { src = "foo", dst = "" }
+            "#,
+            &["foo"],
+        );
+        assert!(err.contains("empty dst"), "got: {err}");
     }
 
     #[test]
     fn swapped_dest_absolute() {
         let err = error_msg(
             r#"[profiles.p.links]
-            "~/.config/test" = "/etc/passwd"
+            my_link = { src = "/etc/passwd", dst = "~/.config/test" }
             "#,
             &[],
         );
@@ -323,7 +345,7 @@ mod tests {
     fn swapped_dest_tilde() {
         let err = error_msg(
             r#"[profiles.p.links]
-            "something" = "~/path"
+            my_link = { src = "~/path", dst = "~/.config/test" }
             "#,
             &[],
         );
@@ -332,13 +354,24 @@ mod tests {
     }
 
     #[test]
+    fn non_absolute_dst() {
+        let err = error_msg(
+            r#"[profiles.p.links]
+            my_link = { src = "foo", dst = "relative/path" }
+            "#,
+            &["foo"],
+        );
+        assert!(err.contains("not absolute"), "got: {err}");
+    }
+
+    #[test]
     fn profile_overrides_global() {
         let err = error_msg(
             r#"[global.links]
-            "~/.config/foo" = "global_foo"
+            g = { src = "global_foo", dst = "~/.config/foo" }
 
             [profiles.p.links]
-            "~/.config/foo" = "local_foo"
+            l = { src = "local_foo", dst = "~/.config/foo" }
             "#,
             &["global_foo", "local_foo"],
         );
@@ -350,7 +383,7 @@ mod tests {
     fn missing_source_file() {
         let err = error_msg(
             r#"[profiles.p.links]
-            "~/.config/test" = "nonexistent"
+            my_link = { src = "nonexistent", dst = "~/.config/test" }
             "#,
             &[],
         );
@@ -362,13 +395,14 @@ mod tests {
     fn valid_global_links() {
         let (_dir, path) = setup(
             r#"[global.links]
-            "~/.config/a" = "a"
+            my_link = { src = "a", dst = "~/.config/a" }
             "#,
             &["a"],
         );
         let config = Config::load(Some(path)).unwrap();
         let links = config.get_global_links().unwrap();
-        assert_eq!(links.get("~/.config/a"), Some(&"a".to_string()));
+        assert_eq!(links.get("my_link").map(|l| l.src.as_str()), Some("a"));
+        assert_eq!(links.get("my_link").map(|l| l.dst.as_str()), Some("~/.config/a"));
         assert_eq!(links.len(), 1);
         assert!(!config.has_profiles());
         assert!(config.get_config_path().is_some());
@@ -378,13 +412,13 @@ mod tests {
     fn valid_profile_links() {
         let (_dir, path) = setup(
             r#"[profiles.p.links]
-            "~/.config/b" = "b"
+            my_link = { src = "b", dst = "~/.config/b" }
             "#,
             &["b"],
         );
         let config = Config::load(Some(path)).unwrap();
         let profile = config.get_profile("p").unwrap();
-        assert_eq!(profile.links.get("~/.config/b"), Some(&"b".to_string()));
+        assert_eq!(profile.links.get("my_link").map(|l| l.src.as_str()), Some("b"));
         assert_eq!(config.list_profiles(), vec!["p"]);
         assert!(config.has_profiles());
     }
@@ -393,18 +427,18 @@ mod tests {
     fn global_and_profile() {
         let (_dir, path) = setup(
             r#"[global.links]
-            "~/.config/a" = "a"
+            a = { src = "a", dst = "~/.config/a" }
 
             [profiles.p.links]
-            "~/.config/b" = "b"
+            b = { src = "b", dst = "~/.config/b" }
             "#,
             &["a", "b"],
         );
         let config = Config::load(Some(path)).unwrap();
         let global = config.get_global_links().unwrap();
-        assert_eq!(global.get("~/.config/a"), Some(&"a".to_string()));
+        assert_eq!(global.get("a").map(|l| l.src.as_str()), Some("a"));
         let profile = config.get_profile("p").unwrap();
-        assert_eq!(profile.links.get("~/.config/b"), Some(&"b".to_string()));
+        assert_eq!(profile.links.get("b").map(|l| l.src.as_str()), Some("b"));
         assert_eq!(config.list_profiles(), vec!["p"]);
     }
 
@@ -431,10 +465,10 @@ mod tests {
     fn normalization() {
         let (_dir, path) = setup(
             r#"[global.links]
-            "~/.config/a" = "./a"
+            a = { src = "./a", dst = "~/.config/a" }
 
             [profiles.p.links]
-            "~/.config/b" = "./b"
+            b = { src = "./b", dst = "~/.config/b" }
             "#,
             &["./a", "./b"],
         );
@@ -442,16 +476,16 @@ mod tests {
         let global = config.get_global_links().unwrap();
         let profile = config.get_profile("p").unwrap();
         assert_eq!(
-            global.get("~/.config/a"),
-            Some(&"a".to_string()),
+            global.get("a").map(|l| l.src.as_str()),
+            Some("a"),
             "expected ./ prefix stripped, got {:?}",
-            global.get("~/.config/a")
+            global.get("a")
         );
         assert_eq!(
-            profile.links.get("~/.config/b"),
-            Some(&"b".to_string()),
+            profile.links.get("b").map(|l| l.src.as_str()),
+            Some("b"),
             "expected ./ prefix stripped, got {:?}",
-            profile.links.get("~/.config/b")
+            profile.links.get("b")
         );
     }
 }

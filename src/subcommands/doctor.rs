@@ -1,3 +1,4 @@
+use crate::context::config::Link;
 use crate::context::symlink::SymlinkStatus;
 use crate::utils::common::expand_tilde;
 use crate::utils::message;
@@ -8,18 +9,18 @@ use indexmap::IndexMap;
 pub fn run(context: &crate::context::Context) -> anyhow::Result<(), anyhow::Error> {
     println!("{}", "Dotbee Doctor Report\n".bold().underline());
 
-    let mut config_links: IndexMap<String, String> = indexmap::IndexMap::new();
+    let mut config_links: IndexMap<String, Link> = indexmap::IndexMap::new();
 
-    // Check global symlinks
+    // check global symlinks
     if let Some(global_links) = context.config.get_global_links() {
         println!("{}", "Global Links:".bold());
-        for (k, v) in global_links {
-            config_links.insert(k.clone(), v.clone());
+        for (name, link) in global_links {
+            config_links.insert(name.clone(), link.clone());
         }
         check_links(global_links, context)?;
     }
 
-    // Check current profile symlinks
+    // check current profile symlinks
     let active_profile = match context.state.get_active_profile() {
         Some(p) => p.to_string(),
         None => {
@@ -38,8 +39,8 @@ pub fn run(context: &crate::context::Context) -> anyhow::Result<(), anyhow::Erro
     match context.config.get_profile(&active_profile) {
         Ok(profile) => {
             println!("{} ({}){}", "Active Profile".bold(), active_profile.cyan().bold(), ":".bold());
-            for (k, v) in &profile.links {
-                config_links.insert(k.clone(), v.clone());
+            for (name, link) in &profile.links {
+                config_links.insert(name.clone(), link.clone());
             }
             check_links(&profile.links, context)?
         }
@@ -58,10 +59,10 @@ pub fn run(context: &crate::context::Context) -> anyhow::Result<(), anyhow::Erro
     Ok(())
 }
 
-fn check_ghost_links(config_links: &IndexMap<String, String>, context: &crate::context::Context) -> anyhow::Result<(), anyhow::Error> {
+fn check_ghost_links(config_links: &IndexMap<String, Link>, context: &crate::context::Context) -> anyhow::Result<(), anyhow::Error> {
     let mut ghosts = Vec::new();
     for link in context.state.get_links() {
-        if !config_links.contains_key(&link.target) {
+        if !config_links.values().any(|l| l.dst == link.target) {
             ghosts.push(link);
         }
     }
@@ -77,18 +78,18 @@ fn check_ghost_links(config_links: &IndexMap<String, String>, context: &crate::c
     Ok(())
 }
 
-fn check_links(links: &IndexMap<String, String>, context: &crate::context::Context) -> anyhow::Result<(), anyhow::Error> {
+fn check_links(links: &IndexMap<String, Link>, context: &crate::context::Context) -> anyhow::Result<(), anyhow::Error> {
     let dotfiles_root = context.state.get_dotfiles_root()?;
 
     let mut sorted_links: Vec<_> = links.iter().collect();
     sorted_links.sort_by_key(|(k, _)| k.as_str());
 
-    for (target_str, source_str) in sorted_links {
-        let source_path = dotfiles_root.join(source_str);
-        let target_path = expand_tilde(target_str);
+    for (_name, link) in sorted_links {
+        let source_path = dotfiles_root.join(&link.src);
+        let target_path = expand_tilde(&link.dst);
 
         if !source_path.exists() {
-            message::error(&format!("{} (Source missing: {})", source_str, source_path.display()));
+            message::error(&format!("{} (Source missing: {})", link.src, source_path.display()));
             continue;
         }
 
@@ -96,16 +97,16 @@ fn check_links(links: &IndexMap<String, String>, context: &crate::context::Conte
 
         match status {
             SymlinkStatus::AlreadyLinked => {
-                message::success(&format!("{} -> {}", source_str, target_str));
+                message::success(&format!("{} -> {}", link.src, link.dst));
             }
             SymlinkStatus::ConflictingSymlink => {
-                message::warning(&format!("{} (Symlink points to wrong target)", target_str));
+                message::warning(&format!("{} (Symlink points to wrong target)", link.dst));
             }
             SymlinkStatus::ConflictingFileOrDir => {
-                message::error(&format!("{} (Conflict: File/Dir exists)", target_str));
+                message::error(&format!("{} (Conflict: File/Dir exists)", link.dst));
             }
             SymlinkStatus::NonExistent => {
-                message::warning(&format!("{} (Not linked)", source_str));
+                message::warning(&format!("{} (Not linked)", link.src));
             }
         }
     }

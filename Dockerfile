@@ -47,12 +47,12 @@ EOF
 RUN <<EOF cat > dotbee.toml
 [settings]
 [profiles.laptop.links]
-"~/.config/nvim" = "profiles/laptop/nvim"
-"~/.config/kitty" = "profiles/laptop/kitty"
+nvim = { src = "profiles/laptop/nvim", dst = "~/.config/nvim" }
+kitty = { src = "profiles/laptop/kitty", dst = "~/.config/kitty" }
 
 [profiles.termux.links]
-"~/.config/nvim" = "profiles/termux/nvim"
-"~/.config/tmux" = "profiles/termux/tmux"
+nvim = { src = "profiles/termux/nvim", dst = "~/.config/nvim" }
+tmux = { src = "profiles/termux/tmux", dst = "~/.config/tmux" }
 EOF
 
 CMD ["/bin/fish"]

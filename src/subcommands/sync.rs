@@ -1,5 +1,8 @@
 use crate::{
-    context::{config::ConflictAction, symlink::SymlinkStatus},
+    context::{
+        config::{ConflictAction, Link},
+        symlink::SymlinkStatus,
+    },
     utils::{common::expand_tilde, message},
 };
 
@@ -41,7 +44,7 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
     let dry_run = context.dry_run;
 
     // build desired links map from config
-    let mut desired_links: IndexMap<String, String> = IndexMap::new();
+    let mut desired_links: IndexMap<String, Link> = IndexMap::new();
 
     if let Some(global_links) = context.config.get_global_links() {
         for (k, v) in global_links {
@@ -66,7 +69,7 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
         .collect();
 
     for (target, source, _is_dir) in &state_links {
-        if !desired_links.contains_key(target) {
+        if !desired_links.values().any(|link| &link.dst == target) {
             let target_path = expand_tilde(target);
             let source_path = dotfiles_root.join(source);
 
@@ -91,12 +94,12 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
     }
 
     // step 2: process desired links
-    for (target_str, source_str) in &desired_links {
-        let source_path = dotfiles_root.join(source_str);
-        let target_path = expand_tilde(target_str);
+    for (_name, link) in &desired_links {
+        let source_path = dotfiles_root.join(&link.src);
+        let target_path = expand_tilde(&link.dst);
 
         if !source_path.exists() {
-            message::error(&format!("Source missing: {}", source_str));
+            message::error(&format!("Source missing: {}", link.src));
             continue;
         }
 
@@ -105,18 +108,18 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
 
         match status {
             SymlinkStatus::AlreadyLinked => {
-                message::success(&format!("{} -> {} (already linked)", source_str, target_str));
+                message::success(&format!("{} -> {} (already linked)", link.src, link.dst));
                 if !dry_run {
-                    context.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
+                    context.state.add_link(link.src.clone(), link.dst.clone(), is_dir)?;
                 }
             }
             SymlinkStatus::NonExistent => {
                 if dry_run {
-                    message::link(&format!("Would link {} -> {}", source_str, target_str));
+                    message::link(&format!("Would link {} -> {}", link.src, link.dst));
                 } else {
                     context.symlink.create(&source_path, &target_path)?;
-                    message::link(&format!("{} -> {}", source_str, target_str));
-                    context.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
+                    message::link(&format!("{} -> {}", link.src, link.dst));
+                    context.state.add_link(link.src.clone(), link.dst.clone(), is_dir)?;
                 }
             }
             SymlinkStatus::ConflictingSymlink | SymlinkStatus::ConflictingFileOrDir => {
@@ -126,23 +129,23 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
                 };
 
                 if dry_run {
-                    message::warning(&format!("Conflict at {}: {} exists. Strategy will be applied.", target_str, kind));
-                    message::info(&format!("  Source: {}", source_str));
+                    message::warning(&format!("Conflict at {}: {} exists. Strategy will be applied.", link.dst, kind));
+                    message::info(&format!("  Source: {}", link.src));
                 } else {
                     let strategy = &context.config.get_settings().on_conflict;
                     let action = match strategy {
                         None => {
-                            message::error(&format!("Conflict: {} -> {} ({})", source_str, target_str, kind));
+                            message::error(&format!("Conflict: {} -> {} ({})", link.src, link.dst, kind));
                             ConflictAction::prompt(&kind)?
                         }
                         Some(a) => a.clone(),
                     };
 
-                    handle_conflict(&action, &source_path, &target_path, source_str, context)?;
+                    handle_conflict(&action, &source_path, &target_path, &link.src, context)?;
 
                     if action == ConflictAction::Overwrite || action == ConflictAction::Adopt {
                         let is_dir = source_path.is_dir();
-                        context.state.add_link(source_str.clone(), target_str.clone(), is_dir)?;
+                        context.state.add_link(link.src.clone(), link.dst.clone(), is_dir)?;
                     }
                 }
             }

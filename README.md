@@ -98,10 +98,10 @@ Edit `dotbee.toml` to define your links.
 
 ```toml
 [global.links]
-"~/.gitconfig" = "git/gitconfig"
+gitconfig = { src = "git/gitconfig", dst = "~/.gitconfig" }
 
 [profiles.desktop.links]
-"~/.config/i3/config" = "i3/config"
+i3_config = { src = "i3/config", dst = "~/.config/i3/config" }
 ```
 
 3. **List Available Profiles:**
@@ -180,7 +180,7 @@ Dotbee uses TOML for configuration.
 on_conflict = "ask"
 
 [global.links]
-"~/.bashrc" = "bashrc"
+bashrc = { src = "bashrc", dst = "~/.bashrc" }
 ```
 
 ## Development & Testing

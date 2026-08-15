@@ -36,9 +36,22 @@
       "properties": {
         "links": {
           "type": "object",
-          "description": "Symlinks to create: { 'destination': 'source' }",
+          "description": "Symlinks to create. Each entry is a named link: { 'name': { 'src': 'source', 'dst': 'destination' } }",
           "additionalProperties": {
-            "type": "string"
+            "type": "object",
+            "description": "A single link with a source and destination path",
+            "properties": {
+              "src": {
+                "type": "string",
+                "description": "Path to the source file/dir inside the dotfiles repo"
+              },
+              "dst": {
+                "type": "string",
+                "description": "Destination path for the symlink (e.g. ~/.config/foo)"
+              }
+            },
+            "required": ["src", "dst"],
+            "additionalProperties": false
           }
         }
       },
@@ -52,9 +65,22 @@
         "properties": {
           "links": {
             "type": "object",
-            "description": "Symlinks to create for this profile: { 'destination': 'source' }",
+            "description": "Symlinks to create for this profile. Each entry is a named link: { 'name': { 'src': 'source', 'dst': 'destination' } }",
             "additionalProperties": {
-              "type": "string"
+              "type": "object",
+              "description": "A single link with a source and destination path",
+              "properties": {
+                "src": {
+                  "type": "string",
+                  "description": "Path to the source file/dir inside the dotfiles repo"
+                },
+                "dst": {
+                  "type": "string",
+                  "description": "Destination path for the symlink (e.g. ~/.config/foo)"
+                }
+              },
+              "required": ["src", "dst"],
+              "additionalProperties": false
             }
           }
         },

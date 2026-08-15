@@ -48,7 +48,7 @@ This document outlines the planned development path for **Dotbee**. As an alpha 
 
 - [x] **Runtime Schema Validation:** Enforce `dotbee.toml` schema validation at runtime during config load.
 
-- [ ] **Clearer Link Names:** instead of `"~/path/to/destination" = "path/to/source"`, now it's `my_config = {src = "path/to/source", dst = "~/path/to/destination"}`.
+- [x] **Clearer Link Names:** instead of `"~/path/to/destination" = "path/to/source"`, now it's `my_config = {src = "path/to/source", dst = "~/path/to/destination"}`.
 
 - [ ] **Change default profile selection behavior:** Show an interactive menu instead of selecting profile based on hostname.
 
@@ -65,7 +65,7 @@ This document outlines the planned development path for **Dotbee**. As an alpha 
 config = "~/.config"
 
 [profiles.desktop.links]
-"{config}/nvim" = "editors/nvim/"
+nvim = { src = "editors/nvim/", dst = "{config}/nvim" }
 ```
 
 - [ ] **Pre/Post Hooks:** Run shell commands before/after profile switch (useful for things like enabling systemd services, but I wouldn't recommend for installing packages.).
