@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+source "$(dirname "$0")/_lib.sh"
+init
+validate_version
+
+step "Checking prerequisites"
+
+check_cargo_tool() {
+  local name="$1"
+  if ! cargo install --list 2>/dev/null | grep -q "^${name% *} "; then
+    info "Installing $name..."
+    cargo install "$name"
+    ok "$name installed"
+  else
+    ok "$name found"
+  fi
+}
+
+check_system_tool() {
+  local name="$1"
+  local hint="$2"
+  if ! command -v "$name" >/dev/null 2>&1; then
+    err "$name not found. $hint"
+    exit 1
+  fi
+  ok "$name found"
+}
+
+check_system_tool gh      "Install from https://cli.github.com/"
+check_system_tool sha256sum "coreutils"
+check_system_tool git-cliff "cargo install git-cliff"
+check_cargo_tool  cargo-zigbuild
+check_cargo_tool  cargo-deb
+check_cargo_tool  cargo-generate-rpm
+
+if [ "$(uname -m)" != "aarch64" ]; then
+  check_system_tool aarch64-linux-gnu-gcc "apt install gcc-aarch64-linux-gnu"
+fi
+
+setup_ndk_env
