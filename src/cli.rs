@@ -69,14 +69,6 @@ pub enum SubCommand {
         profile: Option<String>,
     },
 
-    /// add config file/dir to dotfiles
-    #[command(visible_alias = "a")]
-    Add { profile: Option<String> },
-
-    /// remove config file/dir from dotfiles
-    #[command(visible_alias = "rm")]
-    Remove { profile: Option<String> },
-
     /// download dotfiles repository
     #[command(visible_alias = "f")]
     Fetch { method: FetchMethod },

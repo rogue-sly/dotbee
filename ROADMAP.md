@@ -34,8 +34,7 @@ This document outlines the planned development path for **Dotbee**. As an alpha 
 
 ## Phase 2.5: Moar features.
 
-- [ ] **`dotbee add` / `dotbee remove` Commands:** Add files to your dotbee.toml easily instead of manually moving and editing config.
-- [ ] **`dotbee edit` Command:** Open dotbee.toml config file directly using `$EDITOR`.
+- [x] **`dotbee edit` Command:** Open dotbee.toml config file directly using `$EDITOR`.
 - [ ] **Variable Interpolation:** Declare variables in dotbee.toml to reuse in your links.
 
 ```toml
