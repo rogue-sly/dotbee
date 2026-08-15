@@ -20,10 +20,6 @@ pub fn link(msg: &str) {
     println!("{}: {}", "[LINK]".cyan(), msg);
 }
 
-pub fn miss(msg: &str) {
-    println!("{}: {}", "[MISS]".purple(), msg);
-}
-
 pub fn delete(msg: &str) {
     println!("{}: {}", "[DELETE]".red(), msg);
 }

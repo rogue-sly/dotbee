@@ -12,10 +12,6 @@ pub enum SymlinkStatus {
 pub struct Symlink;
 
 impl Symlink {
-    pub fn new() -> Self {
-        Self
-    }
-
     /// Determines the status of a `destination` path relative to a `source` path
     /// for symlink operations. This is crucial for safely managing dotfiles,
     /// allowing the application to identify existing links, conflicts, or
