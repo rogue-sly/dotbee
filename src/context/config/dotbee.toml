@@ -3,8 +3,8 @@
 [settings]
 on_conflict = "ask"  # overwrite, adopt, skip, abort or ask (default: ask)
 
-# global configs that gets applied regardless of profile
-[global.links]
+# global configs that get applied regardless of profile
+[profiles.global.links]
 bashrc = { src = "bash/bashrc", dst = "~/.bashrc" }
 gitconfig = { src = "git/gitconfig", dst = "~/.gitconfig" }
 

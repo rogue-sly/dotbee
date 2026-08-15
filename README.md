@@ -9,7 +9,7 @@
 ## Features
 
 - **Profile Support:** Switch between different environments (e.g., Desktop, Server, Termux).
-- **Global Configs:** Define links that apply across all profiles.
+- **Global Configs:** Define links that apply across all profiles via the reserved `profiles.global` profile.
 - **Health Checks:** `dotbee doctor` and `dotbee sync` help you identify and fix broken symlinks.
 - **LSP Support:** Full JSON schema provided for autocompletion in `dotbee.toml`.
 - **Dry Run:** Preview changes with `--dry-run` before applying them.
@@ -97,7 +97,7 @@ This creates a default `dotbee.toml` in your current directory.
 Edit `dotbee.toml` to define your links.
 
 ```toml
-[global.links]
+[profiles.global.links]
 gitconfig = { src = "git/gitconfig", dst = "~/.gitconfig" }
 
 [profiles.desktop.links]
@@ -179,7 +179,7 @@ Dotbee uses TOML for configuration.
 [settings]
 on_conflict = "ask"
 
-[global.links]
+[profiles.global.links]
 bashrc = { src = "bashrc", dst = "~/.bashrc" }
 ```
 

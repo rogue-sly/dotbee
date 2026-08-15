@@ -42,10 +42,21 @@ vim.cmd.colorscheme('habamax')
 vim.notify('hello from termux')
 EOF
 
+# Global Profile (applies regardless of active profile)
+RUN mkdir -p global/git
+RUN <<EOF cat > global/git/gitconfig
+[user]
+    name = test
+    email = test@localhost
+EOF
 
 # Create dotbee.toml
 RUN <<EOF cat > dotbee.toml
 [settings]
+
+[profiles.global.links]
+gitconfig = { src = "global/git/gitconfig", dst = "~/.gitconfig" }
+
 [profiles.laptop.links]
 nvim = { src = "profiles/laptop/nvim", dst = "~/.config/nvim" }
 kitty = { src = "profiles/laptop/kitty", dst = "~/.config/kitty" }

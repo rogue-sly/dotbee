@@ -30,36 +30,9 @@
       "additionalProperties": false
     },
 
-    "global": {
-      "type": "object",
-      "description": "Global configurations applied regardless of profile",
-      "properties": {
-        "links": {
-          "type": "object",
-          "description": "Symlinks to create. Each entry is a named link: { 'name': { 'src': 'source', 'dst': 'destination' } }",
-          "additionalProperties": {
-            "type": "object",
-            "description": "A single link with a source and destination path",
-            "properties": {
-              "src": {
-                "type": "string",
-                "description": "Path to the source file/dir inside the dotfiles repo"
-              },
-              "dst": {
-                "type": "string",
-                "description": "Destination path for the symlink (e.g. ~/.config/foo)"
-              }
-            },
-            "required": ["src", "dst"],
-            "additionalProperties": false
-          }
-        }
-      },
-      "additionalProperties": false
-    },
     "profiles": {
       "type": "object",
-      "description": "Named profiles containing specific configurations",
+      "description": "Named profiles containing specific configurations. 'global' is a reserved profile name for links applied regardless of the active profile.",
       "additionalProperties": {
         "type": "object",
         "properties": {

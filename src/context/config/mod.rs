@@ -31,21 +31,17 @@ pub struct Link {
 
 #[derive(Debug, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
-pub struct Global {
-    pub links: IndexMap<String, Link>,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[serde(deny_unknown_fields)]
 pub struct Profile {
     pub links: IndexMap<String, Link>,
 }
+
+/// reserved profile name for links applied regardless of the active profile
+pub const GLOBAL_PROFILE: &str = "global";
 
 #[derive(Debug, Deserialize, Default, Clone)]
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
     settings: Settings,
-    global: Option<Global>,
     profiles: Option<IndexMap<String, Profile>>,
 
     #[serde(skip)]
@@ -62,7 +58,6 @@ impl Config {
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
                 return Ok(Self {
                     settings: Settings::default(),
-                    global: None,
                     profiles: None,
                     config_path: None,
                 });
@@ -74,7 +69,6 @@ impl Config {
 
         let mut config = Self {
             settings: parsed.settings,
-            global: parsed.global,
             profiles: parsed.profiles,
             config_path,
         };
@@ -103,16 +97,19 @@ impl Config {
     pub fn list_profiles(&self) -> Vec<&str> {
         self.profiles
             .as_ref()
-            .map(|p| p.keys().map(|k| k.as_str()).collect())
+            .map(|p| p.keys().map(|k| k.as_str()).filter(|k| *k != GLOBAL_PROFILE).collect())
             .unwrap_or_default()
     }
 
     pub fn has_profiles(&self) -> bool {
-        self.profiles.as_ref().map(|p| !p.is_empty()).unwrap_or(false)
+        self.profiles
+            .as_ref()
+            .map(|p| p.keys().any(|k| k != GLOBAL_PROFILE))
+            .unwrap_or(false)
     }
 
     pub fn get_global_links(&self) -> Option<&IndexMap<String, Link>> {
-        self.global.as_ref().map(|g| &g.links)
+        self.profiles.as_ref()?.get(GLOBAL_PROFILE).map(|p| &p.links)
     }
 
     pub fn get_settings(&self) -> &Settings {
@@ -138,7 +135,7 @@ impl Config {
         let mut errors: Vec<String> = vec![];
 
         {
-            let has_profiles = self.profiles.as_ref().is_some_and(|p| !p.is_empty());
+            let has_profiles = self.profiles.as_ref().is_some_and(|p| p.keys().any(|k| k != GLOBAL_PROFILE));
             // check if profiles are empty
             if !has_profiles {
                 message::warning("No profiles defined in configuration.");
@@ -146,17 +143,18 @@ impl Config {
         }
 
         // check for empty global links
-        if self.global.as_ref().is_some_and(|g| g.links.is_empty()) {
+        if self
+            .profiles
+            .as_ref()
+            .and_then(|p| p.get(GLOBAL_PROFILE))
+            .is_some_and(|g| g.links.is_empty())
+        {
             message::info("Global links section is empty. Consider adding shared links here.");
         }
 
         // build flat list of all sources for checks
         let link_sources: Vec<(&str, &IndexMap<String, Link>)> = {
             let mut sources: Vec<(&str, &IndexMap<String, Link>)> = Vec::new();
-
-            if let Some(g) = &self.global {
-                sources.push(("global", &g.links));
-            }
 
             if let Some(profiles) = &self.profiles {
                 for (name, profile) in profiles {
@@ -239,12 +237,6 @@ impl Config {
     }
 
     fn normalize(&mut self) {
-        if let Some(global) = &mut self.global {
-            for link in global.links.values_mut() {
-                link.src = link.src.trim_start_matches("./").to_string();
-            }
-        }
-
         if let Some(profiles) = &mut self.profiles {
             for profile in profiles.values_mut() {
                 for link in profile.links.values_mut() {
@@ -299,7 +291,7 @@ mod tests {
     #[test]
     fn empty_link_name() {
         let err = error_msg(
-            r#"[global.links]
+            r#"[profiles.global.links]
             "" = { src = "foo", dst = "~/.config/test" }
             "#,
             &["foo"],
@@ -310,7 +302,7 @@ mod tests {
     #[test]
     fn empty_src() {
         let err = error_msg(
-            r#"[global.links]
+            r#"[profiles.global.links]
             my_link = { src = "", dst = "~/.config/test" }
             "#,
             &[],
@@ -321,7 +313,7 @@ mod tests {
     #[test]
     fn empty_dst() {
         let err = error_msg(
-            r#"[global.links]
+            r#"[profiles.global.links]
             my_link = { src = "foo", dst = "" }
             "#,
             &["foo"],
@@ -367,7 +359,7 @@ mod tests {
     #[test]
     fn profile_overrides_global() {
         let err = error_msg(
-            r#"[global.links]
+            r#"[profiles.global.links]
             g = { src = "global_foo", dst = "~/.config/foo" }
 
             [profiles.p.links]
@@ -394,7 +386,7 @@ mod tests {
     #[test]
     fn valid_global_links() {
         let (_dir, path) = setup(
-            r#"[global.links]
+            r#"[profiles.global.links]
             my_link = { src = "a", dst = "~/.config/a" }
             "#,
             &["a"],
@@ -426,7 +418,7 @@ mod tests {
     #[test]
     fn global_and_profile() {
         let (_dir, path) = setup(
-            r#"[global.links]
+            r#"[profiles.global.links]
             a = { src = "a", dst = "~/.config/a" }
 
             [profiles.p.links]
@@ -440,6 +432,29 @@ mod tests {
         let profile = config.get_profile("p").unwrap();
         assert_eq!(profile.links.get("b").map(|l| l.src.as_str()), Some("b"));
         assert_eq!(config.list_profiles(), vec!["p"]);
+    }
+
+    #[test]
+    fn global_profile_is_reserved() {
+        let (_dir, path) = setup(
+            r#"[profiles.global.links]
+            a = { src = "a", dst = "~/.config/a" }
+
+            [profiles.p.links]
+            b = { src = "b", dst = "~/.config/b" }
+            "#,
+            &["a", "b"],
+        );
+        let config = Config::load(Some(path)).unwrap();
+        let global = config.get_global_links().unwrap();
+        assert_eq!(global.get("a").map(|l| l.src.as_str()), Some("a"));
+        assert!(config.get_profile("global").is_ok());
+        assert_eq!(
+            config.list_profiles(),
+            vec!["p"],
+            "global must not be listed as a selectable profile"
+        );
+        assert!(config.has_profiles());
     }
 
     #[test]
@@ -464,7 +479,7 @@ mod tests {
     #[test]
     fn normalization() {
         let (_dir, path) = setup(
-            r#"[global.links]
+            r#"[profiles.global.links]
             a = { src = "./a", dst = "~/.config/a" }
 
             [profiles.p.links]

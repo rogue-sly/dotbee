@@ -1,6 +1,6 @@
 use crate::{
     context::{
-        config::{ConflictAction, Link},
+        config::{ConflictAction, GLOBAL_PROFILE, Link},
         symlink::SymlinkStatus,
     },
     utils::{common::expand_tilde, message},
@@ -34,6 +34,10 @@ impl Display for ConflictKind {
 }
 
 pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) -> anyhow::Result<()> {
+    if profile_name.as_deref() == Some(GLOBAL_PROFILE) {
+        bail!("The '{}' profile is applied automatically and cannot be selected.", GLOBAL_PROFILE);
+    }
+
     let explicit_profile = profile_name.is_some();
     let target_profile = match profile_name {
         Some(name) => Some(name),
