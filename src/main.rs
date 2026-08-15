@@ -1,14 +1,19 @@
+mod cli;
+mod context;
+mod subcommands;
+mod utils;
+
 use anyhow::Context;
 use clap::Parser;
-use dotbee::cli::{Cli, SubCommand};
-use dotbee::subcommands::*;
+use cli::{Cli, SubCommand};
 use nix::fcntl::{Flock, FlockArg};
 use std::fs::File;
+use subcommands::*;
 
 fn main() -> anyhow::Result<()> {
     let dotbee = Cli::parse();
     let _lock = lock_process()?;
-    let mut context = dotbee::context::Context::new(dotbee.config, dotbee.dry_run)?;
+    let mut context = context::Context::new(dotbee.config, dotbee.dry_run)?;
     match dotbee.subcommand {
         SubCommand::Completion { shell } => completion::run(shell)?,
         SubCommand::Doctor => doctor::run(&context)?,
