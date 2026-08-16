@@ -30,6 +30,14 @@
       "additionalProperties": false
     },
 
+    "vars": {
+      "type": "object",
+      "description": "User-defined variables usable in link src/dst paths via {name} interpolation. Values are plain strings and are not themselves interpolated.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+
     "profiles": {
       "type": "object",
       "description": "Named profiles containing specific configurations. 'global' is a reserved profile name for links applied regardless of the active profile.",
@@ -45,11 +53,11 @@
               "properties": {
                 "src": {
                   "type": "string",
-                  "description": "Path to the source file/dir inside the dotfiles repo"
+                  "description": "Path to the source file/dir inside the dotfiles repo. May reference variables from [vars] as {name}."
                 },
                 "dst": {
                   "type": "string",
-                  "description": "Destination path for the symlink (e.g. ~/.config/foo)"
+                  "description": "Destination path for the symlink (e.g. ~/.config/foo). May reference variables from [vars] as {name}."
                 }
               },
               "required": ["src", "dst"],

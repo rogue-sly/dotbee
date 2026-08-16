@@ -183,6 +183,21 @@ on_conflict = "ask"
 bashrc = { src = "bashrc", dst = "~/.bashrc" }
 ```
 
+### Variables
+
+Define reusable variables under `[vars]` and reference them in link `src`/`dst` paths with `{name}`:
+
+```toml
+[vars]
+config = "~/.config"
+repos = "~/git"
+
+[profiles.desktop.links]
+nvim = { src = "editors/nvim/", dst = "{config}/nvim" }
+```
+
+Variables are plain strings and are not interpolated themselves. An undefined `{name}` causes a configuration error.
+
 ## Development & Testing
 
 To avoid accidental data loss on your host system during development, use the provided `mise` tasks to run Dotbee in a container:

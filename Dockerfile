@@ -54,16 +54,19 @@ EOF
 RUN <<EOF cat > dotbee.toml
 [settings]
 
+[vars]
+config = "~/.config"
+
 [profiles.global.links]
 gitconfig = { src = "global/git/gitconfig", dst = "~/.gitconfig" }
 
 [profiles.laptop.links]
-nvim = { src = "profiles/laptop/nvim", dst = "~/.config/nvim" }
-kitty = { src = "profiles/laptop/kitty", dst = "~/.config/kitty" }
+nvim = { src = "profiles/laptop/nvim", dst = "{config}/nvim" }
+kitty = { src = "profiles/laptop/kitty", dst = "{config}/kitty" }
 
 [profiles.termux.links]
-nvim = { src = "profiles/termux/nvim", dst = "~/.config/nvim" }
-tmux = { src = "profiles/termux/tmux", dst = "~/.config/tmux" }
+nvim = { src = "profiles/termux/nvim", dst = "{config}/nvim" }
+tmux = { src = "profiles/termux/tmux", dst = "{config}/tmux" }
 EOF
 
 CMD ["/bin/fish"]

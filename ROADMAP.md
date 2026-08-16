@@ -35,7 +35,7 @@ This document outlines the planned development path for **Dotbee**. As an alpha 
 ## Phase 2.5: Moar features.
 
 - [x] **`dotbee edit` Command:** Open dotbee.toml config file directly using `$EDITOR`.
-- [ ] **Variable Interpolation:** Declare variables in dotbee.toml to reuse in your links.
+- [x] **Variable Interpolation:** Declare variables in dotbee.toml to reuse in your links.
 
 ```toml
 [vars]
@@ -51,10 +51,6 @@ nvim = { src = "editors/nvim/", dst = "{config}/nvim" }
   - Using http (simply download it)
   - Perhaps some other methods
 
-- [ ] **System Profile:** A way to setup symlinks for system configuration files (/etc)
-  - Should invoke sudo
-  - To activate it, use --system with `dotbee switch` Possible commands to use this flag: [switch, purge, repair]
-
 ## Phase 3: Polish (`v1.0`)
 
 - [ ] **Broader Platform Support:** Support even more platforms and provide packages for popular Linux distros (Debian, Fedora, ArchLinux, Nix/OS).
@@ -66,5 +62,8 @@ nvim = { src = "editors/nvim/", dst = "{config}/nvim" }
 
 - [ ] **Performance Optimization:** Implement bulk state updates to improve efficiency for large configurations.
 - [ ] **Copy mode**: Copy the file instead of creating a symlink.
+- [ ] **System Profile:** A way to setup symlinks for system configuration files (/etc)
+  - Should invoke sudo
+  - To activate it, use --system with `dotbee switch` Possible commands to use this flag: [switch, purge, repair]
 
 To infinity and beyond...

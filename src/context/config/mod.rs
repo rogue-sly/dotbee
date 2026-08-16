@@ -1,4 +1,5 @@
 pub mod conflict;
+pub mod vars;
 
 use anyhow::anyhow;
 pub use conflict::ConflictAction;
@@ -42,6 +43,7 @@ pub const GLOBAL_PROFILE: &str = "global";
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
     settings: Settings,
+    vars: IndexMap<String, String>,
     profiles: Option<IndexMap<String, Profile>>,
 
     #[serde(skip)]
@@ -56,11 +58,7 @@ impl Config {
         let content = match fs::read_to_string(config_path) {
             Ok(c) => c,
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                return Ok(Self {
-                    settings: Settings::default(),
-                    profiles: None,
-                    config_path: None,
-                });
+                return Ok(Self::default());
             }
             Err(e) => return Err(e.into()),
         };
@@ -69,12 +67,21 @@ impl Config {
 
         let mut config = Self {
             settings: parsed.settings,
+            vars: parsed.vars,
             profiles: parsed.profiles,
             config_path,
         };
-        config.normalize();
-        config.validate().map_err(|errors| {
-            anyhow!(
+
+        let mut errors: Vec<String> = vec![];
+        if let Err(e) = config.normalize() {
+            errors.extend(e);
+        }
+        if let Err(e) = config.validate() {
+            errors.extend(e);
+        }
+
+        if !errors.is_empty() {
+            return Err(anyhow!(
                 "dotbee.toml configuration error: {} error(s) found\n{}",
                 errors.len(),
                 errors
@@ -83,8 +90,8 @@ impl Config {
                     .map(|(i, e)| format!("  {}. {}", i + 1, e))
                     .collect::<Vec<_>>()
                     .join("\n")
-            )
-        })?;
+            ));
+        }
 
         Ok(config)
     }
@@ -236,14 +243,43 @@ impl Config {
         Ok(())
     }
 
-    fn normalize(&mut self) {
+    fn normalize(&mut self) -> Result<(), Vec<String>> {
+        let mut errors: Vec<String> = vec![];
+
+        // validate variable names
+        for name in self.vars.keys() {
+            if name.is_empty() {
+                errors.push("[vars]: variable name is empty.".to_string());
+            } else if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+                errors.push(format!(
+                    "[vars]: variable name '{}' is invalid. Only alphanumeric characters and '_' are allowed.",
+                    name
+                ));
+            }
+        }
+
+        // interpolate variables into link src/dst
         if let Some(profiles) = &mut self.profiles {
-            for profile in profiles.values_mut() {
-                for link in profile.links.values_mut() {
+            for (profile_name, profile) in profiles {
+                for (link_name, link) in profile.links.iter_mut() {
+                    let src_context = format!("[{}]: link '{}' src", profile_name, link_name);
+                    match vars::interpolate(&link.src, &self.vars, &src_context) {
+                        Ok(src) => link.src = src,
+                        Err(e) => errors.extend(e),
+                    }
+
+                    let dst_context = format!("[{}]: link '{}' dst", profile_name, link_name);
+                    match vars::interpolate(&link.dst, &self.vars, &dst_context) {
+                        Ok(dst) => link.dst = dst,
+                        Err(e) => errors.extend(e),
+                    }
+
                     link.src = link.src.trim_start_matches("./").to_string();
                 }
             }
         }
+
+        if errors.is_empty() { Ok(()) } else { Err(errors) }
     }
 }
 
@@ -502,5 +538,113 @@ mod tests {
             "expected ./ prefix stripped, got {:?}",
             profile.links.get("b")
         );
+    }
+
+    #[test]
+    fn vars_are_parsed() {
+        let (_dir, path) = setup(
+            r#"[vars]
+            config = "~/.config"
+            nvim = "~/.config/nvim"
+            "#,
+            &[],
+        );
+        let config = Config::load(Some(path)).unwrap();
+        assert_eq!(config.vars.get("config").map(|s| s.as_str()), Some("~/.config"));
+        assert_eq!(config.vars.get("nvim").map(|s| s.as_str()), Some("~/.config/nvim"));
+    }
+
+    #[test]
+    fn interpolation_in_dst() {
+        let (_dir, path) = setup(
+            r#"[vars]
+            config = "~/.config"
+
+            [profiles.global.links]
+            nvim = { src = "nvim", dst = "{config}/nvim" }
+            "#,
+            &["nvim"],
+        );
+        let config = Config::load(Some(path)).unwrap();
+        let global = config.get_global_links().unwrap();
+        assert_eq!(
+            global.get("nvim").map(|l| l.dst.as_str()),
+            Some("~/.config/nvim"),
+            "expected interpolated dst, got {:?}",
+            global.get("nvim")
+        );
+    }
+
+    #[test]
+    fn interpolation_in_src() {
+        let (_dir, path) = setup(
+            r#"[vars]
+            repo = "git"
+
+            [profiles.p.links]
+            a = { src = "{repo}/config", dst = "~/.config/a" }
+            "#,
+            &["git/config"],
+        );
+        let config = Config::load(Some(path)).unwrap();
+        let profile = config.get_profile("p").unwrap();
+        assert_eq!(
+            profile.links.get("a").map(|l| l.src.as_str()),
+            Some("git/config"),
+            "expected interpolated src, got {:?}",
+            profile.links.get("a")
+        );
+    }
+
+    #[test]
+    fn interpolation_applies_after_dot_slash_strip() {
+        let (_dir, path) = setup(
+            r#"[vars]
+            repo = "./git"
+
+            [profiles.p.links]
+            a = { src = "{repo}/file", dst = "~/.config/file" }
+            "#,
+            &["git/file"],
+        );
+        let config = Config::load(Some(path)).unwrap();
+        let profile = config.get_profile("p").unwrap();
+        assert_eq!(
+            profile.links.get("a").map(|l| l.src.as_str()),
+            Some("git/file"),
+            "expected './' stripped after interpolation, got {:?}",
+            profile.links.get("a")
+        );
+    }
+
+    #[test]
+    fn undefined_var_fails_to_load() {
+        let err = error_msg(
+            r#"[vars]
+            config = "~/.config"
+
+            [profiles.p.links]
+            nvim = { src = "nvim", dst = "{missing}/nvim" }
+            "#,
+            &["nvim"],
+        );
+        assert!(err.contains("undefined variable"), "got: {err}");
+        assert!(err.contains("missing"), "got: {err}");
+        assert!(err.contains("[p]"), "got: {err}");
+    }
+
+    #[test]
+    fn invalid_var_name_fails_to_load() {
+        let err = error_msg(
+            r#"[vars]
+            "bad name" = "~/.config"
+
+            [profiles.p.links]
+            nvim = { src = "nvim", dst = "~/.config/nvim" }
+            "#,
+            &["nvim"],
+        );
+        assert!(err.contains("invalid"), "got: {err}");
+        assert!(err.contains("bad name"), "got: {err}");
     }
 }
