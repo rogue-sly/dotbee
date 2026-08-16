@@ -22,17 +22,6 @@ aarch64-unknown-linux-gnu = { pkg-url = "{ repo }/releases/download/v{ version }
 x86_64-unknown-linux-musl = { pkg-url = "{ repo }/releases/download/v{ version }/dotbee-linux-x86_64-musl" }
 aarch64-unknown-linux-musl = { pkg-url = "{ repo }/releases/download/v{ version }/dotbee-linux-arm64-musl" }
 
-[package.metadata.deb]
-maintainer = "Rogue.Sly <rogue87@tuta.io>"
-copyright = "2026, Rogue.Sly <rogue87@tuta.io>"
-license-file = "LICENSE"
-assets = [["target/release/dotbee", "usr/bin/", "755"]]
-
-[package.metadata.generate-rpm]
-assets = [
-    { source = "target/release/dotbee", dest = "/usr/bin/dotbee", mode = "755" },
-]
-
 [dependencies]
 anyhow = "1.0"
 clap = { version = "4.5", features = ["derive"] }

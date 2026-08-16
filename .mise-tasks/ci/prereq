@@ -32,8 +32,7 @@ check_system_tool gh "Install from https://cli.github.com/"
 check_system_tool sha256sum "coreutils"
 check_system_tool git-cliff "cargo install git-cliff"
 check_cargo_tool cargo-zigbuild
-check_cargo_tool cargo-deb
-check_cargo_tool cargo-generate-rpm
+check_system_tool nfpm "mise use nfpm"
 
 if [ "$(uname -m)" != "aarch64" ]; then
     check_system_tool aarch64-linux-gnu-gcc "apt install gcc-aarch64-linux-gnu"

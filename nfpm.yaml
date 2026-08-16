@@ -1,0 +1,16 @@
+name: dotbee
+arch: "${ARCH}"
+platform: linux
+version: "${VERSION}"
+section: utils
+priority: optional
+maintainer: Rogue.Sly <rogue87@tuta.io>
+description: Dotfiles manager designed for ease of use
+homepage: https://github.com/rogue-sly/dotbee
+license: MIT
+contents:
+  - src: "target/${TARGET}/release/dotbee"
+    dst: /usr/bin/dotbee
+    file_info:
+      mode: 0755
+    expand: true

@@ -2,4 +2,5 @@
 "cargo:cargo-zigbuild" = "latest"
 git-cliff = "latest"
 lefthook = "latest"
+nfpm = "latest"
 tombi = "latest"

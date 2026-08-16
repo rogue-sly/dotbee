@@ -89,6 +89,52 @@ url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.10/leftho
 url_api = "https://api.github.com/repos/evilmartians/lefthook/releases/assets/470227505"
 provenance = "github-attestations"
 
+[[tools.nfpm]]
+version = "2.47.0"
+backend = "aqua:goreleaser/nfpm"
+
+[tools.nfpm."platforms.linux-arm64"]
+checksum = "sha256:1c0f5f2999b9a974bfb04fdb0cc3306096de530ac5dbb25d739cc5f5219c919c"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.47.0/nfpm_2.47.0_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/goreleaser/nfpm/releases/assets/453316744"
+provenance = "cosign"
+
+[tools.nfpm."platforms.linux-arm64-musl"]
+checksum = "sha256:1c0f5f2999b9a974bfb04fdb0cc3306096de530ac5dbb25d739cc5f5219c919c"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.47.0/nfpm_2.47.0_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/goreleaser/nfpm/releases/assets/453316744"
+provenance = "cosign"
+
+[tools.nfpm."platforms.linux-x64"]
+checksum = "sha256:0660ca602b2d2d2ae4781a06c692b3eeb9d437ffea05b831d76e41f4a3188783"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.47.0/nfpm_2.47.0_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/goreleaser/nfpm/releases/assets/453316748"
+provenance = "cosign"
+
+[tools.nfpm."platforms.linux-x64-musl"]
+checksum = "sha256:0660ca602b2d2d2ae4781a06c692b3eeb9d437ffea05b831d76e41f4a3188783"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.47.0/nfpm_2.47.0_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/goreleaser/nfpm/releases/assets/453316748"
+provenance = "cosign"
+
+[tools.nfpm."platforms.macos-arm64"]
+checksum = "sha256:e8c9d1d9ac218eeed479375143dc46b8d51a2b8dbba8e2f9f15ecc8faa2e404b"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.47.0/nfpm_2.47.0_Darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/goreleaser/nfpm/releases/assets/453316746"
+provenance = "cosign"
+
+[tools.nfpm."platforms.macos-x64"]
+checksum = "sha256:2b04108f8757313dde92ed729560845aadfb7782887eb6988a5dd96f9c146861"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.47.0/nfpm_2.47.0_Darwin_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/goreleaser/nfpm/releases/assets/453316747"
+provenance = "cosign"
+
+[tools.nfpm."platforms.windows-x64"]
+checksum = "sha256:788f88a3bba0d89baa639aba54ba28b384958878700d440ce199a7ff4a567f11"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.47.0/nfpm_2.47.0_Windows_x86_64.zip"
+url_api = "https://api.github.com/repos/goreleaser/nfpm/releases/assets/453316741"
+provenance = "cosign"
+
 [[tools.tombi]]
 version = "1.4.0"
 backend = "aqua:tombi-toml/tombi"

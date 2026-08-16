@@ -28,8 +28,7 @@ ARTIFACT_NAMES=(
     dotbee-android-arm64
 )
 
-DEB_ARCHS=("" "" amd64 arm64 amd64 arm64 "")
-RPM_ARCHS=("" "" x86_64 aarch64 x86_64 aarch64 "")
+PKG_ARCHS=("" "" amd64 arm64 amd64 arm64 "")
 
 setup_ndk_env
 
@@ -38,8 +37,7 @@ mkdir -p dist
 for i in "${!TARGETS[@]}"; do
     target="${TARGETS[$i]}"
     artifact="${ARTIFACT_NAMES[$i]}"
-    deb_arch="${DEB_ARCHS[$i]}"
-    rpm_arch="${RPM_ARCHS[$i]}"
+    pkg_arch="${PKG_ARCHS[$i]}"
 
     echo ""
     info "[$((i + 1))/${#TARGETS[@]}] Building $artifact ($target)"
@@ -49,16 +47,13 @@ for i in "${!TARGETS[@]}"; do
     info "Staging binary..."
     cp "target/$target/release/dotbee" "dist/$artifact"
 
-    if [ -n "$deb_arch" ]; then
+    if [ -n "$pkg_arch" ]; then
         info "Packaging .deb..."
-        cargo deb --target "$target"
-        cp "target/$target/debian/"*.deb "dist/$artifact.deb"
-    fi
-
-    if [ -n "$rpm_arch" ]; then
+        ARCH="$pkg_arch" TARGET="$target" VERSION="$VERSION" \
+            nfpm pkg --packager deb --config nfpm.yaml --target "dist/$artifact.deb"
         info "Packaging .rpm..."
-        cargo generate-rpm --target "$target"
-        cp "target/$target/generate-rpm/"*.rpm "dist/$artifact.rpm"
+        ARCH="$pkg_arch" TARGET="$target" VERSION="$VERSION" \
+            nfpm pkg --packager rpm --config nfpm.yaml --target "dist/$artifact.rpm"
     fi
 
     ok "$artifact done"
