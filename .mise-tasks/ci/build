@@ -32,7 +32,7 @@ PKG_ARCHS=("" "" amd64 arm64 amd64 arm64 "")
 
 setup_ndk_env
 
-mkdir -p dist
+mkdir -p dist/bin dist/deb dist/rpm
 
 for i in "${!TARGETS[@]}"; do
     target="${TARGETS[$i]}"
@@ -45,16 +45,33 @@ for i in "${!TARGETS[@]}"; do
     cargo zigbuild --release --target "$target"
 
     info "Staging binary..."
-    cp "target/$target/release/dotbee" "dist/$artifact"
+    cp "target/$target/release/dotbee" "dist/bin/$artifact"
 
     if [ -n "$pkg_arch" ]; then
         info "Packaging .deb..."
         ARCH="$pkg_arch" TARGET="$target" VERSION="$VERSION" \
-            nfpm pkg --packager deb --config nfpm.yaml --target "dist/$artifact.deb"
+            nfpm pkg --packager deb --config nfpm.yaml --target "dist/deb/$artifact.deb"
         info "Packaging .rpm..."
         ARCH="$pkg_arch" TARGET="$target" VERSION="$VERSION" \
-            nfpm pkg --packager rpm --config nfpm.yaml --target "dist/$artifact.rpm"
+            nfpm pkg --packager rpm --config nfpm.yaml --target "dist/rpm/$artifact.rpm"
     fi
 
     ok "$artifact done"
 done
+
+{
+    echo "# dist"
+    echo ""
+    echo "Artifacts for dotbee v$VERSION"
+    echo ""
+    for i in "${!TARGETS[@]}"; do
+        echo "- \`bin/${ARTIFACT_NAMES[$i]}\` -> \`${TARGETS[$i]}\`"
+        if [ -n "${PKG_ARCHS[$i]}" ]; then
+            echo "  - \`deb/${ARTIFACT_NAMES[$i]}.deb\`"
+            echo "  - \`rpm/${ARTIFACT_NAMES[$i]}.rpm\`"
+        fi
+    done
+    echo ""
+    echo "Checksums: \`checksums.txt\` (flat filenames, matching the GitHub release layout)"
+} >dist/README.md
+ok "dist/README.md generated"

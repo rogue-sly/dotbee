@@ -13,9 +13,10 @@ RELEASE_BODY=$(git-cliff --config cliff.toml -vv --latest --strip header 2>/dev/
 
 if [ -z "${GITHUB_TOKEN:-}" ] && [ -z "${GH_TOKEN:-}" ]; then
     err "GITHUB_TOKEN or GH_TOKEN not set. Skipping release creation."
-    err "Set the token and run: gh release create '$TAG' dist/* --notes '...'"
+    err "Set the token and run: gh release create '$TAG' \$(find dist -type f) --notes '...'"
 else
-    gh release create "$TAG" dist/* \
+    mapfile -t ASSETS < <(find dist -type f | sort)
+    gh release create "$TAG" "${ASSETS[@]}" \
         --notes "$RELEASE_BODY" \
         --title "dotbee $VERSION"
     ok "Release $TAG created"

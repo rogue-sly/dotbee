@@ -8,5 +8,5 @@ validate_version
 
 step "Generating checksums"
 
-(cd dist && sha256sum dotbee-* >checksums.txt)
+(cd dist && sha256sum bin/* deb/* rpm/* | sed -E 's#^([0-9a-f]{64})  [^/]+/#\1  #' >checksums.txt)
 ok "checksums.txt generated"
