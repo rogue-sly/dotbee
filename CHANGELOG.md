@@ -1,4 +1,61 @@
 # Changelog
+## [0.8.0] - 2026-08-19
+
+### 🚀 Features
+
+- [**breaking**] Remove auto_detect_profile in favor of state based profile detection
+- [**breaking**] Make link creation more explicit
+- [**breaking**] Merge global profile into [profiles]
+- Implement edit command
+- Add vars
+
+### 🐛 Bug Fixes
+
+- Replace gitlab style paths with github's
+
+### 💼 Other
+
+- Make the ci script create separate dirs for binaries, rpms and debs
+
+### 🚜 Refactor
+
+- [**breaking**] Add placeholders for (add, remove and fetch) and remove repair command
+- Rename switch to sync
+- Add placeholder for edit command
+- Proper return
+- Remove lib.rs
+- Remove unused functions
+- Fix annoying warnings
+- Rename get_config_path to get_path
+- Fix clippy warning
+
+### 📚 Documentation
+
+- Update roadmap
+- Add roadmap item
+- Put proper doc comments for cli subcommands
+- Update readme to reflect changes in the cli
+- Update roadmap
+- Update roadmap
+
+### ⚙️ Miscellaneous Tasks
+
+- Rewrite actions so that it uses git-cliff and fix the target triple redundancy
+- Configure tombi
+- Remove no longer needed stuff from mise.toml
+- Update CHANGELOG.md via CI
+- Format cliff.toml
+- Rewrite the gh actions script to use mise tasks
+- Lock mise
+- Simplify CI once again
+- Add a pr.yml
+- Drop cargo-deb and cargo-generate-rpm in favor of nfpm
+- Update lefthook
+- *(release)* Sync Cargo.lock for v0.8.0
+- Stage Cargo.lock in bump task
+- Merge tag step into publish to fix ordering race
+- Use usage complete instead of choices
+- Use raw input in publish mise task
 ## [0.7.0] - 2026-07-06
 
 ### 🚀 Features
