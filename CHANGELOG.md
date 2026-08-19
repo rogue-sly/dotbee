@@ -1,11 +1,6 @@
 # Changelog
 ## [0.8.0] - 2026-08-19
 
-### ⚙️ Miscellaneous Tasks
-
-- Add a check for tokens when running in CI
-## [0.8.0] - 2026-08-19
-
 ### 🚀 Features
 
 - [**breaking**] Remove auto_detect_profile in favor of state based profile detection
@@ -61,6 +56,8 @@
 - Merge tag step into publish to fix ordering race
 - Use usage complete instead of choices
 - Use raw input in publish mise task
+- *(release)* Update changelog
+- Add a check for tokens when running in CI
 - *(release)* Update changelog
 ## [0.7.0] - 2026-07-06
 
