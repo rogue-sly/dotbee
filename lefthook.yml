@@ -13,4 +13,15 @@ pre-commit:
       run: tombi format {staged_files}
 
     check:
+      glob: "*.rs"
       run: cargo check --all
+
+pre-push:
+  commands:
+    clippy:
+      glob: "*.rs"
+      run: cargo clippy --all-targets -- -D warnings
+
+    test:
+      glob: "*.rs"
+      run: cargo test --all
