@@ -97,7 +97,7 @@ fn check_links(links: &IndexMap<String, Link>, context: &crate::context::Context
 
         match status {
             SymlinkStatus::AlreadyLinked => {
-                message::success(&format!("{} -> {}", link.src, link.dst));
+                message::healthy(&format!("{} -> {}", link.src, link.dst));
             }
             SymlinkStatus::ConflictingSymlink => {
                 message::warning(&format!("{} (Symlink points to wrong target)", link.dst));

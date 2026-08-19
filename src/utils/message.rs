@@ -4,6 +4,10 @@ pub fn success(msg: &str) {
     println!("{}: {}", "[DONE]".green(), msg);
 }
 
+pub fn healthy(msg: &str) {
+    println!("{}: {}", "[GOOD]".green(), msg);
+}
+
 pub fn error(msg: &str) {
     eprintln!("{}: {}", "[ERROR]".red(), msg);
 }
