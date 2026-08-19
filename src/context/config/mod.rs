@@ -10,17 +10,11 @@ use std::path::{Path, PathBuf};
 
 use crate::utils::message;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Default)]
 #[serde(default, deny_unknown_fields)]
 pub struct Settings {
     #[serde(default, deserialize_with = "conflict::deserialize_conflict_action")]
     pub on_conflict: Option<ConflictAction>,
-}
-
-impl Default for Settings {
-    fn default() -> Self {
-        Self { on_conflict: None }
-    }
 }
 
 #[derive(Debug, Deserialize, Clone)]
