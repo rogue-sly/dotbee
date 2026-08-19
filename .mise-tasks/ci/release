@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-#USAGE arg "[increment]" help="The increment type (major, minor, bugfix) or a literal version" {
-#USAGE   choices "bugfix" "minor" "major"
-#USAGE }
+#USAGE arg "[increment]" help="The increment type (major, minor, bugfix) or a literal version"
+#USAGE complete "increment" run="printf 'bugfix\nminor\nmajor\n'"
 #MISE depends=[
 #MISE   "ci:bump {{usage.increment}}",
 #MISE   "ci:prereq",
