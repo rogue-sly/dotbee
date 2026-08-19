@@ -41,7 +41,7 @@ step "Creating GitHub release"
 
 RELEASE_BODY=$(git-cliff --config cliff.toml -vv --latest --strip header 2>/dev/null || true)
 
-if [ -z "${GITHUB_TOKEN:-}" ] && [ -z "${GH_TOKEN:-}" ]; then
+if [ -n "${CI:-}" ] && [ -z "${GITHUB_TOKEN:-}" ] && [ -z "${GH_TOKEN:-}" ]; then
     err "GITHUB_TOKEN or GH_TOKEN not set. Skipping release creation."
     err "Set the token and run: gh release create '$TAG' \$(find dist -type f) --notes '...'"
 else
@@ -55,7 +55,7 @@ fi
 # crates.io
 step "Publishing to crates.io"
 
-if [ -z "${CARGO_REGISTRY_TOKEN:-}" ]; then
+if [ -n "${CI:-}" ] && [ -z "${CARGO_REGISTRY_TOKEN:-}" ]; then
     err "CARGO_REGISTRY_TOKEN not set. Skipping publish."
     err "Set the token and run: cargo publish"
 else
