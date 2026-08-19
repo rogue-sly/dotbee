@@ -4,11 +4,10 @@
 #USAGE }
 #MISE depends=[
 #MISE   "ci:bump {{usage.increment}}",
-#MISE   "ci:tag {{usage.increment}}",
 #MISE   "ci:prereq",
 #MISE   "ci:build",
 #MISE   "ci:checksums",
-#MISE   "ci:publish",
+#MISE   "ci:publish {{usage.increment}}",
 #MISE ]
 set -euo pipefail
 

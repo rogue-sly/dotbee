@@ -1,10 +1,40 @@
 #!/usr/bin/env bash
-#MISE depends=["ci:checksums"]
+#USAGE arg "[increment]" help="The increment type (major, minor, bugfix) or a literal version" {
+#USAGE   choices "bugfix" "minor" "major"
+#USAGE }
+#MISE depends=["ci:checksums", "ci:bump {{usage.increment}}"]
 set -euo pipefail
 
 source "$(dirname "$0")/../_lib.sh"
 init
 validate_version
+
+step "Generating changelog"
+
+if [ -n "$(git status --porcelain)" ]; then
+    err "Working tree is not clean. Commit or stash changes first."
+    exit 1
+fi
+
+git-cliff --config cliff.toml -vv --output CHANGELOG.md --tag "$TAG"
+ok "Changelog generated"
+
+git add CHANGELOG.md
+if ! git diff --cached --exit-code >/dev/null 2>&1; then
+    git commit -m "chore(release): update changelog"
+    ok "Changelog committed"
+else
+    ok "No changelog changes"
+fi
+
+step "Pushing main and creating tag"
+
+git push origin main
+ok "Changes pushed to main"
+
+git tag "$TAG"
+git push origin "$TAG"
+ok "Tag $TAG created and pushed"
 
 # github
 step "Creating GitHub release"
