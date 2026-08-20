@@ -55,12 +55,6 @@ I've provided `mise` tasks to simplify this process:
    mise run try-dotbee
    ```
 
-   To test with a release build:
-
-   ```bash
-   mise run run-container --release
-   ```
-
 ## Code Quality
 
 ### Formatting & Linting
@@ -124,7 +118,9 @@ git commit -m "feat: add support for custom icon sets"
 
 ## Note on Using LLM/AI Assistants
 
-You can use LLM/AI for help, but please don't use it as a human substitute. For example, you can ask it questions about the codebase or perhaps questions about a specific library, but don't use it for generating code. [I will know if you do that.](https://tenor.com/view/tuco-salamanca-powder-gif-24543326)
+You can use LLM/AI for help, but please don't use it as a human substitute. For example, you can ask it questions about the codebase or perhaps questions about a specific library, but don't use it for generating code.
+
+[I will know if you do that.](https://tenor.com/view/tuco-salamanca-powder-gif-24543326)
 
 ## License
 
