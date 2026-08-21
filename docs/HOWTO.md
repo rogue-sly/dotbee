@@ -115,3 +115,16 @@ nvim = { src = "editors/nvim/", dst = "{cfg}/nvim" }
 ```
 
 Variables are plain strings and are not interpolated themselves. An undefined `{name}` causes a configuration error.
+
+### Pre/Post Hooks
+
+Hooks are simply scripts that get executed when switching between profiles. Each profile can have a `pre_hook` and a `post_hook`.
+
+- **pre_hook:** Runs prior to profile switch (useful for things like enabling systemd services for example).
+- **post_hook:** Runs before switching into the new profile (useful for cleaning up things).
+
+```toml
+[profiles.destktop]
+pre_hook = "systemctl enable foo.service"
+post_hook.path = "./path/to/script.sh"
+```

@@ -1,4 +1,5 @@
 pub mod conflict;
+pub mod hook;
 pub mod vars;
 
 use anyhow::anyhow;
@@ -8,6 +9,7 @@ use serde::Deserialize;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use crate::context::config::hook::Hook;
 use crate::utils::message;
 
 #[derive(Debug, Deserialize, Clone, Default)]
@@ -28,6 +30,8 @@ pub struct Link {
 #[serde(deny_unknown_fields)]
 pub struct Profile {
     pub links: IndexMap<String, Link>,
+    pub pre_hook: Option<Hook>,
+    pub post_hook: Option<Hook>,
 }
 
 /// reserved profile name for links applied regardless of the active profile

@@ -45,7 +45,7 @@ config = "~/.config"
 nvim = { src = "editors/nvim/", dst = "{config}/nvim" }
 ```
 
-- [ ] **Pre/Post Hooks:** Run shell commands before/after profile switch (useful for things like enabling systemd services, but I wouldn't recommend for installing packages.).
+- [x] **Pre/Post Hooks:** Run shell commands before/after profile switch (useful for things like enabling systemd services, but I wouldn't recommend for installing packages.).
 - [ ] **Dotfiles Fetching:** Dotbee should be able to fetch a remote dotfiles repository.
   - Using git
   - Using http (simply download it)

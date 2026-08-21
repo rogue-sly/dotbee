@@ -50,6 +50,13 @@ RUN <<EOF cat > global/git/gitconfig
     email = test@localhost
 EOF
 
+RUN << EOF cat > script.sh
+#!/usr/bin/env bash
+echo 'hello script'
+EOF
+
+RUN chmod +x script.sh
+
 # Create dotbee.toml
 RUN <<EOF cat > dotbee.toml
 [settings]
@@ -60,9 +67,17 @@ config = "~/.config"
 [profiles.global.links]
 gitconfig = { src = "global/git/gitconfig", dst = "~/.gitconfig" }
 
+[profiles.laptop]
+pre_hook = "echo 'hello laptop'"
+post_hook.path = "./script.sh"
+
 [profiles.laptop.links]
 nvim = { src = "profiles/laptop/nvim", dst = "{config}/nvim" }
 kitty = { src = "profiles/laptop/kitty", dst = "{config}/kitty" }
+
+[profiles.termux]
+pre_hook = "echo 'hello termux'"
+post_hook = "goodbye 'termux'"
 
 [profiles.termux.links]
 nvim = { src = "profiles/termux/nvim", dst = "{config}/nvim" }

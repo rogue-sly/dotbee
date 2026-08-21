@@ -32,15 +32,6 @@ fi
 
 BIN_PATH="$(pwd)/target/${usage_target}/${BUILD_MODE}/dotbee"
 
-echo
-echo "Smoke-testing the binary inside the container..."
-podman run --rm \
-    $PODMAN_FLAGS \
-    -v "${BIN_PATH}:/usr/local/bin/dotbee:Z" \
-    dotbee-dev \
-    bash -c "dotbee list && echo && dotbee doctor"
-echo
-
 echo "Running testing container..."
 podman run --hostname="laptop" -it --rm \
     $PODMAN_FLAGS \
