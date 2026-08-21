@@ -9,7 +9,15 @@
 dotbee init
 ```
 
-2. **List Available Profiles:**
+2. **fetch:**
+   Clones dotfiles repository into `~/.local/share/dotbee` and dotbee will remember that path
+   so you can just start using it right away!
+
+```sh
+dotbee fetch https://github.com/rogue-sly/dotfiles
+```
+
+3. **List Available Profiles:**
    Gives a quick view of what configs you have available.
 
 ```sh
