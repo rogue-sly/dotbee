@@ -5,11 +5,11 @@ use std::fs;
 
 pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
     // execute post_hook of the currently active profile
-    if let Some(stale_profile) = context.state.get_active_profile() {
-        if let Some(ref hook) = context.config.get_profile(stale_profile)?.post_hook {
-            println!("Running {} profile post hook", stale_profile);
-            hook.execute()?;
-        }
+    if let Some(stale_profile) = context.state.get_active_profile()
+        && let Some(ref hook) = context.config.get_profile(stale_profile)?.post_hook
+    {
+        println!("Running {} profile post hook", stale_profile);
+        hook.execute()?;
     }
 
     let links = context.state.get_links();
