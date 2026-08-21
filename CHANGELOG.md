@@ -1,4 +1,38 @@
 # Changelog
+## [0.9.0] - 2026-08-21
+
+### 🚀 Features
+
+- Add pre/post hooks
+- Add fetch subcommand
+
+### 💼 Other
+
+- Merge pull request #1 from rogue-sly/feat/hooks
+
+Feat/hooks
+- Merge pull request #2 from rogue-sly/feat/fetch
+
+Feat/fetch
+
+### 🚜 Refactor
+
+- *(schema)* Make settings optional
+- Use a bit more clear message for dr command
+
+### 📚 Documentation
+
+- Update readme + contrib and separate guide
+- Explain fetch
+- Update roadmap
+
+### 🧪 Testing
+
+- Remove smoke test from try-dotbee task
+
+### ⚙️ Miscellaneous Tasks
+
+- Fix clippy warnings
 ## [0.8.0] - 2026-08-19
 
 ### 🚀 Features
@@ -58,6 +92,7 @@
 - Use raw input in publish mise task
 - *(release)* Update changelog
 - Add a check for tokens when running in CI
+- *(release)* Update changelog
 - *(release)* Update changelog
 ## [0.7.0] - 2026-07-06
 
