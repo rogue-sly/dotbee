@@ -47,6 +47,20 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
     let dotfiles_root = context.state.get_dotfiles_root()?;
     let dry_run = context.dry_run;
 
+    // execute post_hook of the currently active profile
+    if let Some(old_profile) = context.state.get_active_profile() {
+        if let Some(ref hook) = context.config.get_profile(old_profile)?.post_hook {
+            hook.execute()?;
+        }
+    }
+
+    // execute pre_hook of the new profile
+    if let Some(new_profile) = &target_profile {
+        if let Some(ref hook) = context.config.get_profile(new_profile)?.pre_hook {
+            hook.execute()?
+        }
+    }
+
     // build desired links map from config
     let mut desired_links: IndexMap<String, Link> = IndexMap::new();
 
