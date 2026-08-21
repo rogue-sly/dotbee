@@ -21,7 +21,7 @@ fn main() -> anyhow::Result<()> {
         SubCommand::List => list::run(&context)?,
         SubCommand::Purge => purge::run(&mut context)?,
         SubCommand::Sync { profile } => sync::run(profile, &mut context)?,
-        SubCommand::Fetch { method } => fetch::run(&mut context, method)?,
+        SubCommand::Fetch { url } => fetch::run(&mut context, url)?,
         SubCommand::Edit => edit::run(&context)?,
     }
 

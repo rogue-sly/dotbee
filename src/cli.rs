@@ -1,7 +1,5 @@
 use clap::{Parser, Subcommand, ValueEnum};
 
-use crate::subcommands::fetch::FetchMethod;
-
 #[derive(Parser)]
 #[command(name = "dotbee", about = "Easy to use dotfiles manager", version, author)]
 pub struct Cli {
@@ -69,9 +67,9 @@ pub enum SubCommand {
         profile: Option<String>,
     },
 
-    /// download dotfiles repository
+    /// download dotfiles repository via git
     #[command(visible_alias = "f")]
-    Fetch { method: FetchMethod },
+    Fetch { url: String },
 
     /// edit dotbee.toml config
     #[command(visible_alias = "e")]
