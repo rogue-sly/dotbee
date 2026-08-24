@@ -2,8 +2,8 @@
 #USAGE arg "[increment]" help="The increment type (major, minor, bugfix) or a literal version"
 #USAGE complete "increment" run="printf 'bugfix\nminor\nmajor\n'"
 #MISE depends=[
-#MISE   "ci:bump {{usage.increment}}",
 #MISE   "ci:prereq",
+#MISE   "ci:bump {{usage.increment}}",
 #MISE   "ci:build",
 #MISE   "ci:checksums",
 #MISE   "ci:publish {{usage.increment}}",

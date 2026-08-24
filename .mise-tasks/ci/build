@@ -6,6 +6,9 @@ source "$(dirname "$0")/../_lib.sh"
 init
 validate_version
 
+step "Generating manpages"
+pandoc -s -t man docs/man.1.md -o docs/dotbee.1
+
 step "Building all targets"
 
 TARGETS=(
