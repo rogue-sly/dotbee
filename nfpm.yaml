@@ -9,8 +9,14 @@ description: Dotfiles manager designed for ease of use
 homepage: https://github.com/rogue-sly/dotbee
 license: MIT
 contents:
+  # bin
   - src: "target/${TARGET}/release/dotbee"
     dst: /usr/bin/dotbee
     file_info:
       mode: 0755
     expand: true
+  # man
+  - src: "docs/dotbee.1"
+    dst: /usr/share/man/man1/dotbee.1
+    file_info:
+      mode: 0644

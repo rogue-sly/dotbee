@@ -3,5 +3,6 @@
 git-cliff = "latest"
 lefthook = "latest"
 nfpm = "latest"
+pandoc = "latest"
 tombi = "latest"
 zig = "latest"
