@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
-#USAGE arg "[increment]" help="The increment type (major, minor, bugfix) or a literal version"
-#USAGE complete "increment" run="printf 'bugfix\nminor\nmajor\n'"
 #MISE raw=true
-#MISE depends=["ci:checksums", "ci:bump {{usage.increment}}"]
 set -euo pipefail
 
 source "$(dirname "$0")/../_lib.sh"

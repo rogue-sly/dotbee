@@ -15,8 +15,6 @@ pkg-url = "{ repo }/releases/download/v{ version }/{ name }-{ target }"
 pkg-fmt = "bin"
 
 [package.metadata.binstall.overrides]
-x86_64-apple-darwin = { pkg-url = "{ repo }/releases/download/v{ version }/dotbee-macos-x86_64" }
-aarch64-apple-darwin = { pkg-url = "{ repo }/releases/download/v{ version }/dotbee-macos-arm64" }
 x86_64-unknown-linux-gnu = { pkg-url = "{ repo }/releases/download/v{ version }/dotbee-linux-x86_64" }
 aarch64-unknown-linux-gnu = { pkg-url = "{ repo }/releases/download/v{ version }/dotbee-linux-arm64" }
 x86_64-unknown-linux-musl = { pkg-url = "{ repo }/releases/download/v{ version }/dotbee-linux-x86_64-musl" }

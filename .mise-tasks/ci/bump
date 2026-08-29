@@ -8,7 +8,7 @@ init
 
 INCREMENT="${usage_increment:-}"
 if [ -z "$INCREMENT" ]; then
-    err "No increment provided. Run: mise run ci:release <major|minor|bugfix|version>"
+    err "No increment provided. Run: mise run ci <major|minor|bugfix|version>"
     exit 1
 fi
 

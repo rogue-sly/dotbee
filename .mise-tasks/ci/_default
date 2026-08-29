@@ -1,24 +1,89 @@
 #!/usr/bin/env bash
+#USAGE arg "[increment]" help="The increment type (major, minor, bugfix) or a literal version"
+#USAGE complete "increment" run="printf 'bugfix\nminor\nmajor\n'"
 set -euo pipefail
 
+source "$(dirname "$0")/../_lib.sh"
+init
+
+TARGETS=(
+    x86_64-unknown-linux-gnu
+    aarch64-unknown-linux-gnu
+    x86_64-unknown-linux-musl
+    aarch64-unknown-linux-musl
+    aarch64-linux-android
+)
+
+ARTIFACT_NAMES=(
+    dotbee-linux-x86_64
+    dotbee-linux-arm64
+    dotbee-linux-x86_64-musl
+    dotbee-linux-arm64-musl
+    dotbee-android-arm64
+)
+
+help() {
+    echo ""
+    echo -e "\e[1mDotbee CI tasks\e[0m"
+    echo ""
+    echo -e "  \e[36mmise run ci <major|minor|bugfix|version>\e[0m"
+    echo -e "      Full release pipeline (prereq, bump, build, package, checksums, publish)"
+    echo ""
+    echo -e "  \e[36mmise run ci:bump <inc>\e[0m"
+    echo -e "      Bump the version in Cargo.toml and commit"
+    echo ""
+    echo -e "  \e[36mmise run ci:build <target-triple> <artifact-name>\e[0m"
+    echo -e "      Build a single target into dist/bin/"
+    echo ""
+    echo -e "  \e[36mmise run ci:package <target-triple> <artifact-name>\e[0m"
+    echo -e "      Package a single target into .deb/.rpm (no-op for android)"
+    echo ""
+    echo -e "  \e[36mmise run ci:prereq\e[0m"
+    echo -e "      Check build prerequisites"
+    echo ""
+    echo -e "  \e[36mmise run ci:checksums\e[0m"
+    echo -e "      Generate dist/checksums.txt"
+    echo ""
+    echo -e "  \e[36mmise run ci:publish\e[0m"
+    echo -e "      Changelog, push main, tag, GitHub release and crates.io publish"
+    echo ""
+    echo -e "\e[1mRelease targets\e[0m"
+    echo ""
+    local i target artifact
+    for i in "${!TARGETS[@]}"; do
+        target="${TARGETS[$i]}"
+        artifact="${ARTIFACT_NAMES[$i]}"
+        printf '  \e[36m%s\e[0m -> %s\n' "$target" "$artifact"
+    done
+    echo ""
+}
+
+INCREMENT="${usage_increment:-}"
+
+if [ -z "$INCREMENT" ] || [[ "$INCREMENT" == "-"* ]]; then
+    help
+    exit 0
+fi
+
+if [[ ! "$INCREMENT" =~ ^(major|minor|bugfix|[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+    err "Invalid increment type '$INCREMENT'. Use 'major', 'minor', 'bugfix', or a literal version (e.g., 1.2.3)."
+    exit 1
+fi
+
+mise run ci:prereq
+mise run ci:bump "$INCREMENT"
+
+for i in "${!TARGETS[@]}"; do
+    mise run ci:build "${TARGETS[$i]}" "${ARTIFACT_NAMES[$i]}"
+done
+
+for i in "${!TARGETS[@]}"; do
+    mise run ci:package "${TARGETS[$i]}" "${ARTIFACT_NAMES[$i]}"
+done
+
+mise run ci:checksums
+# mise run ci:publish
+
+VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)
 echo ""
-echo -e "\e[1mDotbee CI tasks\e[0m"
-echo ""
-echo -e "  \e[36mmise run ci:release <major|minor|bugfix|version>\e[0m"
-echo -e "      Full release pipeline (bump, changelog, tag, build, checksums, publish)"
-echo ""
-echo -e "  \e[36mmise run ci:bump <inc>\e[0m"
-echo -e "      Bump the version in Cargo.toml and commit"
-echo ""
-echo -e "  \e[36mmise run ci:build\e[0m"
-echo -e "      Build all release targets"
-echo ""
-echo -e "  \e[36mmise run ci:prereq\e[0m"
-echo -e "      Check build prerequisites"
-echo ""
-echo -e "  \e[36mmise run ci:checksums\e[0m"
-echo -e "      Generate dist/checksums.txt"
-echo ""
-echo -e "  \e[36mmise run ci:publish <inc>\e[0m"
-echo -e "      Changelog, push main, tag, GitHub release and crates.io publish"
-echo ""
+echo -e "\e[32mRelease $VERSION complete!\e[0m"

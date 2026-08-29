@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+#USAGE arg "target" help="Rust target triple (e.g. x86_64-unknown-linux-musl)"
+#USAGE arg "artifact-name" help="Output artifact name (e.g. dotbee-linux-x86_64-musl)"
+set -euo pipefail
+
+source "$(dirname "$0")/../_lib.sh"
+init
+validate_version
+
+TARGET="${usage_target:-}"
+ARTIFACT="${usage_artifact_name:-}"
+
+if [ -z "$TARGET" ] || [ -z "$ARTIFACT" ]; then
+    err "Usage: mise run ci:package <target-triple> <artifact-name>"
+    exit 1
+fi
+
+DEB_ARCH=""
+RPM_ARCH=""
+if [[ "$TARGET" != *android* ]]; then
+    case "$TARGET" in
+        x86_64-*linux*)  DEB_ARCH=amd64 RPM_ARCH=x86_64 ;;
+        aarch64-*linux*) DEB_ARCH=arm64 RPM_ARCH=aarch64 ;;
+    esac
+fi
+
+if [ -z "$DEB_ARCH" ]; then
+    info "No native packages for $TARGET"
+    exit 0
+fi
+
+step "Packaging $ARTIFACT ($TARGET as deb:$DEB_ARCH rpm:$RPM_ARCH)"
+
+mkdir -p dist/deb dist/rpm
+
+info "Generating manpages..."
+pandoc -s -t man docs/man.1.md -o docs/dotbee.1
+
+info "Packaging .deb..."
+ARCH="$DEB_ARCH" TARGET="$TARGET" VERSION="$VERSION" \
+    nfpm pkg --packager deb --config nfpm.yaml --target "dist/deb/$ARTIFACT.deb"
+
+info "Packaging .rpm..."
+ARCH="$RPM_ARCH" TARGET="$TARGET" VERSION="$VERSION" \
+    nfpm pkg --packager rpm --config nfpm.yaml --target "dist/rpm/$ARTIFACT.rpm"
+
+ok "$ARTIFACT packaged"

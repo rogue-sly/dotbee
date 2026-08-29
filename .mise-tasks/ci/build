@@ -1,80 +1,31 @@
 #!/usr/bin/env bash
-#MISE depends=["ci:prereq"]
+#USAGE arg "target" help="Rust target triple (e.g. x86_64-unknown-linux-musl)"
+#USAGE arg "artifact-name" help="Output artifact name (e.g. dotbee-linux-x86_64-musl)"
 set -euo pipefail
 
 source "$(dirname "$0")/../_lib.sh"
 init
 validate_version
 
-step "Generating manpages"
-pandoc -s -t man docs/man.1.md -o docs/dotbee.1
+TARGET="${usage_target:-}"
+ARTIFACT="${usage_artifact_name:-}"
 
-step "Building all targets"
+if [ -z "$TARGET" ] || [ -z "$ARTIFACT" ]; then
+    err "Usage: mise run ci:build <target-triple> <artifact-name>"
+    exit 1
+fi
 
-TARGETS=(
-    x86_64-apple-darwin
-    aarch64-apple-darwin
-    x86_64-unknown-linux-gnu
-    aarch64-unknown-linux-gnu
-    x86_64-unknown-linux-musl
-    aarch64-unknown-linux-musl
-    aarch64-linux-android
-)
+if [[ "$TARGET" == *android* ]]; then
+    setup_ndk_env
+fi
 
-ARTIFACT_NAMES=(
-    dotbee-macos-x86_64
-    dotbee-macos-arm64
-    dotbee-linux-x86_64
-    dotbee-linux-arm64
-    dotbee-linux-x86_64-musl
-    dotbee-linux-arm64-musl
-    dotbee-android-arm64
-)
+mkdir -p dist/bin
 
-PKG_ARCHS=("" "" amd64 arm64 amd64 arm64 "")
+step "Building $ARTIFACT ($TARGET)"
 
-setup_ndk_env
+cargo build --release --target "$TARGET"
 
-mkdir -p dist/bin dist/deb dist/rpm
+info "Staging binary..."
+cp "target/$TARGET/release/dotbee" "dist/bin/$ARTIFACT"
 
-for i in "${!TARGETS[@]}"; do
-    target="${TARGETS[$i]}"
-    artifact="${ARTIFACT_NAMES[$i]}"
-    pkg_arch="${PKG_ARCHS[$i]}"
-
-    echo ""
-    info "[$((i + 1))/${#TARGETS[@]}] Building $artifact ($target)"
-
-    cargo zigbuild --release --target "$target"
-
-    info "Staging binary..."
-    cp "target/$target/release/dotbee" "dist/bin/$artifact"
-
-    if [ -n "$pkg_arch" ]; then
-        info "Packaging .deb..."
-        ARCH="$pkg_arch" TARGET="$target" VERSION="$VERSION" \
-            nfpm pkg --packager deb --config nfpm.yaml --target "dist/deb/$artifact.deb"
-        info "Packaging .rpm..."
-        ARCH="$pkg_arch" TARGET="$target" VERSION="$VERSION" \
-            nfpm pkg --packager rpm --config nfpm.yaml --target "dist/rpm/$artifact.rpm"
-    fi
-
-    ok "$artifact done"
-done
-
-{
-    echo "# dist"
-    echo ""
-    echo "Artifacts for dotbee v$VERSION"
-    echo ""
-    for i in "${!TARGETS[@]}"; do
-        echo "- \`bin/${ARTIFACT_NAMES[$i]}\` -> \`${TARGETS[$i]}\`"
-        if [ -n "${PKG_ARCHS[$i]}" ]; then
-            echo "  - \`deb/${ARTIFACT_NAMES[$i]}.deb\`"
-            echo "  - \`rpm/${ARTIFACT_NAMES[$i]}.rpm\`"
-        fi
-    done
-    echo ""
-    echo "Checksums: \`checksums.txt\` (flat filenames, matching the GitHub release layout)"
-} >dist/README.md
-ok "dist/README.md generated"
+ok "$ARTIFACT done"
