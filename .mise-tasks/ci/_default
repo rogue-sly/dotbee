@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #USAGE arg "[increment]" help="The increment type (major, minor, bugfix) or a literal version"
 #USAGE complete "increment" run="printf 'bugfix\nminor\nmajor\n'"
+#USAGE flag "-n --dry-run" help="Skip version bump and publish steps"
 set -euo pipefail
 
 source "$(dirname "$0")/../_lib.sh"
@@ -70,19 +71,35 @@ if [[ ! "$INCREMENT" =~ ^(major|minor|bugfix|[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
     exit 1
 fi
 
+# check pre-requisites
 mise run ci:prereq
-mise run ci:bump "$INCREMENT"
 
+# bump dotbee version
+if [[ "${usage_dry_run:-}" != "true" ]]; then
+    mise run ci:bump "$INCREMENT"
+else
+    step "Skipping version bump (--dry-run)"
+fi
+
+# build binaries
 for i in "${!TARGETS[@]}"; do
     mise run ci:build "${TARGETS[$i]}" "${ARTIFACT_NAMES[$i]}"
 done
 
+# package binaries
 for i in "${!TARGETS[@]}"; do
     mise run ci:package "${TARGETS[$i]}" "${ARTIFACT_NAMES[$i]}"
 done
 
+# generate checksums for both binaries and packages
 mise run ci:checksums
-# mise run ci:publish
+
+# publish to github releases & crates.io
+if [[ "${usage_dry_run:-}" != "true" ]]; then
+    mise run ci:publish
+else
+    step "Skipping publish (--dry-run)"
+fi
 
 VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)
 echo ""

@@ -15,15 +15,11 @@ if [ -z "$TARGET" ] || [ -z "$ARTIFACT" ]; then
     exit 1
 fi
 
-if [[ "$TARGET" == *android* ]]; then
-    setup_ndk_env
-fi
-
 mkdir -p dist/bin
 
 step "Building $ARTIFACT ($TARGET)"
 
-cargo build --release --target "$TARGET"
+cross build --release --target "$TARGET"
 
 info "Staging binary..."
 cp "target/$TARGET/release/dotbee" "dist/bin/$ARTIFACT"

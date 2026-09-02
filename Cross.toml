@@ -1,0 +1,22 @@
+# linux gnu
+[target.x86_64-unknown-linux-gnu]
+image = "ghcr.io/cross-rs/x86_64-unknown-linux-gnu:main"
+# pre-build = ["apt-get update && apt-get install --assume-yes zlib1g-dev pkg-config"]
+
+[target.aarch64-unknown-linux-gnu]
+image = "ghcr.io/cross-rs/aarch64-unknown-linux-gnu:main"
+pre-build = [
+    # "dpkg --add-architecture $CROSS_DEB_ARCH",
+    # "apt-get update && apt-get install --assume-yes zlib1g-dev:$CROSS_DEB_ARCH pkg-config:$CROSS_DEB_ARCH"
+]
+
+# # linux musl
+[target.x86_64-unknown-linux-musl]
+image = "ghcr.io/cross-rs/x86_64-unknown-linux-musl:main"
+
+[target.aarch64-unknown-linux-musl]
+image = "ghcr.io/cross-rs/aarch64-unknown-linux-musl:main"
+
+# linux android
+[target.aarch64-linux-android]
+image = "ghcr.io/cross-rs/aarch64-linux-android:main"

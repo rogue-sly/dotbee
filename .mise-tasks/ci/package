@@ -19,8 +19,8 @@ DEB_ARCH=""
 RPM_ARCH=""
 if [[ "$TARGET" != *android* ]]; then
     case "$TARGET" in
-        x86_64-*linux*)  DEB_ARCH=amd64 RPM_ARCH=x86_64 ;;
-        aarch64-*linux*) DEB_ARCH=arm64 RPM_ARCH=aarch64 ;;
+    x86_64-*linux*) DEB_ARCH=amd64 RPM_ARCH=x86_64 ;;
+    aarch64-*linux*) DEB_ARCH=arm64 RPM_ARCH=aarch64 ;;
     esac
 fi
 
