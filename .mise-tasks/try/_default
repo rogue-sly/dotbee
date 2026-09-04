@@ -22,7 +22,7 @@ echo
 cargo build --profile "${usage_profile?}" --target "${usage_target?}"
 
 echo "Building testing container image..."
-podman build -t dotbee-dev .
+podman build -t dotbee-dev "$(dirname "$0")"
 
 # Detect if we are using podman
 PODMAN_FLAGS=""
