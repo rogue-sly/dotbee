@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+#USAGE arg "[command...]" help="Command to run in the Nix container (default: interactive shell)"
+
+set -e
+
+NIX_STORE_VOLUME="dotbee-nix-store"
+NIX_VAR_VOLUME="dotbee-nix-var"
+
+for vol in "$NIX_STORE_VOLUME" "$NIX_VAR_VOLUME"; do
+    if ! podman volume exists "$vol" 2>/dev/null; then
+        podman volume create "$vol" >/dev/null
+    fi
+done
+
+podman run --rm -it \
+    -v "$NIX_STORE_VOLUME:/nix/store" \
+    -v "$NIX_VAR_VOLUME:/nix/var/nix" \
+    -v "$(pwd)":/build \
+    -w /build \
+    -e NIX_CONFIG="experimental-features = nix-command flakes" \
+    nixos/nix \
+    nix "$@"
