@@ -51,7 +51,7 @@ nvim = { src = "editors/nvim/", dst = "{config}/nvim" }
 
 ## Phase 3: Polish (`v1.0`)
 
-- [ ] **Broader Platform Support:** Support even more platforms and provide packages for popular Linux distros (Debian, Fedora, ArchLinux, Nix/OS).
+- [ ] **Broader Platform Support:** Support even more platforms and provide packages for popular Linux distros (Debian, Fedora, Nix/OS).
 - [ ] **Stable Release:** Tag and release `v1.0.0`.
 - [ ] **Complete Test Coverage:** Write tests for all possible failure cases.
 - [ ] **Man Pages:** Write a manpage that covers all dotbee features.
