@@ -11,7 +11,7 @@ step "Generating changelog"
 git-cliff --config cliff.toml -vv --output CHANGELOG.md --tag "$TAG"
 ok "Changelog generated"
 
-git add Cargo.toml Cargo.lock docs/man.1.md CHANGELOG.md
+git add Cargo.toml Cargo.lock docs/man.1.md docs/dotbee.1 CHANGELOG.md
 if ! git diff --cached --exit-code >/dev/null 2>&1; then
     git commit -m "chore(release): prepare for v$VERSION"
     ok "Changes committed"
