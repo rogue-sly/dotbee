@@ -52,7 +52,7 @@ cargo install --git https://github.com/rogue-sly/dotbee
 To avoid accidental data loss on your host system during development, use the provided `mise` tasks to run Dotbee in a container:
 
 ```sh
-mise run try-dotbee --profile dev
+mise run try --profile dev
 ```
 
 ## Acknowledgments
