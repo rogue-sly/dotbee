@@ -1,4 +1,42 @@
 # Changelog
+## [1.0.0] - 2026-09-05
+
+### 💼 Other
+
+- Activate mise using direnv
+
+reason why is because the usual mise activate on shell startup causes a
+slow down and makes read $PATH a pain in the ass
+
+using mise activate --shims sorta solves this but you lose on features
+like env vars in mise.toml
+
+so this is the middle ground for me
+
+why do I bother wasting time with this?
+
+### 🚜 Refactor
+
+- Use libgit2 instead of calling to git cli
+- Shorten image link
+- Couple try-dotbee script and Dockerfile together in a folder
+
+### 📚 Documentation
+
+- Write manpages
+- Update roadmap
+- Update roadmap
+
+### ⚙️ Miscellaneous Tasks
+
+- Update mise lockfile
+- Add a manpages generation step and refactor ci
+- Drop macos
+- Update manpages
+- Use cross-rs for cross compilation
+- Sprinkle in that nix flake
+- Remove hostname feature from nix
+- Use git once in the ci task
 ## [0.9.0] - 2026-08-21
 
 ### 🚀 Features
@@ -33,6 +71,7 @@ Feat/fetch
 ### ⚙️ Miscellaneous Tasks
 
 - Fix clippy warnings
+- *(release)* Update changelog
 ## [0.8.0] - 2026-08-19
 
 ### 🚀 Features
