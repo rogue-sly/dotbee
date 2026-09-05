@@ -8,20 +8,15 @@ validate_version
 
 step "Generating changelog"
 
-if [ -n "$(git status --porcelain)" ]; then
-    err "Working tree is not clean. Commit or stash changes first."
-    exit 1
-fi
-
 git-cliff --config cliff.toml -vv --output CHANGELOG.md --tag "$TAG"
 ok "Changelog generated"
 
-git add CHANGELOG.md
+git add Cargo.toml Cargo.lock docs/man.1.md CHANGELOG.md
 if ! git diff --cached --exit-code >/dev/null 2>&1; then
-    git commit -m "chore(release): update changelog"
-    ok "Changelog committed"
+    git commit -m "chore(release): prepare for v$VERSION"
+    ok "Changes committed"
 else
-    ok "No changelog changes"
+    ok "No changes to commit"
 fi
 
 step "Pushing main and creating tag"

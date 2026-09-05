@@ -12,11 +12,6 @@ if [ -z "$INCREMENT" ]; then
     exit 1
 fi
 
-if [ -n "$(git status --porcelain)" ]; then
-    err "Working tree is not clean. Commit or stash changes first."
-    exit 1
-fi
-
 step "Bumping version"
 
 OLD_VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)
@@ -43,7 +38,3 @@ fi
 sed -i "s/^version = \"$OLD_VERSION\"/version = \"$NEW_VERSION\"/" Cargo.toml && cargo check
 sed -i "s/^footer: dotbee \"$OLD_VERSION\"/footer: dotbee \"$NEW_VERSION\"/" docs/man.1.md
 ok "Bumped $OLD_VERSION -> $NEW_VERSION"
-
-git add Cargo.toml Cargo.lock docs/man.1.md
-git commit -m "chore(release): prepare for v$NEW_VERSION"
-ok "Bump committed"
