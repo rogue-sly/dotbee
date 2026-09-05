@@ -51,17 +51,8 @@ nvim = { src = "editors/nvim/", dst = "{config}/nvim" }
 
 ## Phase 3: Polish (`v1.0`)
 
-- [ ] **Broader Platform Support:** Support even more platforms and provide packages for popular Linux distros (Debian, Fedora, Nix/OS).
+- [x] **Broader Platform Support:** Support even more platforms and provide packages for popular Linux distros (Debian, Fedora, Nix/OS).
 - [ ] **Stable Release:** Tag and release `v1.0.0`.
-- [ ] **Complete Test Coverage:** Write tests for all possible failure cases.
-- [ ] **Man Pages:** Write a manpage that covers all dotbee features.
-
-## Optional
-
-- [ ] **Performance Optimization:** Implement bulk state updates to improve efficiency for large configurations.
-- [ ] **Copy mode**: Copy the file instead of creating a symlink.
-- [ ] **System Profile:** A way to setup symlinks for system configuration files (/etc)
-  - Should invoke sudo
-  - To activate it, use --system with `dotbee switch` Possible commands to use this flag: [switch, purge, repair]
+- [x] **Man Pages:** Write a manpage that covers all dotbee features.
 
 To infinity and beyond...
