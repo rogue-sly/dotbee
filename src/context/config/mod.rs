@@ -95,14 +95,24 @@ impl Config {
     }
 
     pub fn get_profile(&self, name: &str) -> anyhow::Result<&Profile, anyhow::Error> {
-        let profiles = self.profiles.as_ref().ok_or(anyhow!("No profiles defined in configuration."))?;
-        profiles.get(name).ok_or(anyhow!("Profile '{}' not found in configuration.", name))
+        let profiles = self
+            .profiles
+            .as_ref()
+            .ok_or(anyhow!("No profiles defined in configuration."))?;
+        profiles
+            .get(name)
+            .ok_or(anyhow!("Profile '{}' not found in configuration.", name))
     }
 
     pub fn list_profiles(&self) -> Vec<&str> {
         self.profiles
             .as_ref()
-            .map(|p| p.keys().map(|k| k.as_str()).filter(|k| *k != GLOBAL_PROFILE).collect())
+            .map(|p| {
+                p.keys()
+                    .map(|k| k.as_str())
+                    .filter(|k| *k != GLOBAL_PROFILE)
+                    .collect()
+            })
             .unwrap_or_default()
     }
 
@@ -114,7 +124,10 @@ impl Config {
     }
 
     pub fn get_global_links(&self) -> Option<&IndexMap<String, Link>> {
-        self.profiles.as_ref()?.get(GLOBAL_PROFILE).map(|p| &p.links)
+        self.profiles
+            .as_ref()?
+            .get(GLOBAL_PROFILE)
+            .map(|p| &p.links)
     }
 
     pub fn get_settings(&self) -> &Settings {
@@ -140,7 +153,10 @@ impl Config {
         let mut errors: Vec<String> = vec![];
 
         {
-            let has_profiles = self.profiles.as_ref().is_some_and(|p| p.keys().any(|k| k != GLOBAL_PROFILE));
+            let has_profiles = self
+                .profiles
+                .as_ref()
+                .is_some_and(|p| p.keys().any(|k| k != GLOBAL_PROFILE));
             // check if profiles are empty
             if !has_profiles {
                 message::warning("No profiles defined in configuration.");
@@ -200,7 +216,8 @@ impl Config {
                 }
 
                 // dst is where the symlink lands, so it must be absolute (or ~)
-                if !link.dst.is_empty() && !link.dst.starts_with('/') && !link.dst.starts_with('~') {
+                if !link.dst.is_empty() && !link.dst.starts_with('/') && !link.dst.starts_with('~')
+                {
                     errors.push(format!(
                         "[{}]: link '{}' has dst '{}' which is not absolute. dst should start with / or ~.",
                         section, name, link.dst
@@ -219,7 +236,8 @@ impl Config {
                 }
 
                 // source path existence
-                if !link.src.is_empty() && !link.src.starts_with('/') && !link.src.starts_with('~') {
+                if !link.src.is_empty() && !link.src.starts_with('/') && !link.src.starts_with('~')
+                {
                     let source_path = dotfiles_root.join(&link.src);
                     if !source_path.exists() {
                         errors.push(format!(
@@ -277,7 +295,11 @@ impl Config {
             }
         }
 
-        if errors.is_empty() { Ok(()) } else { Err(errors) }
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(errors)
+        }
     }
 }
 
@@ -401,7 +423,10 @@ mod tests {
             "#,
             &["global_foo", "local_foo"],
         );
-        assert!(err.contains("overrides an existing global link"), "got: {err}");
+        assert!(
+            err.contains("overrides an existing global link"),
+            "got: {err}"
+        );
         assert!(err.contains("'p'"), "got: {err}");
     }
 
@@ -428,7 +453,10 @@ mod tests {
         let config = Config::load(Some(path)).unwrap();
         let links = config.get_global_links().unwrap();
         assert_eq!(links.get("my_link").map(|l| l.src.as_str()), Some("a"));
-        assert_eq!(links.get("my_link").map(|l| l.dst.as_str()), Some("~/.config/a"));
+        assert_eq!(
+            links.get("my_link").map(|l| l.dst.as_str()),
+            Some("~/.config/a")
+        );
         assert_eq!(links.len(), 1);
         assert!(!config.has_profiles());
         assert!(config.get_path().is_some());
@@ -444,7 +472,10 @@ mod tests {
         );
         let config = Config::load(Some(path)).unwrap();
         let profile = config.get_profile("p").unwrap();
-        assert_eq!(profile.links.get("my_link").map(|l| l.src.as_str()), Some("b"));
+        assert_eq!(
+            profile.links.get("my_link").map(|l| l.src.as_str()),
+            Some("b")
+        );
         assert_eq!(config.list_profiles(), vec!["p"]);
         assert!(config.has_profiles());
     }
@@ -548,8 +579,14 @@ mod tests {
             &[],
         );
         let config = Config::load(Some(path)).unwrap();
-        assert_eq!(config.vars.get("config").map(|s| s.as_str()), Some("~/.config"));
-        assert_eq!(config.vars.get("nvim").map(|s| s.as_str()), Some("~/.config/nvim"));
+        assert_eq!(
+            config.vars.get("config").map(|s| s.as_str()),
+            Some("~/.config")
+        );
+        assert_eq!(
+            config.vars.get("nvim").map(|s| s.as_str()),
+            Some("~/.config/nvim")
+        );
     }
 
     #[test]

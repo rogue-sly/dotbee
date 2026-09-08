@@ -11,7 +11,10 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(path_to_config: Option<String>, dry_run: bool) -> anyhow::Result<Self, anyhow::Error> {
+    pub fn new(
+        path_to_config: Option<String>,
+        dry_run: bool,
+    ) -> anyhow::Result<Self, anyhow::Error> {
         let mut state = State::load()?;
 
         // determine effective config path from explicit arg or stored dotfiles path

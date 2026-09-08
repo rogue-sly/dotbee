@@ -18,7 +18,9 @@ pub enum ConflictAction {
     Skip,
 }
 
-pub fn deserialize_conflict_action<'de, D>(deserializer: D) -> Result<Option<ConflictAction>, D::Error>
+pub fn deserialize_conflict_action<'de, D>(
+    deserializer: D,
+) -> Result<Option<ConflictAction>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -58,12 +60,20 @@ impl ConflictAction {
     /// on how to handle the problem.
     pub fn prompt(kind: &ConflictKind) -> anyhow::Result<ConflictAction, anyhow::Error> {
         let selection = Select::new("Conflict")
-            .description(format!("Conflict occurred of kind: {}.\nhow do you want to handle it?", kind).as_str())
+            .description(
+                format!(
+                    "Conflict occurred of kind: {}.\nhow do you want to handle it?",
+                    kind
+                )
+                .as_str(),
+            )
             .theme(&Theme::base16())
             .options(vec![
                 DemandOption::new(ConflictAction::Abort).description("Stop syncing"),
-                DemandOption::new(ConflictAction::Adopt).description("Replace the file in dotfiles with the conflicting one"),
-                DemandOption::new(ConflictAction::Overwrite).description("Overwrite conflicting file"),
+                DemandOption::new(ConflictAction::Adopt)
+                    .description("Replace the file in dotfiles with the conflicting one"),
+                DemandOption::new(ConflictAction::Overwrite)
+                    .description("Overwrite conflicting file"),
                 DemandOption::new(ConflictAction::Skip).description("Don't symlink this file"),
             ])
             .run()?;

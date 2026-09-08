@@ -36,7 +36,10 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
             if context.dry_run {
                 message::warning(&format!("{} is already missing from disk.", link.target));
             } else {
-                message::warning(&format!("Cleaning up stale state for missing link: {}", link.target));
+                message::warning(&format!(
+                    "Cleaning up stale state for missing link: {}",
+                    link.target
+                ));
             }
             continue;
         }
@@ -45,7 +48,10 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
             if context.dry_run {
                 message::error(&format!("SKIPPING {}: not a symlink.", link.target));
             } else {
-                message::error(&format!("Aborting removal of {}: path is a real file/directory.", link.target));
+                message::error(&format!(
+                    "Aborting removal of {}: path is a real file/directory.",
+                    link.target
+                ));
             }
             continue;
         }
@@ -56,7 +62,10 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
             match fs::remove_file(&target_path) {
                 Ok(_) => message::delete(&format!("Removed {}", link.target)),
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                    message::warning(&format!("Target '{}' disappeared during execution.", link.target));
+                    message::warning(&format!(
+                        "Target '{}' disappeared during execution.",
+                        link.target
+                    ));
                 }
                 Err(e) => message::error(&format!("Failed to remove {}: {}", link.target, e)),
             }

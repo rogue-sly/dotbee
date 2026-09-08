@@ -33,7 +33,11 @@ pub fn run(context: &Context) -> anyhow::Result<(), anyhow::Error> {
 fn show_links(links: &IndexMap<String, Link>) {
     let mut iter = links.iter().peekable();
     while let Some((name, link)) = iter.next() {
-        let branch = if iter.peek().is_none() { "└──" } else { "├──" };
+        let branch = if iter.peek().is_none() {
+            "└──"
+        } else {
+            "├──"
+        };
         println!("{} {}: {} -> {}", branch, name, link.src, link.dst);
     }
 }

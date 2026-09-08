@@ -22,7 +22,10 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
                 path_string.to_string_lossy()
             ));
         } else {
-            message::success(&format!("Would initialize {} (dry run)", path_string.to_string_lossy()));
+            message::success(&format!(
+                "Would initialize {} (dry run)",
+                path_string.to_string_lossy()
+            ));
         }
         return Ok(());
     }
@@ -45,12 +48,19 @@ pub fn run(context: &mut Context) -> anyhow::Result<(), anyhow::Error> {
     // update state to remember this dotfiles directory
     if let Some(parent) = fs::canonicalize(config_path)
         .ok()
-        .and_then(|abs_config_path| abs_config_path.parent().map(|dotfiles_path| dotfiles_path.to_path_buf()))
+        .and_then(|abs_config_path| {
+            abs_config_path
+                .parent()
+                .map(|dotfiles_path| dotfiles_path.to_path_buf())
+        })
     {
         context.state.set_dotfiles_path(Some(parent))?;
     }
 
-    message::success(&format!("Successfully initialized {}", path_string.to_string_lossy()));
+    message::success(&format!(
+        "Successfully initialized {}",
+        path_string.to_string_lossy()
+    ));
     println!(
         "Edit the file to configure your dotfiles, then run {} to apply.",
         "dotbee sync --profile <profile>".yellow()

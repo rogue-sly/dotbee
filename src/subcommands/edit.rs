@@ -14,7 +14,11 @@ pub fn run(context: &Context) -> Result<()> {
     let editor = resolve_editor();
 
     if context.dry_run {
-        message::info(&format!("Would open {} with '{}'", config_path.display(), editor));
+        message::info(&format!(
+            "Would open {} with '{}'",
+            config_path.display(),
+            editor
+        ));
         return Ok(());
     }
 

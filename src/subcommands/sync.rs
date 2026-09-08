@@ -33,9 +33,15 @@ impl Display for ConflictKind {
     }
 }
 
-pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) -> anyhow::Result<()> {
+pub fn run(
+    profile_name: Option<String>,
+    context: &mut crate::context::Context,
+) -> anyhow::Result<()> {
     if profile_name.as_deref() == Some(GLOBAL_PROFILE) {
-        bail!("The '{}' profile is applied automatically and cannot be selected.", GLOBAL_PROFILE);
+        bail!(
+            "The '{}' profile is applied automatically and cannot be selected.",
+            GLOBAL_PROFILE
+        );
     }
 
     let explicit_profile = profile_name.is_some();
@@ -93,7 +99,10 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
 
             if target_path.is_symlink() && fs::read_link(&target_path)? == source_path {
                 if dry_run {
-                    message::delete(&format!("Would remove ghost link (missing from config): {}", target));
+                    message::delete(&format!(
+                        "Would remove ghost link (missing from config): {}",
+                        target
+                    ));
                 } else {
                     fs::remove_file(&target_path)?;
                     message::delete(&format!("Removed ghost link: {}", target));
@@ -106,8 +115,17 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
     // print header for dry run
     if dry_run {
         match target_profile {
-            Some(ref profile) => println!("{} {} {}", "Syncing profile".yellow(), profile.bold().cyan(), "(dry run)".yellow()),
-            None => println!("{} {}", "Syncing global links".yellow(), "(dry run)".yellow()),
+            Some(ref profile) => println!(
+                "{} {} {}",
+                "Syncing profile".yellow(),
+                profile.bold().cyan(),
+                "(dry run)".yellow()
+            ),
+            None => println!(
+                "{} {}",
+                "Syncing global links".yellow(),
+                "(dry run)".yellow()
+            ),
         }
     }
 
@@ -128,7 +146,9 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
             SymlinkStatus::AlreadyLinked => {
                 message::success(&format!("{} -> {} (already linked)", link.src, link.dst));
                 if !dry_run {
-                    context.state.add_link(link.src.clone(), link.dst.clone(), is_dir)?;
+                    context
+                        .state
+                        .add_link(link.src.clone(), link.dst.clone(), is_dir)?;
                 }
             }
             SymlinkStatus::NonExistent => {
@@ -137,7 +157,9 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
                 } else {
                     context.symlink.create(&source_path, &target_path)?;
                     message::link(&format!("{} -> {}", link.src, link.dst));
-                    context.state.add_link(link.src.clone(), link.dst.clone(), is_dir)?;
+                    context
+                        .state
+                        .add_link(link.src.clone(), link.dst.clone(), is_dir)?;
                 }
             }
             SymlinkStatus::ConflictingSymlink | SymlinkStatus::ConflictingFileOrDir => {
@@ -147,13 +169,19 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
                 };
 
                 if dry_run {
-                    message::warning(&format!("Conflict at {}: {} exists. Strategy will be applied.", link.dst, kind));
+                    message::warning(&format!(
+                        "Conflict at {}: {} exists. Strategy will be applied.",
+                        link.dst, kind
+                    ));
                     message::info(&format!("  Source: {}", link.src));
                 } else {
                     let strategy = &context.config.get_settings().on_conflict;
                     let action = match strategy {
                         None => {
-                            message::error(&format!("Conflict: {} -> {} ({})", link.src, link.dst, kind));
+                            message::error(&format!(
+                                "Conflict: {} -> {} ({})",
+                                link.src, link.dst, kind
+                            ));
                             ConflictAction::prompt(&kind)?
                         }
                         Some(a) => a.clone(),
@@ -163,7 +191,9 @@ pub fn run(profile_name: Option<String>, context: &mut crate::context::Context) 
 
                     if action == ConflictAction::Overwrite || action == ConflictAction::Adopt {
                         let is_dir = source_path.is_dir();
-                        context.state.add_link(link.src.clone(), link.dst.clone(), is_dir)?;
+                        context
+                            .state
+                            .add_link(link.src.clone(), link.dst.clone(), is_dir)?;
                     }
                 }
             }
@@ -200,26 +230,39 @@ fn handle_conflict(
             if let Err(e) = fs::remove_file(destination)
                 && e.kind() == std::io::ErrorKind::IsADirectory
             {
-                fs::remove_dir_all(destination).with_context(|| format!("Failed to remove directory at {:?}", destination))?;
+                fs::remove_dir_all(destination)
+                    .with_context(|| format!("Failed to remove directory at {:?}", destination))?;
             }
             context.symlink.create(source, destination)?;
-            println!("  Overwrite: {} → {}", source.display(), destination.display());
+            println!(
+                "  Overwrite: {} → {}",
+                source.display(),
+                destination.display()
+            );
         }
         ConflictAction::Adopt => {
             let adopt_target = dotfiles_root.join(rel_source);
             if let Some(parent) = adopt_target.parent() {
-                fs::create_dir_all(parent).with_context(|| format!("Failed to create directory at {:?}", parent))?;
+                fs::create_dir_all(parent)
+                    .with_context(|| format!("Failed to create directory at {:?}", parent))?;
             }
 
             if let Err(e) = fs::remove_file(&adopt_target)
                 && e.kind() == std::io::ErrorKind::IsADirectory
             {
-                fs::remove_dir_all(&adopt_target).with_context(|| format!("Failed to remove directory at {:?}", adopt_target))?;
+                fs::remove_dir_all(&adopt_target)
+                    .with_context(|| format!("Failed to remove directory at {:?}", adopt_target))?;
             }
 
-            fs::rename(destination, &adopt_target).with_context(|| format!("Failed to move {:?} to {:?}", destination, adopt_target))?;
+            fs::rename(destination, &adopt_target).with_context(|| {
+                format!("Failed to move {:?} to {:?}", destination, adopt_target)
+            })?;
             context.symlink.create(source, destination)?;
-            println!("  Adopted: {} → {}", source.display(), destination.display());
+            println!(
+                "  Adopted: {} → {}",
+                source.display(),
+                destination.display()
+            );
         }
     }
 

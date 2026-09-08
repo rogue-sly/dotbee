@@ -12,7 +12,11 @@ use indexmap::IndexMap;
 ///
 /// All errors are collected and returned at once so the user sees every
 /// undefined variable in a single run.
-pub fn interpolate(input: &str, vars: &IndexMap<String, String>, context: &str) -> Result<String, Vec<String>> {
+pub fn interpolate(
+    input: &str,
+    vars: &IndexMap<String, String>,
+    context: &str,
+) -> Result<String, Vec<String>> {
     let mut errors = Vec::new();
     let mut output = String::with_capacity(input.len());
     let chars: Vec<char> = input.chars().collect();
@@ -67,7 +71,11 @@ pub fn interpolate(input: &str, vars: &IndexMap<String, String>, context: &str) 
         }
     }
 
-    if errors.is_empty() { Ok(output) } else { Err(errors) }
+    if errors.is_empty() {
+        Ok(output)
+    } else {
+        Err(errors)
+    }
 }
 
 fn is_valid_name(name: &str) -> bool {
@@ -88,14 +96,20 @@ mod tests {
 
     #[test]
     fn substitutes_single_var() {
-        assert_eq!(interpolate("{config}/foo", &vars(), "ctx").unwrap(), "~/.config/foo");
+        assert_eq!(
+            interpolate("{config}/foo", &vars(), "ctx").unwrap(),
+            "~/.config/foo"
+        );
     }
 
     #[test]
     fn substitutes_var_at_start_middle_end() {
         let v = vars();
         assert_eq!(interpolate("{config}", &v, "ctx").unwrap(), "~/.config");
-        assert_eq!(interpolate("a/{config}/b", &v, "ctx").unwrap(), "a/~/.config/b");
+        assert_eq!(
+            interpolate("a/{config}/b", &v, "ctx").unwrap(),
+            "a/~/.config/b"
+        );
         assert_eq!(interpolate("a/{config}", &v, "ctx").unwrap(), "a/~/.config");
     }
 
@@ -109,7 +123,10 @@ mod tests {
 
     #[test]
     fn leaves_plain_text_untouched() {
-        assert_eq!(interpolate("~/.config/nvim", &vars(), "ctx").unwrap(), "~/.config/nvim");
+        assert_eq!(
+            interpolate("~/.config/nvim", &vars(), "ctx").unwrap(),
+            "~/.config/nvim"
+        );
     }
 
     #[test]
@@ -121,12 +138,18 @@ mod tests {
     #[test]
     fn collects_all_undefined_vars() {
         let err = interpolate("{a}/{b}", &vars(), "ctx").unwrap_err();
-        assert_eq!(err, vec!["ctx: undefined variable 'a'", "ctx: undefined variable 'b'"]);
+        assert_eq!(
+            err,
+            vec!["ctx: undefined variable 'a'", "ctx: undefined variable 'b'"]
+        );
     }
 
     #[test]
     fn double_braces_escape() {
-        assert_eq!(interpolate("{{config}}", &vars(), "ctx").unwrap(), "{config}");
+        assert_eq!(
+            interpolate("{{config}}", &vars(), "ctx").unwrap(),
+            "{config}"
+        );
         assert_eq!(interpolate("a{{b", &vars(), "ctx").unwrap(), "a{b");
         assert_eq!(interpolate("a}}b", &vars(), "ctx").unwrap(), "a}b");
     }
@@ -153,6 +176,9 @@ mod tests {
 
     #[test]
     fn unicode_is_preserved() {
-        assert_eq!(interpolate("café/{config}", &vars(), "ctx").unwrap(), "café/~/.config");
+        assert_eq!(
+            interpolate("café/{config}", &vars(), "ctx").unwrap(),
+            "café/~/.config"
+        );
     }
 }

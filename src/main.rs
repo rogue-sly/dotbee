@@ -56,5 +56,6 @@ fn lock_process() -> anyhow::Result<Flock<File>> {
         .read(true)
         .open(&lock_path)?;
     // acquire and return lock
-    Flock::lock(file, FlockArg::LockExclusiveNonblock).map_err(|_| anyhow::anyhow!("There can only be ONE dotbee process"))
+    Flock::lock(file, FlockArg::LockExclusiveNonblock)
+        .map_err(|_| anyhow::anyhow!("There can only be ONE dotbee process"))
 }

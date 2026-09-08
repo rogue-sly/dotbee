@@ -20,10 +20,15 @@ pub fn run(context: &mut Context, url: String) -> Result<()> {
         return Ok(());
     }
 
-    let path = data_dir().context("Could not determine data directory")?.join("dotbee");
+    let path = data_dir()
+        .context("Could not determine data directory")?
+        .join("dotbee");
 
     if path.is_dir() && fs::read_dir(&path)?.next().is_some() {
-        message::warning(&format!("Directory {} already exists and is not empty, skipping", path.display()));
+        message::warning(&format!(
+            "Directory {} already exists and is not empty, skipping",
+            path.display()
+        ));
         return Ok(());
     }
 
@@ -68,7 +73,10 @@ fn prompt_passphrase(description: &str) -> Result<String> {
 }
 
 fn prompt_input(title: &str, placeholder: &str) -> Result<String> {
-    let input = Input::new(title).placeholder(placeholder).theme(&Theme::base16()).run()?;
+    let input = Input::new(title)
+        .placeholder(placeholder)
+        .theme(&Theme::base16())
+        .run()?;
     Ok(input)
 }
 
@@ -118,7 +126,9 @@ fn clone(url: &str, path: &Path) -> Result<()> {
         let received_bytes = stats.received_bytes();
 
         if total_objects > 0 && received_objects < total_objects {
-            let percent = (received_objects * 100).checked_div(total_objects).unwrap_or(0);
+            let percent = (received_objects * 100)
+                .checked_div(total_objects)
+                .unwrap_or(0);
             let bytes = format_bytes(received_bytes);
             print!(
                 "\r\x1b[2KReceiving objects: {:3}% ({}/{}) | {}",
@@ -126,8 +136,13 @@ fn clone(url: &str, path: &Path) -> Result<()> {
             );
             let _ = io::stdout().flush();
         } else if total_deltas > 0 && indexed_deltas < total_deltas {
-            let percent = (indexed_deltas * 100).checked_div(total_deltas).unwrap_or(0);
-            print!("\r\x1b[2KResolving deltas: {:3}% ({}/{})", percent, indexed_deltas, total_deltas);
+            let percent = (indexed_deltas * 100)
+                .checked_div(total_deltas)
+                .unwrap_or(0);
+            print!(
+                "\r\x1b[2KResolving deltas: {:3}% ({}/{})",
+                percent, indexed_deltas, total_deltas
+            );
             let _ = io::stdout().flush();
         }
         true
@@ -138,7 +153,9 @@ fn clone(url: &str, path: &Path) -> Result<()> {
 
         if allowed_types.contains(CredentialType::SSH_KEY) {
             if state.total_attempts >= 10 {
-                return Err(git2::Error::from_str("Maximum authentication attempts exceeded"));
+                return Err(git2::Error::from_str(
+                    "Maximum authentication attempts exceeded",
+                ));
             }
             state.total_attempts += 1;
 
@@ -156,7 +173,11 @@ fn clone(url: &str, path: &Path) -> Result<()> {
             while state.key_index < ssh_keys.len() {
                 let key_path = &ssh_keys[state.key_index];
                 let pub_key = key_path.with_extension("pub");
-                let pub_key_opt = if pub_key.is_file() { Some(pub_key.as_path()) } else { None };
+                let pub_key_opt = if pub_key.is_file() {
+                    Some(pub_key.as_path())
+                } else {
+                    None
+                };
 
                 let encrypted = is_ssh_key_encrypted(key_path);
 
@@ -172,8 +193,14 @@ fn clone(url: &str, path: &Path) -> Result<()> {
                     state.passphrase_attempts += 1;
                     let desc = format!("Enter passphrase for {}", key_path.display());
                     if let Ok(passphrase) = prompt_passphrase(&desc) {
-                        let pass_opt = if passphrase.is_empty() { None } else { Some(passphrase) };
-                        if let Ok(cred) = Cred::ssh_key(user, pub_key_opt, key_path, pass_opt.as_deref()) {
+                        let pass_opt = if passphrase.is_empty() {
+                            None
+                        } else {
+                            Some(passphrase)
+                        };
+                        if let Ok(cred) =
+                            Cred::ssh_key(user, pub_key_opt, key_path, pass_opt.as_deref())
+                        {
                             return Ok(cred);
                         }
                     }
@@ -197,11 +224,19 @@ fn clone(url: &str, path: &Path) -> Result<()> {
 
                 if expanded.is_file() {
                     let pub_key = expanded.with_extension("pub");
-                    let pub_key_opt = if pub_key.is_file() { Some(pub_key.as_path()) } else { None };
+                    let pub_key_opt = if pub_key.is_file() {
+                        Some(pub_key.as_path())
+                    } else {
+                        None
+                    };
 
                     let desc = format!("Enter passphrase for {}", expanded.display());
                     let passphrase = prompt_passphrase(&desc).unwrap_or_default();
-                    let pass_opt = if passphrase.is_empty() { None } else { Some(passphrase.as_str()) };
+                    let pass_opt = if passphrase.is_empty() {
+                        None
+                    } else {
+                        Some(passphrase.as_str())
+                    };
                     if let Ok(cred) = Cred::ssh_key(user, pub_key_opt, &expanded, pass_opt) {
                         return Ok(cred);
                     }
@@ -213,7 +248,9 @@ fn clone(url: &str, path: &Path) -> Result<()> {
 
         if allowed_types.contains(CredentialType::USER_PASS_PLAINTEXT) {
             if state.total_attempts >= 10 {
-                return Err(git2::Error::from_str("Maximum authentication attempts exceeded"));
+                return Err(git2::Error::from_str(
+                    "Maximum authentication attempts exceeded",
+                ));
             }
             state.total_attempts += 1;
 
@@ -249,7 +286,10 @@ fn clone(url: &str, path: &Path) -> Result<()> {
     let mut checkout = CheckoutBuilder::new();
     checkout.progress(|_, completed, total| {
         if let Some(percent) = (completed * 100).checked_div(total) {
-            print!("\r\x1b[2KUpdating files: {:3}% ({}/{})", percent, completed, total);
+            print!(
+                "\r\x1b[2KUpdating files: {:3}% ({}/{})",
+                percent, completed, total
+            );
             let _ = io::stdout().flush();
         }
     });

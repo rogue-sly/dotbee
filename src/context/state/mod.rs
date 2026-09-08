@@ -33,11 +33,14 @@ impl State {
     fn save(&self) -> Result<()> {
         let path = Self::get_path()?;
         if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent).with_context(|| format!("Failed to create state directory {:?}", parent))?;
+            fs::create_dir_all(parent)
+                .with_context(|| format!("Failed to create state directory {:?}", parent))?;
         }
 
-        let content = serde_json::to_string_pretty(self).context("Failed to serialize state to json")?;
-        fs::write(&path, &content).with_context(|| format!("Failed to write state file at {:?}", path))?;
+        let content =
+            serde_json::to_string_pretty(self).context("Failed to serialize state to json")?;
+        fs::write(&path, &content)
+            .with_context(|| format!("Failed to write state file at {:?}", path))?;
 
         Ok(())
     }
@@ -48,12 +51,14 @@ impl State {
             return Ok(Self::default());
         }
 
-        let content = fs::read_to_string(&path).with_context(|| format!("Failed to read state file at {:?}", path))?;
+        let content = fs::read_to_string(&path)
+            .with_context(|| format!("Failed to read state file at {:?}", path))?;
         if content.trim().is_empty() {
             return Ok(Self::default());
         }
 
-        let state: State = serde_json::from_str(&content).with_context(|| format!("Failed to parse state file at {:?}", path))?;
+        let state: State = serde_json::from_str(&content)
+            .with_context(|| format!("Failed to parse state file at {:?}", path))?;
         Ok(state)
     }
 
@@ -71,7 +76,10 @@ impl State {
         self.dotfiles_path.as_deref()
     }
 
-    pub fn set_dotfiles_path(&mut self, path: Option<PathBuf>) -> anyhow::Result<(), anyhow::Error> {
+    pub fn set_dotfiles_path(
+        &mut self,
+        path: Option<PathBuf>,
+    ) -> anyhow::Result<(), anyhow::Error> {
         self.dotfiles_path = path;
         self.save()?;
         Ok(())
@@ -80,7 +88,10 @@ impl State {
     pub fn get_dotfiles_root(&self) -> Result<PathBuf> {
         match self.get_dotfiles_path() {
             Some(p) if p.exists() => Ok(p.to_path_buf()),
-            Some(p) => bail!("Stored dotfiles path {:?} no longer exists. Run 'dotbee init' to set a new one.", p),
+            Some(p) => bail!(
+                "Stored dotfiles path {:?} no longer exists. Run 'dotbee init' to set a new one.",
+                p
+            ),
             None => std::env::current_dir().context("Failed to get current directory"),
         }
     }
@@ -89,8 +100,17 @@ impl State {
         &self.links
     }
 
-    pub fn add_link(&mut self, source: String, target: String, is_dir: bool) -> anyhow::Result<(), anyhow::Error> {
-        let link = Link { source, target, is_dir };
+    pub fn add_link(
+        &mut self,
+        source: String,
+        target: String,
+        is_dir: bool,
+    ) -> anyhow::Result<(), anyhow::Error> {
+        let link = Link {
+            source,
+            target,
+            is_dir,
+        };
         if !self.links.contains(&link) {
             self.links.push(link);
         }

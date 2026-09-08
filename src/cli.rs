@@ -1,7 +1,12 @@
 use clap::{Parser, Subcommand, ValueEnum};
 
 #[derive(Parser)]
-#[command(name = "dotbee", about = "Easy to use dotfiles manager", version, author)]
+#[command(
+    name = "dotbee",
+    about = "Easy to use dotfiles manager",
+    version,
+    author
+)]
 pub struct Cli {
     #[command(subcommand)]
     pub subcommand: SubCommand,

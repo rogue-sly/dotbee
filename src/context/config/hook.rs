@@ -16,7 +16,10 @@ impl Hook {
             Hook::File { path } => match Command::new(path).status() {
                 Ok(_status) => {}
                 Err(e) if e.kind() == std::io::ErrorKind::PermissionDenied => {
-                    eprintln!("Error: The script at {:?} is not executable. Try 'chmod +x {:?}'", path, path);
+                    eprintln!(
+                        "Error: The script at {:?} is not executable. Try 'chmod +x {:?}'",
+                        path, path
+                    );
                 }
                 Err(e) if e.raw_os_error() == Some(libc::ENOEXEC) => {
                     eprintln!(
